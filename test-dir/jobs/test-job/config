@@ -1,0 +1,2 @@
+REPO_HANDLER=repo-handler/git.sh
+REPO_URL=https://github.com/theasp/mini-ci
