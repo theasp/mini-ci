@@ -8,12 +8,14 @@ export MINICI_MASTER=$PPID
 export MINICI_DEBUG=yes
 export MINICI_JOB_NAME=test-job
 export MINICI_JOB_DIR="$(pwd)/test-dir/jobs/$MINICI_JOB_NAME"
+export MINICI_LOG_DIR="${MINICI_JOB_DIR}/log/"
+export MINICI_STATUS_DIR="${MINICI_JOB_DIR}/status/"
 
 CONFIG="${MINICI_JOB_DIR}/config"
 
-POLL_LOG="${MINICI_JOB_DIR}/poll.log"
-UPDATE_LOG="${MINICI_JOB_DIR}/update.log"
-TASKS_LOG="${MINICI_JOB_DIR}/tasks.log"
+POLL_LOG="${MINICI_LOG_DIR}/poll.log"
+UPDATE_LOG="${MINICI_LOG_DIR}/update.log"
+TASKS_LOG="${MINICI_LOG_DIR}/tasks.log"
 
 STATUS_POLL="UNKNOWN"
 STATUS_UPDATE="UNKNOWN"
@@ -97,6 +99,9 @@ repo_poll_start() {
         STATE="poll"
         log "Polling job"
 
+        STATUS_POLL="WORKING"
+        update_status_files
+
         $REPO_HANDLER poll "$WORK_DIR" $REPO_URL > $POLL_LOG 2>&1 &
         add_child $! "repo_poll_finish"
     fi
@@ -119,6 +124,7 @@ repo_poll_finish() {
         STATUS_POLL="ERROR"
         warning "Update did not finish sucessfully: $line"
     fi
+    update_status_files
 }
 
 repo_update_start() {
@@ -126,6 +132,9 @@ repo_update_start() {
     log "Updating workspace"
 
     test -e $WORK_DIR || mkdir $WORK_DIR
+
+    STATUS_UPDATE="WORKING"
+    update_status_files
 
     $REPO_HANDLER update "$WORK_DIR" $REPO_URL > $UPDATE_LOG 2>&1 &
     add_child $! "repo_update_finish"
@@ -142,13 +151,15 @@ repo_update_finish() {
         STATUS_UPDATE="ERROR"
         warning "Update did not finish sucessfully"
     fi
+    update_status_files
 }
 
 tasks_start() {
     STATE="tasks"
     log "Starting tasks"
     STATE="idle"
-    STATUS_TASKS="OK"
+    STATUS_TASKS="WORKING"
+    update_status_files
 }
 
 tasks_finish() {
@@ -206,7 +217,44 @@ abort() {
     fi
 }
 
+update_status_files() {
+    debug "Updating state files in $MINICI_STATUS_DIR"
+    test -e $MINICI_STATUS_DIR || mkdir $MINICI_STATUS_DIR
+
+    echo "STATUS_POLL=$STATUS_POLL" > $MINICI_STATUS_DIR/poll.tmp
+    mv $MINICI_STATUS_DIR/poll.tmp $MINICI_STATUS_DIR/poll
+
+    echo "STATUS_UPDATE=$STATUS_UPDATE" > $MINICI_STATUS_DIR/update.tmp
+    mv $MINICI_STATUS_DIR/update.tmp $MINICI_STATUS_DIR/update
+
+    echo "STATUS_TASKS=$STATUS_TASKS" > $MINICI_STATUS_DIR/tasks.tmp
+    mv $MINICI_STATUS_DIR/tasks.tmp $MINICI_STATUS_DIR/tasks
+}
+
+read_status_files() {
+    debug "Reading state files in $MINICI_STATUS_DIR"
+
+    test -e $MINICI_STATUS_DIR || mkdir $MINICI_STATUS_DIR
+
+    for name in poll update tasks; do
+        test -e $MINICI_STATUS_DIR/$name && source $MINICI_STATUS_DIR/$name || true
+    done
+
+    if [[ "$STATUS_POLL" = "WORKING" ]]; then
+        STATUS_POLL="UNKNOWN"
+    fi
+
+    if [[ "$STATUS_UPDATE" = "WORKING" ]]; then
+        STATUS_UPDATE="UNKNOWN"
+    fi
+
+    if [[ "$STATUS_TASKS" = "WORKING" ]]; then
+        STATUS_TASKS="UNKNOWN"
+    fi
+}
+
 status() {
+    update_status_files
     log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:$STATUS_POLL Update:$STATUS_UPDATE Tasks:$STATUS_TASKS"
 }
 
@@ -282,7 +330,7 @@ process_queue() {
     done
 }
 
-_start() {
+start() {
     log "Starting up"
 
     # Defaults
@@ -290,11 +338,13 @@ _start() {
 
     test -e $CONFIG && source $CONFIG
 
-    _RUN=yes
+    read_status_files
+
+    RUN=yes
     STATE=idle
     NEXT_POLL=0
 
-    while [[ "$_RUN" = "yes" ]]; do
+    while [[ "$RUN" = "yes" ]]; do
         # read_commands has a 1 second timeout
         read_commands
         process_queue
@@ -309,4 +359,4 @@ _start() {
     _shutdown
 }
 
-_start
+start
