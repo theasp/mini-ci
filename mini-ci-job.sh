@@ -269,14 +269,7 @@ read_commands() {
             CMD=$(echo $CMD | tr '[:upper:]' '[:lower:]')
 
             case $CMD in
-                poll|update)
-                    if [[ -x "$REPO_HANDLER" ]]; then
-                        queue "$CMD"
-                    else
-                        debug "Repo handler not supported: $REPO_HANDLER"
-                    fi
-                    ;;
-                clean|tasks)
+                poll|update|clean|tasks)
                     queue "$CMD"
                     ;;
                 status)
