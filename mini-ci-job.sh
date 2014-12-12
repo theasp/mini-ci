@@ -8,16 +8,15 @@ export _MINICI_MASTER=$PPID
 export _MINICI_DEBUG=yes
 export _MINICI_JOB_NAME=test-job
 export _MINICI_JOB_DIR="$(pwd)/test-dir/jobs/$_MINICI_JOB_NAME"
-export _MINICI_JOB_WORKSPACE="$_MINICI_JOB_DIR/workspace"
-export _MINICI_JOB_CONFIG="${_MINICI_JOB_DIR}/config"
+export _CONFIG="${_MINICI_JOB_DIR}/config"
 
-_MINICI_JOB_POLL_LOG="${_MINICI_JOB_DIR}/poll.log"
-_MINICI_JOB_UPDATE_LOG="${_MINICI_JOB_DIR}/update.log"
-_MINICI_JOB_BUILD_LOG="${_MINICI_JOB_DIR}/build.log"
+_POLL_LOG="${_MINICI_JOB_DIR}/poll.log"
+_UPDATE_LOG="${_MINICI_JOB_DIR}/update.log"
+_TASKS_LOG="${_MINICI_JOB_DIR}/tasks.log"
 
-_MINICI_JOB_STATUS_POLL="UNKNOWN"
-_MINICI_JOB_STATUS_UPDATE="UNKNOWN"
-_MINICI_JOB_STATUS_BUILD="UNKNOWN"
+_STATUS_POLL="UNKNOWN"
+_STATUS_UPDATE="UNKNOWN"
+_STATUS_TASKS="UNKNOWN"
 
 if [[ -z "$_MINICI_LIBDIR" ]]; then
     echo "ERROR: LIBDIR not set.  Not running inside of mini-ci?" 1>&2
@@ -35,24 +34,23 @@ if [[ -z "$_MINICI_JOB_NAME" ]]; then
 fi
 _MINICI_LOG_CONTEXT="job($$)/$_MINICI_JOB_NAME"
 
-
 if [[ -z "$_MINICI_JOB_DIR" ]]; then
     error "Unable to determine job directory"
 fi
 
-if [[ -z "$_MINICI_JOB_CONFIG" ]]; then
+if [[ -z "$_CONFIG" ]]; then
     error "Unable to determine job configuration file"
 fi
 
-_MINICI_JOB_CHILD_PIDS=()
-_MINICI_JOB_CHILD_CBS=()
+_CHILD_PIDS=()
+_CHILD_CBS=()
 
-_minici_job_handle_children() {
+_handle_children() {
     local tmpPids=()
     local tmpCBs=()
-    for ((i=0; i < ${#_MINICI_JOB_CHILD_PIDS[@]}; ++i)); do
-        local pid=${_MINICI_JOB_CHILD_PIDS[$i]}
-        local cb=${_MINICI_JOB_CHILD_CBS[$i]}
+    for ((i=0; i < ${#_CHILD_PIDS[@]}; ++i)); do
+        local pid=${_CHILD_PIDS[$i]}
+        local cb=${_CHILD_CBS[$i]}
 
         if ! kill -0 $pid 2>/dev/null; then
             set +e
@@ -67,118 +65,147 @@ _minici_job_handle_children() {
         fi
     done
 
-    _MINICI_JOB_CHILD_PIDS=(${tmpPids[@]})
-    _MINICI_JOB_CHILD_CBS=(${tmpCBs[@]})
+    _CHILD_PIDS=(${tmpPids[@]})
+    _CHILD_CBS=(${tmpCBs[@]})
 }
 
-_minici_job_queue() {
+_queue() {
     debug "Queued $@"
-    _MINICI_JOB_QUEUE=(${_MINICI_JOB_QUEUE[@]} $@)
+    _QUEUE=(${_QUEUE[@]} $@)
 }
 
-_minici_job_child() {
+_child() {
     debug "Added child $@"
-    _MINICI_JOB_CHILD_PIDS=(${_MINICI_JOB_CHILD_PIDS[@]} $1)
-    _MINICI_JOB_CHILD_CBS=(${_MINICI_JOB_CHILD_CBS[@]} $2)
+    _CHILD_PIDS=(${_CHILD_PIDS[@]} $1)
+    _CHILD_CBS=(${_CHILD_CBS[@]} $2)
 }
 
-_minici_job_clean() {
+_clean() {
     log "Cleaning workspace"
-    if [[ -e "$_MINICI_JOB_WORKSPACE" ]]; then
-        log "Removing workspace $_MINICI_JOB_WORKSPACE"
-        rm -rf $_MINICI_JOB_WORKSPACE
+    if [[ -e "$WORKSPACE" ]]; then
+        log "Removing workspace $WORKSPACE"
+        rm -rf $WORKSPACE
     fi
-    mkdir $_MINICI_JOB_WORKSPACE
+    mkdir $WORKSPACE
 
-    _minici_job_queue "update"
+    _queue "update"
 }
 
-_minici_job_poll_start() {
-    _MINICI_JOB_STATE="poll"
+_poll_start() {
+    _STATE="poll"
     log "Polling job"
 
-    $REPO_HANDLER poll "$_MINICI_JOB_WORKSPACE" $REPO_URL > $_MINICI_JOB_POLL_LOG 2>&1 &
-    _minici_job_child $! "_minici_job_poll_finish"
+    $REPO_HANDLER poll "$WORKSPACE" $REPO_URL > $_POLL_LOG 2>&1 &
+    _child $! "_poll_finish"
 }
 
-_minici_job_poll_finish() {
-    _MINICI_JOB_STATE="idle"
-    line=$(tail -n 1 $_MINICI_JOB_POLL_LOG)
+_poll_finish() {
+    _STATE="idle"
+    line=$(tail -n 1 $_POLL_LOG)
     if [[ $1 -eq 0 ]]; then
-        _MINICI_JOB_STATUS_POLL="OK"
+        _STATUS_POLL="OK"
         if [[ "$line" = "OK POLL NEEDED" ]]; then
             log "Poll finished sucessfully, queuing update"
-            _minici_job_queue "update"
+            _queue "update"
         else
             log "Poll finished sucessfully, no update required"
         fi
     else
-        _MINICI_JOB_STATUS_POLL="ERROR"
+        _STATUS_POLL="ERROR"
         warning "Update did not finish sucessfully: $line"
     fi
 }
 
-_minici_job_update_start() {
-    _MINICI_JOB_STATE="update"
+_update_start() {
+    _STATE="update"
     log "Updating workspace"
 
-    $REPO_HANDLER update "$_MINICI_JOB_WORKSPACE" $REPO_URL > $_MINICI_JOB_UPDATE_LOG 2>&1 &
-    _minici_job_child $! "_minici_job_update_finish"
+    $REPO_HANDLER update "$WORKSPACE" $REPO_URL > $_UPDATE_LOG 2>&1 &
+    _child $! "_update_finish"
 }
 
-_minici_job_update_finish() {
-    _MINICI_JOB_STATE="idle"
+_update_finish() {
+    _STATE="idle"
     if [[ $1 -eq 0 ]]; then
-        _MINICI_JOB_STATUS_UPDATE="OK"
-        log "Update finished sucessfully, queuing build"
-        _minici_job_queue "build"
+        _STATUS_UPDATE="OK"
+        log "Update finished sucessfully, queuing tasks"
+        _queue "tasks"
     else
-        _MINICI_JOB_STATUS_UPDATE="ERROR"
+        _STATUS_UPDATE="ERROR"
         warning "Update did not finish sucessfully"
     fi
 }
 
-_minici_job_build_start() {
-    _MINICI_JOB_STATE="build"
-    log "Starting build"
-    _MINICI_JOB_STATE="idle"
-    _MINICI_JOB_STATUS_BUILD="OK"
+_tasks_start() {
+    _STATE="tasks"
+    log "Starting tasks"
+    _STATE="idle"
+    _STATUS_TASKS="OK"
 }
 
-_minici_job_abort() {
-    unset _MINICI_JOB_QUEUE
+_tasks_finish() {
+    _STATE="idle"
+    _STATUS_TASKS="OK"
+}
+
+_abort() {
+    unset _QUEUE
 
     OK="ERR"
 
-    case $_MINICI_JOB_STATE in
+    case $_STATE in
         idle)
             OK="OK"
             ;;
 
-        poll|update|build)
-            OK="OK"
+        poll|update|tasks)
+            local tmpPids=()
+            local tmpCBs=()
+            for SIGNAL in -9 -9 -1; do
+                for ((i=0; i < ${#_CHILD_PIDS[@]}; ++i)); do
+                    local pid=${_CHILD_PIDS[$i]}
+                    local cb=${_CHILD_CBS[$i]}
+
+                    if kill -0 $pid 2>/dev/null; then
+                        kill -9 $pid 2>/dev/null
+                        debug "Killed child $pid with signal 9"
+                        tmpPids=(${tmpPids[@]} $pid)
+                        tmpCBs=(${tmpCBs[@]} $cb)
+                    fi
+                done
+                if [[ ${#tmpPids} -gt 0 ]]; then
+                    sleep 1;
+                fi
+            done
+
+            if [[ ${#_tmpPids} -gt 0 ]]; then
+                error "Processes remaining after abort: ${#_CHILD_PIDS}"
+            fi
+
+            _CHILD_PIDS=(${tmpPids[@]})
+            _CHILD_CBS=(${tmpCBs[@]})
             ;;
 
         *)
-            warning "Job in unknown busy state: $_MINICI_JOB_BUSY"
+            warning "Job in unknown busy state: $_BUSY"
             ;;
     esac
 
     if [[ "$OK" = "OK" ]]; then
-        _MINICI_JOB_STATE="idle"
+        _STATE="idle"
     fi
     echo "$OK ABORT $STATE"
 }
 
-_minici_job_status() {
-    echo "OK PID:$$ STATE:$_MINICI_JOB_STATE QUEUE:[${_MINICI_JOB_QUEUE[@]}] POLL:$_MINICI_JOB_STATUS_POLL UPDATE:$_MINICI_JOB_STATUS_UPDATE BUILD:$_MINICI_JOB_STATUS_BUILD"
+_status() {
+    echo "OK PID:$$ STATE:$_STATE QUEUE:[${_QUEUE[@]}] POLL:$_STATUS_POLL UPDATE:$_STATUS_UPDATE TASKS:$_STATUS_TASKS"
 }
 
-_minici_job_shutdown() {
+_shutdown() {
     log "Shutting down"
 }
 
-_minici_job_read_commands() {
+_read_commands() {
     while read -t 1 CMD ARGS; do
         #read CMD ARGS
         if [[ "$CMD" ]]; then
@@ -187,26 +214,26 @@ _minici_job_read_commands() {
             case $CMD in
                 poll|update)
                     if [[ -x "$REPO_HANDLER" ]]; then
-                        _minici_job_queue "$CMD"
+                        _queue "$CMD"
                         echo "OK QUEUED"
                     else
                         debug "Repo handler not supported: $REPO_HANDLER"
                         echo "ERR UNSUPPORTED"
                     fi
                     ;;
-                clean|build)
-                    _minici_job_queue "$CMD"
+                clean|tasks)
+                    _queue "$CMD"
                     echo "OK QUEUED"
                     ;;
                 status)
-                    _minici_job_status
+                    _status
                     ;;
                 abort)
-                    _minici_job_abort
+                    _abort
                     ;;
                 quit|shutdown)
-                    _MINICI_JOB_RUN=no
-                    _minici_job_abort
+                    _RUN=no
+                    _abort
                     echo "OK QUIT"
                     break
                     ;;
@@ -219,28 +246,31 @@ _minici_job_read_commands() {
     done
 }
 
-_minici_job_process_queue() {
-    while [[ ${_MINICI_JOB_QUEUE[0]} ]]; do
-        if [[ "$_MINICI_JOB_STATE" != "idle" ]]; then
+_process_queue() {
+    while [[ ${_QUEUE[0]} ]]; do
+        if [[ "$_STATE" != "idle" ]]; then
             break
         fi
 
-        CMD=${_MINICI_JOB_QUEUE[0]}
-        _MINICI_JOB_QUEUE=(${_MINICI_JOB_QUEUE[@]:1})
+        CMD=${_QUEUE[0]}
+        _QUEUE=(${_QUEUE[@]:1})
         case $CMD in
             clean)
-                _minici_job_clean
+                _clean
                 ;;
 
             poll)
-                _minici_job_poll_start
+                _poll_start
                 ;;
+
             update)
-                _minici_job_update_start
+                _update_start
                 ;;
-            build)
-                _minici_job_build_start
+
+            tasks)
+                _tasks_start
                 ;;
+
             *)
                 error "Unknown job in queue: $CMD"
                 ;;
@@ -248,28 +278,31 @@ _minici_job_process_queue() {
     done
 }
 
-_minici_job_start() {
+_start() {
     log "Starting up"
 
-    test -e $_MINICI_JOB_CONFIG && source $_MINICI_JOB_CONFIG
+    # Defaults
+    WORKSPACE="$_MINICI_JOB_DIR/workspace"
 
-    _MINICI_JOB_RUN=yes
-    _MINICI_JOB_STATE=idle
+    test -e $_CONFIG && source $_CONFIG
+
+    _RUN=yes
+    _STATE=idle
     _MINICI_NEXT_POLL=0
 
-    while [[ "$_MINICI_JOB_RUN" = "yes" ]]; do
-        # _minici_job_read_commands has a 1 second timeout
-        _minici_job_read_commands
-        _minici_job_process_queue
-        _minici_job_handle_children
-        if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -gt $_MINICI_NEXT_POLL ]] && [[ $_MINICI_JOB_STATE = "idle" ]]; then
+    while [[ "$_RUN" = "yes" ]]; do
+        # _read_commands has a 1 second timeout
+        _read_commands
+        _process_queue
+        _handle_children
+        if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -gt $_MINICI_NEXT_POLL ]] && [[ $_STATE = "idle" ]]; then
             debug "Poll frequency timeout"
-            _minici_job_queue "poll"
+            _queue "poll"
             _MINICI_NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
         fi
     done
 
-    _minici_job_shutdown
+    _shutdown
 }
 
-_minici_job_start
+_start
