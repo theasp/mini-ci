@@ -2,14 +2,10 @@
 
 set -e
 
-MINICI_DEBUG=yes
+#MINICI_DEBUG=yes
 MINICI_JOB_DIR="$(pwd)/test-dir/base-os-3.0-unstable/"
 
 CONFIG="${MINICI_JOB_DIR}/config"
-
-source $MINICI_LIBDIR/functions.sh
-
-MINICI_LOG_CONTEXT="job($$)"
 
 if [[ -z "$MINICI_JOB_DIR" ]]; then
     error "Unable to determine job directory"
@@ -35,12 +31,7 @@ warning() {
 }
 
 log() {
-    if [ "$MINICI_LOG_CONTEXT" ]; then
-        msg="$MINICI_LOG_CONTEXT $@"
-    else
-        msg="$@"
-    fi
-    echo "$(date +%F-%T)" $msg 1>&2
+    echo "$(date +%F-%T) $$ $@" 1>&2
 }
 
 CHILD_PIDS=()

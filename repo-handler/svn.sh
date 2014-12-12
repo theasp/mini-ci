@@ -17,12 +17,7 @@ warning() {
 }
 
 log() {
-    if [ "$MINICI_LOG_CONTEXT" ]; then
-        msg="$MINICI_LOG_CONTEXT $@"
-    else
-        msg="$@"
-    fi
-    echo "$(date +%F-%T)" $msg 1>&2
+    echo "$(date +%F-%T) $$ $@" 1>&2
 }
 
 OPERATION=$1
