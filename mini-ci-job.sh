@@ -396,7 +396,7 @@ start() {
         read_commands
         process_queue
         handle_children
-        if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -gt $NEXT_POLL ]] && [[ $STATE = "idle" ]]; then
+        if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -ge $NEXT_POLL ]] && [[ $STATE = "idle" ]]; then
             debug "Poll frequency timeout"
             queue "poll"
             NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
