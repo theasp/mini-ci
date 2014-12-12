@@ -66,8 +66,16 @@ killtree() {
     kill -${_sig} ${_pid}
 }
 
-
 for cmd in $@; do
+    case $cmd in
+        status|poll|update|tasks|abort|quit|shutdown)
+        ;;
+        *)
+            echo "ERROR: Unknown command $cmd" 1>&2
+            exit 1
+            ;;
+    esac
+
     END_TIME=$(( $(printf '%(%s)T\n' -1) + $TIMEOUT))
     (echo $@ > $CONTROL_FIFO) &
     ECHO_PID=$!
