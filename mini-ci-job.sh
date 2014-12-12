@@ -258,16 +258,15 @@ _minici_job_start() {
     _MINICI_NEXT_POLL=0
 
     while [[ "$_MINICI_JOB_RUN" = "yes" ]]; do
+        # _minici_job_read_commands has a 1 second timeout
+        _minici_job_read_commands
+        _minici_job_process_queue
+        _minici_job_handle_children
         if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -gt $_MINICI_NEXT_POLL ]] && [[ $_MINICI_JOB_STATE = "idle" ]]; then
             debug "Poll frequency timeout"
             _minici_job_queue "poll"
             _MINICI_NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
         fi
-
-        # _minici_job_read_commands should take roughly 1 second
-        _minici_job_read_commands
-        _minici_job_process_queue
-        _minici_job_handle_children
     done
 
     _minici_job_shutdown
