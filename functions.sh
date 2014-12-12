@@ -4,7 +4,7 @@ error() {
 }
 
 debug() {
-    if [ "$_MINICI_DEBUG" = "yes" ]; then
+    if [ "$MINICI_DEBUG" = "yes" ]; then
         log "DEBUG: $@"
     fi
 }
@@ -14,8 +14,8 @@ warning() {
 }
 
 log() {
-    if [ "$_MINICI_LOG_CONTEXT" ]; then
-        msg="$_MINICI_LOG_CONTEXT $@"
+    if [ "$MINICI_LOG_CONTEXT" ]; then
+        msg="$MINICI_LOG_CONTEXT $@"
     else
         msg="$@"
     fi
