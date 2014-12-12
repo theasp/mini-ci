@@ -9,10 +9,6 @@ MINICI_JOB_DIR="$(pwd)/test-dir/base-os-3.0-unstable/"
 
 CONFIG="${MINICI_JOB_DIR}/config"
 
-STATUS_POLL="UNKNOWN"
-STATUS_UPDATE="UNKNOWN"
-STATUS_TASKS="UNKNOWN"
-
 if [[ -z "$MINICI_LIBDIR" ]]; then
     echo "ERROR: LIBDIR not set.  Not running inside of mini-ci?" 1>&2
     exit 1
@@ -366,6 +362,7 @@ start() {
     WORK_DIR="$MINICI_JOB_DIR/workspace"
     TASKS_DIR="$MINICI_JOB_DIR/tasks.d"
     LOG_DIR="$MINICI_JOB_DIR/log"
+    STATUS_DIR="$MINICI_JOB_DIR/log"
     POLL_LOG="${LOG_DIR}/poll.log"
     UPDATE_LOG="${LOG_DIR}/update.log"
     TASKS_LOG="${LOG_DIR}/tasks.log"
@@ -380,6 +377,10 @@ start() {
     fi
 
     test -e $CONFIG && source $CONFIG
+
+    STATUS_POLL="UNKNOWN"
+    STATUS_UPDATE="UNKNOWN"
+    STATUS_TASKS="UNKNOWN"
 
     read_status_files
 
