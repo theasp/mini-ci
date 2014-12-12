@@ -82,11 +82,11 @@ _child() {
 
 _clean() {
     log "Cleaning workspace"
-    if [[ -e "$WORKSPACE" ]]; then
-        log "Removing workspace $WORKSPACE"
-        rm -rf $WORKSPACE
+    if [[ -e "$WORK_DIR" ]]; then
+        log "Removing workspace $WORK_DIR"
+        rm -rf $WORK_DIR
     fi
-    mkdir $WORKSPACE
+    mkdir $WORK_DIR
 
     _queue "update"
 }
@@ -95,7 +95,7 @@ _poll_start() {
     _STATE="poll"
     log "Polling job"
 
-    $REPO_HANDLER poll "$WORKSPACE" $REPO_URL > $_POLL_LOG 2>&1 &
+    $REPO_HANDLER poll "$WORK_DIR" $REPO_URL > $_POLL_LOG 2>&1 &
     _child $! "_poll_finish"
 }
 
@@ -120,7 +120,7 @@ _update_start() {
     _STATE="update"
     log "Updating workspace"
 
-    $REPO_HANDLER update "$WORKSPACE" $REPO_URL > $_UPDATE_LOG 2>&1 &
+    $REPO_HANDLER update "$WORK_DIR" $REPO_URL > $_UPDATE_LOG 2>&1 &
     _child $! "_update_finish"
 }
 
@@ -282,7 +282,7 @@ _start() {
     log "Starting up"
 
     # Defaults
-    WORKSPACE="$_MINICI_JOB_DIR/workspace"
+    WORK_DIR="$_MINICI_JOB_DIR/workspace"
 
     test -e $_CONFIG && source $_CONFIG
 
