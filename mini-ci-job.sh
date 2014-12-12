@@ -157,14 +157,33 @@ repo_update_finish() {
 tasks_start() {
     STATE="tasks"
     log "Starting tasks"
-    STATE="idle"
-    STATUS_TASKS="WORKING"
-    update_status_files
+
+    if [[ -e $TASKS_DIR ]]; then
+        STATUS_TASKS="WORKING"
+        update_status_files
+
+        (MINICI_LOG_CONTEXT="$MINICI_JOB_NAME/tasks($$)"; run_tasks) > $TASKS_LOG 2>&1 &
+        add_child $! "tasks_finish"
+
+    else
+        STATUS_TASKS="ERROR"
+        update_status_files
+
+        STATE="idle"
+        warning "The tasks directory $TASKS_DIR does not exist"
+    fi
 }
 
 tasks_finish() {
     STATE="idle"
-    STATUS_TASKS="OK"
+    if [[ $1 -eq 0 ]]; then
+        STATUS_TASKS="OK"
+        log "Tasks finished sucessfully"
+    else
+        STATUS_UPDATE="ERROR"
+        warning "Tasks did not finish sucessfully"
+    fi
+    update_status_files
 }
 
 abort() {
@@ -251,6 +270,29 @@ read_status_files() {
     if [[ "$STATUS_TASKS" = "WORKING" ]]; then
         STATUS_TASKS="UNKNOWN"
     fi
+}
+
+run_tasks() {
+    log "Running tasks"
+
+    if [[ ! -d $TASKS_DIR ]]; then
+        error "Can't find tasks directory $TASKS_DIR"
+    fi
+
+    cd $WORK_DIR
+
+    TASKS_RE='^[a-zA-Z0-9_-]+$'
+    set -x
+    for task in $(ls -1 $TASKS_DIR | grep -E -e "$TASKS_RE" | sort); do
+        file="$TASKS_DIR/$task"
+        if [[ -x $file ]]; then
+            LOG="${LOG_DIR}/${task}.log"
+            log "Running $task"
+            if ! $file > $LOG 2>&1; then
+                error "Bad return code $?"
+            fi
+        fi
+    done
 }
 
 status() {
