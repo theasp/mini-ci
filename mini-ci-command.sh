@@ -51,6 +51,11 @@ if [[ -z $CONTROL_FIFO ]]; then
     exit 1
 fi
 
+if [[ ! -e $CONTROL_FIFO ]]; then
+    echo "ERROR: Control fifo $CONTROL_FIFO is missing" 1>&2
+    exit 1
+fi
+
 killtree() {
     local _pid=$1
     local _sig=${2:--TERM}
