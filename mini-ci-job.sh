@@ -20,10 +20,6 @@ fi
 
 source $MINICI_LIBDIR/functions.sh
 
-if [[ -z "$MINICI_MASTER" ]]; then
-    error "Unable to determine PID of master process"
-fi
-
 MINICI_LOG_CONTEXT="job($$)"
 
 if [[ -z "$MINICI_JOB_DIR" ]]; then
