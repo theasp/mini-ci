@@ -3,19 +3,11 @@
 set -e
 
 # TODO: Should be set before running
-export MINICI_LIBDIR="$(pwd)"
-export MINICI_MASTER=$PPID
-export MINICI_DEBUG=yes
-export MINICI_JOB_NAME=test-job
-export MINICI_JOB_DIR="$(pwd)/test-dir/jobs/$MINICI_JOB_NAME"
-export MINICI_LOG_DIR="${MINICI_JOB_DIR}/log/"
-export MINICI_STATUS_DIR="${MINICI_JOB_DIR}/status/"
+MINICI_LIBDIR="$(pwd)"
+MINICI_DEBUG=yes
+MINICI_JOB_DIR="$(pwd)/test-dir/base-os-3.0-unstable/"
 
 CONFIG="${MINICI_JOB_DIR}/config"
-
-POLL_LOG="${MINICI_LOG_DIR}/poll.log"
-UPDATE_LOG="${MINICI_LOG_DIR}/update.log"
-TASKS_LOG="${MINICI_LOG_DIR}/tasks.log"
 
 STATUS_POLL="UNKNOWN"
 STATUS_UPDATE="UNKNOWN"
@@ -32,10 +24,7 @@ if [[ -z "$MINICI_MASTER" ]]; then
     error "Unable to determine PID of master process"
 fi
 
-if [[ -z "$MINICI_JOB_NAME" ]]; then
-    error "Unable to determine job name"
-fi
-MINICI_LOG_CONTEXT="$MINICI_JOB_NAME/job($$)"
+MINICI_LOG_CONTEXT="job($$)"
 
 if [[ -z "$MINICI_JOB_DIR" ]]; then
     error "Unable to determine job directory"
@@ -162,7 +151,7 @@ tasks_start() {
         STATUS_TASKS="WORKING"
         update_status_files
 
-        (MINICI_LOG_CONTEXT="$MINICI_JOB_NAME/tasks($$)"; run_tasks) > $TASKS_LOG 2>&1 &
+        (MINICI_LOG_CONTEXT="tasks(\$\$)"; run_tasks) > $TASKS_LOG 2>&1 &
         add_child $! "tasks_finish"
 
     else
@@ -186,77 +175,85 @@ tasks_finish() {
     update_status_files
 }
 
+# http://stackoverflow.com/questions/392022/best-way-to-kill-all-child-processes
+killtree() {
+    local _pid=$1
+    local _sig=${2:--TERM}
+    kill -stop ${_pid} # needed to stop quickly forking parent from producing children between child killing and parent killing
+    for _child in $(pgrep -P ${_pid}); do
+        killtree ${_child} ${_sig}
+    done
+    kill -${_sig} ${_pid}
+}
+
+
 abort() {
     unset QUEUE
 
-    OK="ERR"
+    local tmpPids=()
+    SLEEPTIME=1
+    for SIGNAL in TERM TERM KILL; do
+        for ((i=0; i < ${#CHILD_PIDS[@]}; ++i)); do
+            local pid=${CHILD_PIDS[$i]}
+
+            if kill -0 $pid 2>/dev/null; then
+                killtree $pid $SIGNAL
+                debug "Killed child $pid with SIG$SIGNAL"
+                tmpPids=(${tmpPids[@]} $pid)
+            fi
+        done
+        if [[ ${#tmpPids} -gt 0 ]]; then
+            sleep $SLEEPTIME;
+            SLEEPTIME=5
+        fi
+    done
+
+    if [[ ${#_tmpPids} -gt 0 ]]; then
+        error "Processes remaining after abort: ${#CHILD_PIDS}"
+    fi
+
+    CHILD_PIDS=()
+    CHILD_CBS=()
 
     case $STATE in
-        idle)
-            OK="OK"
+        poll)
+            STATUS_POLL="UNKNOWN"
             ;;
 
-        poll|update|tasks)
-            local tmpPids=()
-            local tmpCBs=()
-            SLEEPTIME=1
-            for SIGNAL in TERM TERM KILL; do
-                for ((i=0; i < ${#CHILD_PIDS[@]}; ++i)); do
-                    local pid=${CHILD_PIDS[$i]}
-                    local cb=${CHILD_CBS[$i]}
-
-                    if kill -0 $pid 2>/dev/null; then
-                        kill -$SIGNAL $pid 2>/dev/null
-                        debug "Killed child $pid with SIG$SIGNAL"
-                        tmpPids=(${tmpPids[@]} $pid)
-                        tmpCBs=(${tmpCBs[@]} $cb)
-                    fi
-                done
-                if [[ ${#tmpPids} -gt 0 ]]; then
-                    sleep $SLEEPTIME;
-                    SLEEPTIME=5
-                fi
-            done
-
-            if [[ ${#_tmpPids} -gt 0 ]]; then
-                error "Processes remaining after abort: ${#CHILD_PIDS}"
-            fi
-
-            CHILD_PIDS=(${tmpPids[@]})
-            CHILD_CBS=(${tmpCBs[@]})
+        update)
+            STATUS_UPDATE="UNKNOWN"
             ;;
 
-        *)
-            warning "Job in unknown busy state: $_BUSY"
+        tasks)
+            STATUS_TASKS="UNKNOWN"
             ;;
     esac
+    update_status_files
 
-    if [[ "$OK" = "OK" ]]; then
-        STATE="idle"
-    fi
+    STATE="idle"
 }
 
 update_status_files() {
-    debug "Updating state files in $MINICI_STATUS_DIR"
-    test -e $MINICI_STATUS_DIR || mkdir $MINICI_STATUS_DIR
+    debug "Updating state files in $STATUS_DIR"
+    test -e $STATUS_DIR || mkdir $STATUS_DIR
 
-    echo "STATUS_POLL=$STATUS_POLL" > $MINICI_STATUS_DIR/poll.tmp
-    mv $MINICI_STATUS_DIR/poll.tmp $MINICI_STATUS_DIR/poll
+    echo "STATUS_POLL=$STATUS_POLL" > $STATUS_DIR/poll.tmp
+    mv $STATUS_DIR/poll.tmp $STATUS_DIR/poll
 
-    echo "STATUS_UPDATE=$STATUS_UPDATE" > $MINICI_STATUS_DIR/update.tmp
-    mv $MINICI_STATUS_DIR/update.tmp $MINICI_STATUS_DIR/update
+    echo "STATUS_UPDATE=$STATUS_UPDATE" > $STATUS_DIR/update.tmp
+    mv $STATUS_DIR/update.tmp $STATUS_DIR/update
 
-    echo "STATUS_TASKS=$STATUS_TASKS" > $MINICI_STATUS_DIR/tasks.tmp
-    mv $MINICI_STATUS_DIR/tasks.tmp $MINICI_STATUS_DIR/tasks
+    echo "STATUS_TASKS=$STATUS_TASKS" > $STATUS_DIR/tasks.tmp
+    mv $STATUS_DIR/tasks.tmp $STATUS_DIR/tasks
 }
 
 read_status_files() {
-    debug "Reading state files in $MINICI_STATUS_DIR"
+    debug "Reading state files in $STATUS_DIR"
 
-    test -e $MINICI_STATUS_DIR || mkdir $MINICI_STATUS_DIR
+    test -e $STATUS_DIR || mkdir $STATUS_DIR
 
     for name in poll update tasks; do
-        test -e $MINICI_STATUS_DIR/$name && source $MINICI_STATUS_DIR/$name || true
+        test -e $STATUS_DIR/$name && source $STATUS_DIR/$name || true
     done
 
     if [[ "$STATUS_POLL" = "WORKING" ]]; then
@@ -302,10 +299,11 @@ status() {
 
 _shutdown() {
     log "Shutting down"
+    abort
 }
 
 read_commands() {
-    while read -t 1 CMD ARGS; do
+    while read -t 1 CMD ARGS <&3; do
         #read CMD ARGS
         if [[ "$CMD" ]]; then
             CMD=$(echo $CMD | tr '[:upper:]' '[:lower:]')
@@ -321,8 +319,7 @@ read_commands() {
                     abort
                     ;;
                 quit|shutdown)
-                    _RUN=no
-                    abort
+                    RUN=no
                     break
                     ;;
                 *)
@@ -369,12 +366,21 @@ start() {
     log "Starting up"
 
     # Defaults
+    CONTROL_FIFO="${MINICI_JOB_DIR}/control.fifo"
     WORK_DIR="$MINICI_JOB_DIR/workspace"
     TASKS_DIR="$MINICI_JOB_DIR/tasks.d"
     LOG_DIR="$MINICI_JOB_DIR/log"
+    POLL_LOG="${LOG_DIR}/poll.log"
+    UPDATE_LOG="${LOG_DIR}/update.log"
+    TASKS_LOG="${LOG_DIR}/tasks.log"
 
-    if [[ ! -d $MINICI_LOG_DIR ]]; then
-        mkdir $MINICI_LOG_DIR
+    rm -f $CONTROL_FIFO
+    mkfifo $CONTROL_FIFO
+
+    exec 3<> $CONTROL_FIFO
+    
+    if [[ ! -d $LOG_DIR ]]; then
+        mkdir $LOG_DIR
     fi
 
     test -e $CONFIG && source $CONFIG
