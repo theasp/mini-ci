@@ -2,12 +2,12 @@
 
 set -e
 
-if [ -z "$_MINICI_LIBDIR" ]; then
+if [ -z "$MINICI_LIBDIR" ]; then
     echo "ERROR: LIBDIR not set.  Not running inside of mini-ci?" 1>&2
     exit 1
 fi
 
-source $_MINICI_LIBDIR/functions.sh
+source $MINICI_LIBDIR/functions.sh
 
 OPERATION=$1
 DIR=$2
