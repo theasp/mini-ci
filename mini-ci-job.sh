@@ -2,17 +2,10 @@
 
 set -e
 
-# TODO: Should be set before running
-MINICI_LIBDIR="$(pwd)"
 MINICI_DEBUG=yes
 MINICI_JOB_DIR="$(pwd)/test-dir/base-os-3.0-unstable/"
 
 CONFIG="${MINICI_JOB_DIR}/config"
-
-if [[ -z "$MINICI_LIBDIR" ]]; then
-    echo "ERROR: LIBDIR not set.  Not running inside of mini-ci?" 1>&2
-    exit 1
-fi
 
 source $MINICI_LIBDIR/functions.sh
 
@@ -25,6 +18,30 @@ fi
 if [[ -z "$CONFIG" ]]; then
     error "Unable to determine job configuration file"
 fi
+
+error() {
+    log "ERROR: $@"
+    exit 1
+}
+
+debug() {
+    if [ "$MINICI_DEBUG" = "yes" ]; then
+        log "DEBUG: $@"
+    fi
+}
+
+warning() {
+    log "WARN: $@"
+}
+
+log() {
+    if [ "$MINICI_LOG_CONTEXT" ]; then
+        msg="$MINICI_LOG_CONTEXT $@"
+    else
+        msg="$@"
+    fi
+    echo "$(date +%F-%T)" $msg 1>&2
+}
 
 CHILD_PIDS=()
 CHILD_CBS=()
