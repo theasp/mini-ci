@@ -1,4 +1,16 @@
+# Specify a different job directory.  Defaults to $MINICI_DIR/jobs/$JOB_NAME/workspace
+# WORKSPACE=
+
+# Specify the repo handler program.
 REPO_HANDLER=repo-handler/git.sh
+
+# Specify the URL to use for the repo handler
 REPO_URL=https://github.com/theasp/mini-ci
 
-POLL_FREQ=60
+# If this is set to a number greater than zero, it will poll the
+# repository using the repo-handler every this many seconds, starting
+# at startup.  To have a more complicated scheme, use cron.
+POLL_FREQ=600
+
+# Specify a different tasks directory.  Defaults to $MINICI_DIR/jobs/$JOB_NAME/tasks.d
+# TASKS_DIR=
