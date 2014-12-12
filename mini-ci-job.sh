@@ -288,17 +288,17 @@ _start() {
 
     _RUN=yes
     _STATE=idle
-    _MINICI_NEXT_POLL=0
+    _NEXT_POLL=0
 
     while [[ "$_RUN" = "yes" ]]; do
         # _read_commands has a 1 second timeout
         _read_commands
         _process_queue
         _handle_children
-        if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -gt $_MINICI_NEXT_POLL ]] && [[ $_STATE = "idle" ]]; then
+        if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -gt $_NEXT_POLL ]] && [[ $_STATE = "idle" ]]; then
             debug "Poll frequency timeout"
             _queue "poll"
-            _MINICI_NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
+            _NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
         fi
     done
 
