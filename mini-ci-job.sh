@@ -328,7 +328,7 @@ start() {
 
     # Defaults
     WORK_DIR="$MINICI_JOB_DIR/workspace"
-    TASKS_DIR="$_MINICI_JOB_DIR/tasks.d"
+    TASKS_DIR="$MINICI_JOB_DIR/tasks.d"
 
     test -e $CONFIG && source $CONFIG
 
