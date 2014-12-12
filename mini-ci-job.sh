@@ -32,7 +32,7 @@ fi
 if [[ -z "$_MINICI_JOB_NAME" ]]; then
     error "Unable to determine job name"
 fi
-_MINICI_LOG_CONTEXT="job($$)/$_MINICI_JOB_NAME"
+_MINICI_LOG_CONTEXT="$_MINICI_JOB_NAME/job($$)"
 
 if [[ -z "$_MINICI_JOB_DIR" ]]; then
     error "Unable to determine job directory"
