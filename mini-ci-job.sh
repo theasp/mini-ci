@@ -329,6 +329,11 @@ start() {
     # Defaults
     WORK_DIR="$MINICI_JOB_DIR/workspace"
     TASKS_DIR="$MINICI_JOB_DIR/tasks.d"
+    LOG_DIR="$MINICI_JOB_DIR/log"
+
+    if [[ ! -d $MINICI_LOG_DIR ]]; then
+        mkdir $MINICI_LOG_DIR
+    fi
 
     test -e $CONFIG && source $CONFIG
 
