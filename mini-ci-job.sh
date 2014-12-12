@@ -161,20 +161,22 @@ _abort() {
         poll|update|tasks)
             local tmpPids=()
             local tmpCBs=()
-            for SIGNAL in -9 -9 -1; do
+            SLEEPTIME=1
+            for SIGNAL in TERM TERM KILL; do
                 for ((i=0; i < ${#_CHILD_PIDS[@]}; ++i)); do
                     local pid=${_CHILD_PIDS[$i]}
                     local cb=${_CHILD_CBS[$i]}
 
                     if kill -0 $pid 2>/dev/null; then
-                        kill -9 $pid 2>/dev/null
+                        kill -$SIGNAL $pid 2>/dev/null
                         debug "Killed child $pid with signal 9"
                         tmpPids=(${tmpPids[@]} $pid)
                         tmpCBs=(${tmpCBs[@]} $cb)
                     fi
                 done
                 if [[ ${#tmpPids} -gt 0 ]]; then
-                    sleep 1;
+                    sleep $SLEEPTIME;
+                    SLEEPTIME=5
                 fi
             done
 
