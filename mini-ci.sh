@@ -335,6 +335,7 @@ status() {
 quit() {
     log "Shutting down"
     abort
+    exit 0
 }
 
 read_commands() {
