@@ -472,6 +472,12 @@ acquire_lock() {
     echo $CUR_PID > $PID_FILE
 }
 
+schedule_poll() {
+    if [[ $POLL_FREQ ]] && [[ $POLL_FREQ -gt 0 ]]; then
+        NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
+    fi
+}
+
 main_loop() {
     log "Starting up"
 
@@ -502,7 +508,7 @@ main_loop() {
         if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -ge $NEXT_POLL ]] && [[ $STATE = "idle" ]]; then
             debug "Poll frequency timeout"
             queue "poll"
-            NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
+            schedule_poll
         fi
     done
 
