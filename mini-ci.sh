@@ -190,7 +190,7 @@ tasks_start() {
         STATUS_TASKS="WORKING"
         update_status_files
 
-        (MINICI_LOG_CONTEXT="tasks(\$\$)"; run_tasks) > $TASKS_LOG 2>&1 &
+        (run_tasks) > $TASKS_LOG 2>&1 &
         add_child $! "tasks_finish"
 
     else
