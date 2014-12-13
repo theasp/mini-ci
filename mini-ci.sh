@@ -353,6 +353,9 @@ read_commands() {
                 abort)
                     abort
                     ;;
+                reload)
+                    reload
+                    ;;
                 quit|shutdown)
                     RUN=no
                     break
@@ -397,10 +400,9 @@ process_queue() {
     done
 }
 
-start() {
-    log "Starting up"
+reload() {
+    log "Reloading configuration"
 
-    # Defaults
     CONTROL_FIFO="${MINICI_JOB_DIR}/control.fifo"
     WORK_DIR="$MINICI_JOB_DIR/workspace"
     TASKS_DIR="$MINICI_JOB_DIR/tasks.d"
@@ -410,22 +412,34 @@ start() {
     UPDATE_LOG="${LOG_DIR}/update.log"
     TASKS_LOG="${LOG_DIR}/tasks.log"
 
-    rm -f $CONTROL_FIFO
-    mkfifo $CONTROL_FIFO
-
-    exec 3<> $CONTROL_FIFO
+    if [[ -f $CONFIG ]]; then
+        source $CONFIG
+    else
+        error "Unable to find configuration file $CONFIG"
+    fi
     
     if [[ ! -d $LOG_DIR ]]; then
         mkdir $LOG_DIR
     fi
 
-    test -e $CONFIG && source $CONFIG
+    abort
 
     STATUS_POLL="UNKNOWN"
     STATUS_UPDATE="UNKNOWN"
     STATUS_TASKS="UNKNOWN"
 
     read_status_files
+}
+
+start() {
+    log "Starting up"
+
+    reload
+
+    rm -f $CONTROL_FIFO
+    mkfifo $CONTROL_FIFO
+
+    exec 3<> $CONTROL_FIFO
 
     RUN=yes
     STATE=idle
