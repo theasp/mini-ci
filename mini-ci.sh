@@ -356,7 +356,7 @@ read_commands() {
                     abort
                     ;;
                 reload)
-                    reload
+                    reload_config
                     ;;
                 quit|shutdown)
                     RUN=no
@@ -402,15 +402,21 @@ process_queue() {
     done
 }
 
-reload() {
+reload_config() {
     log "Reloading configuration"
+    load_config
+    # Abort needs to be after reading the config file so that the
+    # status directory is valid.
+    abort
+}
 
-    CONTROL_FIFO="${MINICI_JOB_DIR}/control.fifo"
-    PID_FILE="${MINICI_JOB_DIR}/minici.pid"
-    WORK_DIR="$MINICI_JOB_DIR/workspace"
-    TASKS_DIR="$MINICI_JOB_DIR/tasks.d"
-    LOG_DIR="$MINICI_JOB_DIR/log"
-    STATUS_DIR="$MINICI_JOB_DIR/log"
+load_config() {
+    CONTROL_FIFO="control.fifo"
+    PID_FILE="minici.pid"
+    WORK_DIR="workspace"
+    TASKS_DIR="tasks.d"
+    STATUS_DIR="status"
+    LOG_DIR="log"
     POLL_LOG="${LOG_DIR}/poll.log"
     UPDATE_LOG="${LOG_DIR}/update.log"
     TASKS_LOG="${LOG_DIR}/tasks.log"
@@ -424,10 +430,6 @@ reload() {
     if [[ ! -d $LOG_DIR ]]; then
         mkdir $LOG_DIR
     fi
-
-    # Abort needs to be after reading the config file so that the
-    # status directory is valid.
-    abort
 
     STATUS_POLL="UNKNOWN"
     STATUS_UPDATE="UNKNOWN"
@@ -445,6 +447,7 @@ reload() {
     export UPDATE_LOG
     export TASKS_LOG
 
+    cd $MINICI_JOB_DIR
     acquire_lock
 }
 
@@ -461,15 +464,8 @@ acquire_lock() {
     echo $$ > $PID_FILE
 }
 
-start() {
+main_loop() {
     log "Starting up"
-
-    reload
-
-    rm -f $CONTROL_FIFO
-    mkfifo $CONTROL_FIFO
-
-    exec 3<> $CONTROL_FIFO
 
     RUN=yes
     STATE=idle
@@ -617,7 +613,29 @@ _svn() {
     esac
 }
 
-trap reload SIGHUP
-trap quit SIGTERM
+start() {
+    trap reload_config SIGHUP
+    trap quit SIGTERM SIGINT
+
+    load_config
+
+    rm -f $CONTROL_FIFO
+    mkfifo $CONTROL_FIFO
+
+    exec 3<> $CONTROL_FIFO
+
+    if [[ $DAEMON = "yes" ]]; then
+        # Based on:
+        # http://blog.n01se.net/blog-n01se-net-p-145.html
+
+        [[ -t 0 ]] && exec </dev/null || true
+        [[ -t 1 ]] && exec >/dev/null || true
+        [[ -t 2 ]] && exec 2>/dev/null || true
+
+        (main_loop &) &
+    else
+        main_loop
+    fi
+}
 
 start
