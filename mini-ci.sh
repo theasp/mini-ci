@@ -294,7 +294,7 @@ status() {
     log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:$STATUS_POLL Update:$STATUS_UPDATE Tasks:$STATUS_TASKS"
 }
 
-_shutdown() {
+quit() {
     log "Shutting down"
     abort
 }
@@ -405,7 +405,7 @@ start() {
         fi
     done
 
-    _shutdown
+    quit
 }
 
 start
