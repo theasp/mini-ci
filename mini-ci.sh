@@ -421,6 +421,7 @@ load_config() {
     TASKS_DIR="tasks.d"
     STATUS_DIR="status"
     LOG_DIR="log"
+    MINICI_LOG="${LOG_DIR}/mini-ci.log"
     POLL_LOG="${LOG_DIR}/poll.log"
     UPDATE_LOG="${LOG_DIR}/update.log"
     TASKS_LOG="${LOG_DIR}/tasks.log"
