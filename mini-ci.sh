@@ -78,6 +78,40 @@ clean() {
     queue "update"
 }
 
+repo_run() {
+    local OPERATION=$1
+    local CALLBACK=$2
+
+    if [[ $REPO_URL ]]; then
+        if [[ $REPO_HANDLER ]]; then
+            case $REPO_HANDLER in
+                git|svn) # These are built in
+                    cmd="_$REPO_HANDLER"
+                    ;;
+
+                *)
+                    if [[ -x $REPO_HANDLER ]]; then
+                        cmd=$REPO_HANDLER
+                    else
+                        warning "Unable to $OPERATION on $REPO_URL, $REPO_HANDLER is not executable"
+                        return 1
+                    fi
+                    ;;
+            esac
+
+            ($cmd $OPERATION "$WORK_DIR" $REPO_URL > $POLL_LOG 2>&1) &
+            add_child $! $CALLBACK
+            return 0
+        else
+            warning "Unable to $OPERATION on $REPO_URL, REPO_HANDLER not set"
+            return 1
+        fi
+    else
+        warning "No REPO_URL defined"
+        return 1
+    fi
+}
+
 repo_poll_start() {
     if [[ ! -e $WORK_DIR ]]; then
         repo_update_start
@@ -88,8 +122,10 @@ repo_poll_start() {
         STATUS_POLL="WORKING"
         update_status_files
 
-        $REPO_HANDLER poll "$WORK_DIR" $REPO_URL > $POLL_LOG 2>&1 &
-        add_child $! "repo_poll_finish"
+        if ! repo_run poll "repo_poll_finish"; then
+            STATE="idle"
+            STATUS_POLL="ERROR"
+        fi
     fi
 }
 
@@ -108,7 +144,7 @@ repo_poll_finish() {
         fi
     else
         STATUS_POLL="ERROR"
-        warning "Update did not finish sucessfully: $line"
+        warning "Poll did not finish sucessfully"
     fi
     update_status_files
 }
@@ -122,8 +158,10 @@ repo_update_start() {
     STATUS_UPDATE="WORKING"
     update_status_files
 
-    $REPO_HANDLER update "$WORK_DIR" $REPO_URL > $UPDATE_LOG 2>&1 &
-    add_child $! "repo_update_finish"
+    if ! repo_run update "repo_update_finish"; then
+        STATE="idle"
+        STATUS_POLL="ERROR"
+    fi
 }
 
 repo_update_finish() {
@@ -406,6 +444,133 @@ start() {
     done
 
     quit
+}
+
+_git() {
+    local OPERATION=$1
+    local DIR=$2
+    local REPO=$3
+
+    if [ -z "$OPERATION" ]; then
+        error "Missing argument OPERATION"
+    fi
+
+    if [ -z "$DIR" ]; then
+        error "Missing argument DIR"
+    fi
+
+    if [ -z "$REPO" ]; then
+        error "Missing argument REPO"
+    fi
+
+    cd $DIR
+
+    case $OPERATION in
+        update)
+            if [ ! -d .git ]; then
+                if ! git clone $REPO .; then
+                    echo "ERR UPDATE CLONE"
+                    exit 1
+                fi
+            else
+                if ! git pull --rebase; then
+                    echo "ERR UPDATE PULL"
+                    exit 1
+                fi
+            fi
+            echo "OK UPDATE"
+            exit 0
+            ;;
+
+        poll)
+            if ! git remote update; then
+                echo "ERR POLL UPDATE"
+                exit 1
+            fi
+
+            local LOCAL=$(git rev-parse @)
+            local REMOTE=$(git rev-parse @{u})
+            local BASE=$(git merge-base @ @{u})
+
+            echo "Local: $LOCAL"
+            echo "Remote: $REMOTE"
+            echo "Base: $BASE"
+
+            if [ $LOCAL = $REMOTE ]; then
+                echo "OK POLL CURRENT"
+                exit 0
+            elif [ $LOCAL = $BASE ]; then
+                echo "OK POLL NEEDED"
+                exit 0
+            elif [ $REMOTE = $BASE ]; then
+                echo "ERR POLL LOCALCOMMITS"
+                exit 1
+            else
+                echo "ERR POLL DIVERGED"
+                exit 1
+            fi
+            ;;
+        *)
+            error "Unknown operation $OPERATION"
+            ;;
+    esac
+}
+
+_svn() {
+    local OPERATION=$1
+    local DIR=$2
+    local REPO=$3
+
+    if [ -z "$OPERATION" ]; then
+        error "Missing argument OPERATION"
+    fi
+
+    if [ -z "$DIR" ]; then
+        error "Missing argument DIR"
+    fi
+
+    if [ -z "$REPO" ]; then
+        error "Missing argument REPO"
+    fi
+
+    cd $DIR
+
+    case $OPERATION in
+        update)
+            if [ ! -d .svn ]; then
+                if ! svn checkout $REPO .; then
+                    echo "ERR UPDATE CHECKOUT"
+                    exit 1
+                fi
+            else
+                if ! svn update; then
+                    echo "ERR UPDATE UPDATE"
+                    exit 1
+                fi
+            fi
+            echo "OK UPDATE"
+            exit 0
+            ;;
+
+        poll)
+            local LOCAL=$(svn info | grep '^Last Changed Rev' | cut -f 2 -d :)
+            local REMOTE=$(svn info -r HEAD| grep '^Last Changed Rev' | cut -f 2 -d :)
+
+            echo "Local: $LOCAL"
+            echo "Remote: $REMOTE"
+
+            if [[ $LOCAL -eq $REMOTE ]]; then
+                echo "OK POLL CURRENT"
+                exit 0
+            else
+                echo "OK POLL NEEDED"
+                exit 0
+            fi
+            ;;
+        *)
+            error "Unknown operation $OPERATION"
+            ;;
+    esac
 }
 
 start
