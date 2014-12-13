@@ -68,7 +68,7 @@ killtree() {
 
 for cmd in $@; do
     case $cmd in
-        status|poll|update|tasks|abort|quit|shutdown|reload)
+        status|poll|update|tasks|clean|abort|quit|shutdown|reload)
         ;;
         *)
             echo "ERROR: Unknown command $cmd" 1>&2
