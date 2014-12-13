@@ -420,7 +420,6 @@ load_config() {
     TASKS_DIR="tasks.d"
     STATUS_DIR="status"
     LOG_DIR="log"
-    MINICI_LOG="${LOG_DIR}/mini-ci.log"
     POLL_LOG="${LOG_DIR}/poll.log"
     UPDATE_LOG="${LOG_DIR}/update.log"
     TASKS_LOG="${LOG_DIR}/tasks.log"
@@ -430,7 +429,13 @@ load_config() {
     else
         error "Unable to find configuration file $CONFIG"
     fi
-    
+
+    # Set this after sourcing the config file to hide the error when
+    # running in an empty dir.
+    if [[ -z $MINICI_LOG ]]; then
+        MINICI_LOG="${LOG_DIR}/mini-ci.log"
+    fi
+
     if [[ ! -d $LOG_DIR ]]; then
         mkdir $LOG_DIR
     fi
