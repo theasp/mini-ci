@@ -483,6 +483,7 @@ main_loop() {
     trap reload_config SIGHUP
     trap quit SIGINT
     trap quit SIGTERM
+    trap "queue poll" SIGUSR1
 
     # Even though this was done before, make a new lock as your PID
     # may have changed if running as a daemon.
