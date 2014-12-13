@@ -1,16 +1,53 @@
-# Specify a different work directory.  Defaults to $MINICI_DIR/jobs/$JOB_NAME/workspace
-# WORK_DIR=<dir>
+# All paths are relative to the job directory.
 
-# Specify the repo handler program.
+# WORK_DIR: The directory where the repository will be checked out
+# into, and where tasks are launched.  Defaults to "workspace".
+WORK_DIR="workspace"
+
+# REPO_HANDLER: This is either a command that exits with the
+# appropriate return codes, or one of the built in handlers:
+# - git
+# - svn
 REPO_HANDLER=git
 
-# Specify the URL to use for the repo handler
+# REPO_URL: The URL to the repository.  Fetching the URL must not ask
+# for a username or password.  Use ~/.netrc or ssh keys for remote
+# repositories.
 REPO_URL=https://github.com/theasp/mini-ci
 
-# If this is set to a number greater than zero, it will poll the
+# POLL_FREQ: If this is set to a number greater than zero, it will poll the
 # repository using the repo-handler every this many seconds, starting
 # at startup.  To have a more complicated scheme, use cron.
 POLL_FREQ=600
 
-# Specify a different tasks directory.  Defaults to $MINICI_DIR/jobs/$JOB_NAME/tasks.d
-# TASKS_DIR=<dir>
+# TASKS_DIR: The directory which holds the tasks to be performed on
+# the checked out repository.  Defaults to "tasks.d"
+TASKS_DIR=tasks.d
+
+# CONTROL_FIFO: The fifo that mini-ci will read to accept commands.
+# Defaults to "control.fifo".
+CONTROL_FIFO="control.fifo"
+
+# PID_FILE: The file containing the process ID for mini-ci.  Defaults
+# to "minici.pid".
+PID_FILE="minici.pid"
+
+# STATUS_DIR: A directory where status files are kept.  Defaults to
+# "status".
+STATUS_DIR="status"
+
+# LOG_DIR: The directory where logs are kept.  Defaults to "log".
+LOG_DIR="log"
+
+# POLL_LOG: Name of the poll log.  Defaults to "${LOG_DIR}/poll.log".
+POLL_LOG="${LOG_DIR}/poll.log"
+
+# UPDATE_LOG: Name of the update log.  Defaults to "${LOG_DIR}/update.log".
+UPDATE_LOG="${LOG_DIR}/update.log"
+
+# TASKS_LOG: Name of the tasks log.  Defaults to "${LOG_DIR}/tasks.log".
+TASKS_LOG="${LOG_DIR}/tasks.log"
+
+# MINICI_LOG: Name of the mini-ci log.  Defaults to
+# "${LOG_DIR}/mini-ci.log".
+MINICI_LOG="${LOG_DIR}/mini-ci.log"
