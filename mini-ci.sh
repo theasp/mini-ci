@@ -31,7 +31,11 @@ warning() {
 }
 
 log() {
-    echo "$(date +%F-%T) $$ $@" 1>&2
+    msg="$(date +%F-%T) $BASHPID $@"
+    echo $msg 1>&2
+    if [[ $MINICI_LOG ]]; then
+        echo $msg >> $MINICI_LOG
+    fi
 }
 
 handle_children() {
