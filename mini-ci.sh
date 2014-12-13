@@ -430,6 +430,16 @@ reload() {
     STATUS_TASKS="UNKNOWN"
 
     read_status_files
+
+    export CONTROL_FIFO
+    export WORK_DIR
+    export TASKS_DIR
+    export WORK_DIR
+    export LOG_DIR
+    export STATUS_DIR
+    export POLL_LOG
+    export UPDATE_LOG
+    export TASKS_LOG
 }
 
 start() {
