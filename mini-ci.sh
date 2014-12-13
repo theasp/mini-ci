@@ -587,4 +587,7 @@ _svn() {
     esac
 }
 
+trap reload SIGHUP
+trap quit SIGTERM
+
 start
