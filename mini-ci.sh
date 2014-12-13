@@ -457,20 +457,36 @@ load_config() {
 }
 
 acquire_lock() {
+    CUR_PID=$BASHPID
     if [[ -e $PID_FILE ]]; then
         TEST_PID=$(< $PID_FILE)
-        if [[ $TEST_PID && $TEST_PID -ne $$ ]]; then
+        if [[ $TEST_PID && $TEST_PID -ne $CUR_PID ]]; then
+            debug "Lock file present $PID_FILE, has $TEST_PID"
             if kill -0 $TEST_PID >/dev/null 2>&1; then
                 error "Unable to acquire lock.  Is minici running as PID ${TEST_PID}?"
             fi
         fi
     fi
 
-    echo $$ > $PID_FILE
+    debug "Writing $CUR_PID to $PID_FILE"
+    echo $CUR_PID > $PID_FILE
 }
 
 main_loop() {
     log "Starting up"
+
+    rm -f $CONTROL_FIFO
+    mkfifo $CONTROL_FIFO
+
+    exec 3<> $CONTROL_FIFO
+
+    trap reload_config SIGHUP
+    trap quit SIGINT
+    trap quit SIGTERM
+
+    # Even though this was done before, make a new lock as your PID
+    # may have changed if running as a daemon.
+    acquire_lock
 
     RUN=yes
     STATE=idle
@@ -619,24 +635,16 @@ _svn() {
 }
 
 start() {
-    trap reload_config SIGHUP
-    trap quit SIGTERM SIGINT
-
     load_config
-
-    rm -f $CONTROL_FIFO
-    mkfifo $CONTROL_FIFO
-
-    exec 3<> $CONTROL_FIFO
 
     if [[ $DAEMON = "yes" ]]; then
         # Based on:
         # http://blog.n01se.net/blog-n01se-net-p-145.html
-
         [[ -t 0 ]] && exec </dev/null || true
         [[ -t 1 ]] && exec >/dev/null || true
         [[ -t 2 ]] && exec 2>/dev/null || true
 
+        # Double fork will detach the process
         (main_loop &) &
     else
         main_loop
