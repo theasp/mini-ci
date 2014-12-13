@@ -2,7 +2,7 @@
 # WORK_DIR=<dir>
 
 # Specify the repo handler program.
-REPO_HANDLER=repo-handler/git.sh
+REPO_HANDLER=git
 
 # Specify the URL to use for the repo handler
 REPO_URL=https://github.com/theasp/mini-ci
