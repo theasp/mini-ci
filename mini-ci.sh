@@ -3,11 +3,10 @@
 set -e
 
 #DEBUG=yes
-MINICI_JOB_DIR="test-dir/jobs/test-job/"
+JOB_DIR="."
+CONFIG="${JOB_DIR}/config"
 
-CONFIG="${MINICI_JOB_DIR}/config"
-
-if [[ -z "$MINICI_JOB_DIR" ]]; then
+if [[ -z "$JOB_DIR" ]]; then
     error "Unable to determine job directory"
 fi
 
@@ -452,7 +451,7 @@ load_config() {
     export UPDATE_LOG
     export TASKS_LOG
 
-    cd $MINICI_JOB_DIR
+    cd $JOB_DIR
     acquire_lock
 }
 
