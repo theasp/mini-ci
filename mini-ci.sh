@@ -2,7 +2,7 @@
 
 set -e
 
-#MINICI_DEBUG=yes
+#DEBUG=yes
 MINICI_JOB_DIR="test-dir/jobs/test-job/"
 
 CONFIG="${MINICI_JOB_DIR}/config"
@@ -21,7 +21,7 @@ error() {
 }
 
 debug() {
-    if [ "$MINICI_DEBUG" = "yes" ]; then
+    if [ "$DEBUG" = "yes" ]; then
         log "DEBUG: $@"
     fi
 }
