@@ -335,6 +335,7 @@ status() {
 quit() {
     log "Shutting down"
     abort
+    rm -f $PID_FILE
     exit 0
 }
 
@@ -405,6 +406,7 @@ reload() {
     log "Reloading configuration"
 
     CONTROL_FIFO="${MINICI_JOB_DIR}/control.fifo"
+    PID_FILE="${MINICI_JOB_DIR}/minici.pid"
     WORK_DIR="$MINICI_JOB_DIR/workspace"
     TASKS_DIR="$MINICI_JOB_DIR/tasks.d"
     LOG_DIR="$MINICI_JOB_DIR/log"
@@ -423,6 +425,8 @@ reload() {
         mkdir $LOG_DIR
     fi
 
+    # Abort needs to be after reading the config file so that the
+    # status directory is valid.
     abort
 
     STATUS_POLL="UNKNOWN"
@@ -440,6 +444,21 @@ reload() {
     export POLL_LOG
     export UPDATE_LOG
     export TASKS_LOG
+
+    acquire_lock
+}
+
+acquire_lock() {
+    if [[ -e $PID_FILE ]]; then
+        TEST_PID=$(< $PID_FILE)
+        if [[ $TEST_PID && $TEST_PID -ne $$ ]]; then
+            if kill -0 $TEST_PID >/dev/null 2>&1; then
+                error "Unable to acquire lock.  Is minici running as PID ${TEST_PID}?"
+            fi
+        fi
+    fi
+
+    echo $$ > $PID_FILE
 }
 
 start() {
