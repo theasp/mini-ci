@@ -3,7 +3,7 @@
 set -e
 
 #MINICI_DEBUG=yes
-MINICI_JOB_DIR="$(pwd)/test-dir/base-os-3.0-unstable/"
+MINICI_JOB_DIR="test-dir/jobs/test-job/"
 
 CONFIG="${MINICI_JOB_DIR}/config"
 
