@@ -34,9 +34,6 @@ log() {
     echo "$(date +%F-%T) $$ $@" 1>&2
 }
 
-CHILD_PIDS=()
-CHILD_CBS=()
-
 handle_children() {
     local tmpPids=()
     local tmpCBs=()
