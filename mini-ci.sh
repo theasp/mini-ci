@@ -423,6 +423,7 @@ load_config() {
     POLL_LOG="${LOG_DIR}/poll.log"
     UPDATE_LOG="${LOG_DIR}/update.log"
     TASKS_LOG="${LOG_DIR}/tasks.log"
+    POLL_FREQ=0
 
     if [[ -f $CONFIG ]]; then
         source $CONFIG
@@ -455,6 +456,7 @@ load_config() {
     export POLL_LOG
     export UPDATE_LOG
     export TASKS_LOG
+    export POLL_FREQ
 
     cd $JOB_DIR
     acquire_lock
