@@ -496,7 +496,12 @@ acquire_lock() {
         if [[ $TEST_PID && $TEST_PID -ne $CUR_PID ]]; then
             debug "Lock file present $PID_FILE, has $TEST_PID"
             if kill -0 $TEST_PID >/dev/null 2>&1; then
-                error "Unable to acquire lock.  Is minici running as PID ${TEST_PID}?"
+                if [[ $OKNODO = "yes" ]]; then
+                    debug "Unable to acquire lock.  Is minici running as PID ${TEST_PID}?"
+                    exit 0
+                else
+                    error "Unable to acquire lock.  Is minici running as PID ${TEST_PID}?"
+                fi
             fi
         fi
     fi
