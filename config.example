@@ -2,7 +2,7 @@
 
 # WORK_DIR: The directory where the repository will be checked out
 # into, and where tasks are launched.  Defaults to "workspace".
-WORK_DIR="workspace"
+WORK_DIR="./workspace"
 
 # REPO_HANDLER: This is either a command that exits with the
 # appropriate return codes, or one of the built in handlers:
@@ -22,22 +22,22 @@ POLL_FREQ=600
 
 # TASKS_DIR: The directory which holds the tasks to be performed on
 # the checked out repository.  Defaults to "tasks.d"
-TASKS_DIR=tasks.d
+TASKS_DIR="./tasks.d"
 
 # CONTROL_FIFO: The fifo that mini-ci will read to accept commands.
 # Defaults to "control.fifo".
-CONTROL_FIFO="control.fifo"
+CONTROL_FIFO="./control.fifo"
 
 # PID_FILE: The file containing the process ID for mini-ci.  Defaults
 # to "minici.pid".
-PID_FILE="minici.pid"
+PID_FILE="./minici.pid"
 
-# STATUS_DIR: A directory where status files are kept.  Defaults to
+# STATUS_FILE: A file where status information is kept.  Defaults to
 # "status".
-STATUS_DIR="status"
+STATUS_FILE="./status"
 
 # LOG_DIR: The directory where logs are kept.  Defaults to "log".
-LOG_DIR="log"
+LOG_DIR="./log"
 
 # POLL_LOG: Name of the poll log.  Defaults to "${LOG_DIR}/poll.log".
 POLL_LOG="${LOG_DIR}/poll.log"

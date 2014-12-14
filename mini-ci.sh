@@ -155,7 +155,7 @@ repo_poll_start() {
         log "Polling job"
 
         STATUS_POLL="WORKING"
-        update_status_files
+        update_status_file
 
         if ! repo_run poll "repo_poll_finish"; then
             STATE="idle"
@@ -181,7 +181,7 @@ repo_poll_finish() {
         STATUS_POLL="ERROR"
         warning "Poll did not finish sucessfully"
     fi
-    update_status_files
+    update_status_file
 }
 
 repo_update_start() {
@@ -191,7 +191,7 @@ repo_update_start() {
     test -e $WORK_DIR || mkdir $WORK_DIR
 
     STATUS_UPDATE="WORKING"
-    update_status_files
+    update_status_file
 
     if ! repo_run update "repo_update_finish"; then
         STATE="idle"
@@ -210,7 +210,7 @@ repo_update_finish() {
         STATUS_UPDATE="ERROR"
         warning "Update did not finish sucessfully"
     fi
-    update_status_files
+    update_status_file
 }
 
 tasks_start() {
@@ -219,14 +219,14 @@ tasks_start() {
 
     if [[ -e $TASKS_DIR ]]; then
         STATUS_TASKS="WORKING"
-        update_status_files
+        update_status_file
 
         (run_tasks) > $TASKS_LOG 2>&1 &
         add_child $! "tasks_finish"
 
     else
         STATUS_TASKS="ERROR"
-        update_status_files
+        update_status_file
 
         STATE="idle"
         warning "The tasks directory $TASKS_DIR does not exist"
@@ -242,7 +242,7 @@ tasks_finish() {
         STATUS_UPDATE="ERROR"
         warning "Tasks did not finish sucessfully"
     fi
-    update_status_files
+    update_status_file
 }
 
 # http://stackoverflow.com/questions/392022/best-way-to-kill-all-child-processes
@@ -298,43 +298,39 @@ abort() {
             STATUS_TASKS="UNKNOWN"
             ;;
     esac
-    update_status_files
+    update_status_file
 
     STATE="idle"
 }
 
-update_status_files() {
-    debug "Updating state files in $STATUS_DIR"
-    test -e $STATUS_DIR || mkdir $STATUS_DIR
+update_status_file() {
+    debug "Updating status file $STATUS_FILE"
 
-    echo "STATUS_POLL=$STATUS_POLL" > $STATUS_DIR/poll.tmp
-    mv $STATUS_DIR/poll.tmp $STATUS_DIR/poll
+    cat > $STATUS_FILE.tmp <<EOF
+STATUS_TIME_UTC="$(date -u +%s)"
+STATUS_DATE="$(date)"
+STATUS_POLL="$STATUS_POLL"
+STATUS_UPDATE="$STATUS_UPDATE"
+STATUS_TASKS="$STATUS_TASKS"
+EOF
 
-    echo "STATUS_UPDATE=$STATUS_UPDATE" > $STATUS_DIR/update.tmp
-    mv $STATUS_DIR/update.tmp $STATUS_DIR/update
-
-    echo "STATUS_TASKS=$STATUS_TASKS" > $STATUS_DIR/tasks.tmp
-    mv $STATUS_DIR/tasks.tmp $STATUS_DIR/tasks
+    mv $STATUS_FILE.tmp $STATUS_FILE
 }
 
-read_status_files() {
-    debug "Reading state files in $STATUS_DIR"
+read_status_file() {
+    debug "Reading status file in $STATUS_FILE"
 
-    test -e $STATUS_DIR || mkdir $STATUS_DIR
+    test -f $STATUS_FILE && source $STATUS_FILE || true
 
-    for name in poll update tasks; do
-        test -e $STATUS_DIR/$name && source $STATUS_DIR/$name || true
-    done
-
-    if [[ "$STATUS_POLL" = "WORKING" ]]; then
+    if [[ -z "$STATUS_POLL" ]] || [[ "$STATUS_POLL" = "WORKING" ]]; then
         STATUS_POLL="UNKNOWN"
     fi
 
-    if [[ "$STATUS_UPDATE" = "WORKING" ]]; then
+    if [[ -z "$STATUS_UPDATE" ]] || [[ "$STATUS_UPDATE" = "WORKING" ]]; then
         STATUS_UPDATE="UNKNOWN"
     fi
 
-    if [[ "$STATUS_TASKS" = "WORKING" ]]; then
+    if [[ -z "$STATUS_TASKS" ]] || [[ "$STATUS_TASKS" = "WORKING" ]]; then
         STATUS_TASKS="UNKNOWN"
     fi
 }
@@ -365,7 +361,7 @@ run_tasks() {
 }
 
 status() {
-    update_status_files
+    update_status_file
     log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:$STATUS_POLL Update:$STATUS_UPDATE Tasks:$STATUS_TASKS"
 }
 
@@ -450,12 +446,12 @@ reload_config() {
 }
 
 load_config() {
-    CONTROL_FIFO="control.fifo"
-    PID_FILE="minici.pid"
-    WORK_DIR="workspace"
-    TASKS_DIR="tasks.d"
-    STATUS_DIR="status"
-    LOG_DIR="log"
+    CONTROL_FIFO="./control.fifo"
+    PID_FILE="./minici.pid"
+    WORK_DIR="./workspace"
+    TASKS_DIR="./tasks.d"
+    STATUS_FILE="./status"
+    LOG_DIR="./log"
     POLL_LOG="${LOG_DIR}/poll.log"
     UPDATE_LOG="${LOG_DIR}/update.log"
     TASKS_LOG="${LOG_DIR}/tasks.log"
@@ -477,18 +473,12 @@ load_config() {
         mkdir $LOG_DIR
     fi
 
-    STATUS_POLL="UNKNOWN"
-    STATUS_UPDATE="UNKNOWN"
-    STATUS_TASKS="UNKNOWN"
-
-    read_status_files
-
     export CONTROL_FIFO
     export WORK_DIR
     export TASKS_DIR
     export WORK_DIR
     export LOG_DIR
-    export STATUS_DIR
+    export STATUS_FILE
     export POLL_LOG
     export UPDATE_LOG
     export TASKS_LOG
@@ -524,6 +514,8 @@ schedule_poll() {
 
 main_loop() {
     log "Starting up"
+
+    read_status_file
 
     rm -f $CONTROL_FIFO
     mkfifo $CONTROL_FIFO
