@@ -2,17 +2,33 @@
 
 set -e
 
-#DEBUG=yes
-JOB_DIR="."
-CONFIG="${JOB_DIR}/config"
+SHNAME=$(basename $0)
 
-if [[ -z "$JOB_DIR" ]]; then
-    error "Unable to determine job directory"
-fi
+help() {
+    cat <<EOF
+Usage: $SHNAME [option ...] [command ...]
 
-if [[ -z "$CONFIG" ]]; then
-    error "Unable to determine job configuration file"
-fi
+Options:
+  -d|--job-dir <dir>       directory for job
+  -c|--config-file <file>  config file to use, relative to job-dir
+  -o|--oknodo              exit quietly if already running
+  -D|--debug               log debugging information
+  -F|--foreground          do not become a daemon, run in foreground
+  -h|--help                show usage information and exit
+
+Commands:
+  status  log the current status
+  poll    poll the source code repository for updates, queue update if
+          updates are available
+  update  update the source code repository, queue tasks if updates are made
+  tasks   run the tasks in the tasks directory
+  clean   remove the work directory
+  abort   abort the currently running command
+  quit|shutdown
+          shutdown the daemon, aborting any running command
+  reload  reread the config file, aborting any running command
+EOF
+}
 
 error() {
     log "ERROR: $@"
@@ -659,10 +675,45 @@ _svn() {
             error "Unknown operation $OPERATION"
             ;;
     esac
+
+    cd -
 }
 
 start() {
+    TEMP=$(getopt -o c:,d:,o,D,F, --long timeout:,config-file:,job-dir:,oknodo,debug,foreground -n 'test.sh' -- "$@")
+    eval set -- "$TEMP"
+
+    DEBUG=no
+    DAEMON=yes
+    JOB_DIR="."
+    CONFIG="config"
+    OKNODO=no
+
+    while true; do
+        case "$1" in
+            -c|--config-file)
+                CONFIG_FILE=$2; shift 2;;
+            -d|--job-dir)
+                JOB_DIR=$2; shift 2;;
+            -o|--oknodo)
+                OKNODO=yes; shift 1;;
+            -D|--debug)
+                DEBUG=yes; shift 1;;
+            -F|--foreground)
+                DAEMON=yes; shift 1;;
+            --)
+                shift ; break ;;
+            *)
+                echo "ERROR: Problem parsing arguments" 1>&2; exit 1;;
+        esac
+    done
+
+    cd $JOB_DIR
     load_config
+
+    for cmd in $@; do
+        queue $cmd
+    done
 
     if [[ $DAEMON = "yes" ]]; then
         # Based on:
@@ -678,4 +729,4 @@ start() {
     fi
 }
 
-start
+start $@
