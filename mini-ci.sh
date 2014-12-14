@@ -62,8 +62,18 @@ handle_children() {
 }
 
 queue() {
-    debug "Queued $@"
+    local cmd=$1
+    case $cmd in
+        status|poll|update|tasks|clean|abort|quit|shutdown|reload)
+        ;;
+        *)
+            error "Unknown command: $cmd"
+            exit 1
+            ;;
+    esac
+
     QUEUE=(${QUEUE[@]} $@)
+    debug "Queued $@"
 }
 
 add_child() {
