@@ -338,6 +338,8 @@ run_tasks() {
             fi
         fi
     done
+
+    cd -
 }
 
 status() {
@@ -468,7 +470,6 @@ load_config() {
     export TASKS_LOG
     export POLL_FREQ
 
-    cd $JOB_DIR
     acquire_lock
 }
 
@@ -599,6 +600,8 @@ _git() {
             error "Unknown operation $OPERATION"
             ;;
     esac
+
+    cd -
 }
 
 _svn() {
