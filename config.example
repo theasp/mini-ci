@@ -42,10 +42,12 @@ LOG_DIR="./log"
 # POLL_LOG: Name of the poll log.  Defaults to "${LOG_DIR}/poll.log".
 POLL_LOG="${LOG_DIR}/poll.log"
 
-# UPDATE_LOG: Name of the update log.  Defaults to "${LOG_DIR}/update.log".
+# UPDATE_LOG: Name of the update log.  Defaults to
+# "${LOG_DIR}/update.log".
 UPDATE_LOG="${LOG_DIR}/update.log"
 
-# TASKS_LOG: Name of the tasks log.  Defaults to "${LOG_DIR}/tasks.log".
+# TASKS_LOG: Name of the tasks log.  Defaults to
+# "${LOG_DIR}/tasks.log".
 TASKS_LOG="${LOG_DIR}/tasks.log"
 
 # MINICI_LOG: Name of the mini-ci log.  Defaults to
