@@ -720,7 +720,7 @@ send_message() {
 
 
 start() {
-    TEMP=$(getopt -o c:,d:,m::,o,D,F, --long timeout:,config-file:,job-dir:,message::,oknodo,debug,foreground -n 'test.sh' -- "$@")
+    TEMP=$(getopt -o c:,d:,m::,o,D,F,h --long timeout:,config-file:,job-dir:,message::,oknodo,debug,foreground,help -n 'test.sh' -- "$@")
     eval set -- "$TEMP"
 
     MESSAGE=no
@@ -750,6 +750,10 @@ start() {
                 DEBUG=yes; shift 1;;
             -F|--foreground)
                 DAEMON=no; shift 1;;
+            -h|--help)
+                help
+                exit 0
+                ;;
             --)
                 shift ; break ;;
             *)
