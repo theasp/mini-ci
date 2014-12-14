@@ -28,6 +28,11 @@ Commands:
   quit|shutdown
           shutdown the daemon, aborting any running command
   reload  reread the config file, aborting any running command
+
+Commands given while not in message mode will be queued.  For instance
+the following command will have a repository polled for updates (which
+will trigger update and tasks if required) then quit.
+  $SHNAME -d <dir> -F poll quit
 EOF
 }
 
