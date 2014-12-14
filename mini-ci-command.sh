@@ -1,43 +1,43 @@
 #!/bin/bash
 
+set -e
+
 TIMEOUT=5
 
-while getopts ":t:d:f:c:" opt; do
-    case $opt in
-        t)
-            TIMEOUT=$OPTARG
-            ;;
-        c)
-            CONFIG_FILE=$OPTARG
-            ;;
-        d)
-            JOB_DIR=$OPTARG
-            ;;
-        f)
-            CONTROL_FIFO=$OPTARG
-            ;;
-        \?)
-            echo "Invalid option: -$OPTARG" >&2
-            exit 1
-            ;;
-        :)
-            echo "Option -$OPTARG requires an argument." >&2
-            exit 1
-            ;;
+SHNAME=$(basename $0)
+
+TEMP=$(getopt -o t:,c:,d:,f:, --long timeout:,config-file:,job-dir:,control-fifo: -n 'test.sh' -- "$@")
+eval set -- "$TEMP"
+
+while true; do
+    case "$1" in
+        -t|--timeout)
+            TIMEOUT=$2; shift 2;;
+        -c|--config-file)
+            CONFIG_FILE=$2; shift 2;;
+        -d|--job-dir)
+            JOB_DIR=$2; shift 2;;
+        -f|--control-fifo)
+            CONTROL_FIFO=$2; shift 2;;
+        --)
+            shift ; break ;;
+        *)
+            echo "ERROR: Problem parsing arguments" 1>&2; exit 1;;
     esac
 done
 shift $((OPTIND-1))
 
 
 if [[ ! $CONTROL_FIFO ]]; then
-    if [[ ! $CONFIG_FILE ]]; then
-        if [[ $JOB_DIR ]]; then
-            CONFIG_FILE="$JOB_DIR/config"
-            CONTROL_FIFO="$JOB_DIR/control.fifo"
-        else
+    CONTROL_FIFO="control.fifo"
+    if [[ $CONFIG_FILE ]]; then
+        if [[ ! $JOB_DIR ]]; then
+            JOB_DIR=$(dirname $CONFIG_FILE)
+        fi
+    else
+        CONFIG_FILE="config"
+        if [[ ! $JOB_DIR ]]; then
             JOB_DIR='./'
-            CONFIG_FILE="./config"
-            CONTROL_FIFO="./control.fifo"
         fi
     fi
 
@@ -49,6 +49,10 @@ fi
 if [[ -z $CONTROL_FIFO ]]; then
     echo "ERROR: Unable to determine control fifo" 1>&2
     exit 1
+fi
+
+if [[ "$JOB_DIR" ]]; then
+    cd $JOB_DIR
 fi
 
 if [[ ! -e $CONTROL_FIFO ]]; then
