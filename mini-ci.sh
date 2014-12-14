@@ -447,7 +447,7 @@ reload_config() {
 
 load_config() {
     CONTROL_FIFO="./control.fifo"
-    PID_FILE="./minici.pid"
+    PID_FILE="./mini-ci.pid"
     WORK_DIR="./workspace"
     TASKS_DIR="./tasks.d"
     STATUS_FILE="./status"

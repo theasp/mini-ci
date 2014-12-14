@@ -30,7 +30,7 @@ CONTROL_FIFO="./control.fifo"
 
 # PID_FILE: The file containing the process ID for mini-ci.  Defaults
 # to "minici.pid".
-PID_FILE="./minici.pid"
+PID_FILE="./mini-ci.pid"
 
 # STATUS_FILE: A file where status information is kept.  Defaults to
 # "status".
