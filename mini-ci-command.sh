@@ -6,7 +6,7 @@ TIMEOUT=5
 
 SHNAME=$(basename $0)
 
-TEMP=$(getopt -o t:,c:,d:,f:, --long timeout:,config-file:,job-dir:,control-fifo: -n 'test.sh' -- "$@")
+TEMP=$(getopt -o t:,c:,d:,f:, --long timeout:,config-file:,job-dir:,control-fifo: -n $SHNAME -- "$@")
 eval set -- "$TEMP"
 
 while true; do
