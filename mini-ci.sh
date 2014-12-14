@@ -11,6 +11,7 @@ Usage: $SHNAME [option ...] [command ...]
 Options:
   -d|--job-dir <dir>       directory for job
   -c|--config-file <file>  config file to use, relative to job-dir
+  -m|--message [timeout]   send commands to running daemon, then exit
   -o|--oknodo              exit quietly if already running
   -D|--debug               log debugging information
   -F|--foreground          do not become a daemon, run in foreground
@@ -439,6 +440,8 @@ reload_config() {
     # Abort needs to be after reading the config file so that the
     # status directory is valid.
     abort
+
+    acquire_lock
 }
 
 load_config() {
@@ -485,8 +488,6 @@ load_config() {
     export UPDATE_LOG
     export TASKS_LOG
     export POLL_FREQ
-
-    acquire_lock
 }
 
 acquire_lock() {
@@ -684,10 +685,46 @@ _svn() {
     cd -
 }
 
+send_message() {
+    local cmd=$1
+
+    case $cmd in
+        status|poll|update|tasks|clean|abort|quit|shutdown|reload)
+        ;;
+        *)
+            error "Unknown command $cmd"
+            ;;
+    esac
+
+    local END_TIME=$(( $(printf '%(%s)T\n' -1) + $TIMEOUT))
+    (echo $@ > $CONTROL_FIFO) &
+    local ECHO_PID=$!
+
+    while [[ $(printf '%(%s)T\n' -1) -lt $END_TIME ]]; do
+        if ! kill -0 $ECHO_PID >/dev/null 2>&1; then
+            break
+        fi
+        sleep 1
+    done
+
+    if kill -0 $ECHO_PID >/dev/null 2>&1; then
+        kill -KILL $ECHO_PID
+        error "Timeout writing $cmd to $CONTROL_FIFO"
+    fi
+
+    wait $ECHO_PID
+    if [[ $? -ne 0 ]]; then
+        error "Error writing to $CONTROL_FIFO"
+    fi
+}
+
+
 start() {
-    TEMP=$(getopt -o c:,d:,o,D,F, --long timeout:,config-file:,job-dir:,oknodo,debug,foreground -n 'test.sh' -- "$@")
+    TEMP=$(getopt -o c:,d:,m::,o,D,F, --long timeout:,config-file:,job-dir:,message::,oknodo,debug,foreground -n 'test.sh' -- "$@")
     eval set -- "$TEMP"
 
+    MESSAGE=no
+    TIMEOUT=5
     DEBUG=no
     DAEMON=yes
     JOB_DIR="."
@@ -700,12 +737,19 @@ start() {
                 CONFIG_FILE=$2; shift 2;;
             -d|--job-dir)
                 JOB_DIR=$2; shift 2;;
+            -m|--message)
+                MESSAGE=yes
+                if [[ "$2" ]]; then
+                    TIMEOUT=$2
+                fi
+                shift 2
+                ;;
             -o|--oknodo)
                 OKNODO=yes; shift 1;;
             -D|--debug)
                 DEBUG=yes; shift 1;;
             -F|--foreground)
-                DAEMON=yes; shift 1;;
+                DAEMON=no; shift 1;;
             --)
                 shift ; break ;;
             *)
@@ -715,6 +759,20 @@ start() {
 
     cd $JOB_DIR
     load_config
+
+    if [[ $MESSAGE = "yes" ]]; then
+        unset MINICI_LOG
+        if [[ ! -e $CONTROL_FIFO ]]; then
+            error "Control fifo $CONTROL_FIFO is missing"
+        fi
+
+        for cmd in $@; do
+            send_message $cmd
+        done
+        exit 0
+    fi
+
+    acquire_lock
 
     for cmd in $@; do
         queue $cmd
