@@ -25,7 +25,6 @@ while true; do
             echo "ERROR: Problem parsing arguments" 1>&2; exit 1;;
     esac
 done
-shift $((OPTIND-1))
 
 
 if [[ ! $CONTROL_FIFO ]]; then
