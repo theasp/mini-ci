@@ -4,16 +4,33 @@
 # into, and where tasks are launched.  Defaults to "workspace".
 WORK_DIR="./workspace"
 
+# EMAIL_NOTIFY: A space and/or comma seperated list of conditions to
+# notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",
+# "RECOVER" (when a state changes from "ERROR" or "UNKNOWN" to "OK")
+# and "NEWPROB" (when a state changes from "OK" to "ERROR" or
+# "UNKNOWN").  Defaults to "NEWPROB, RECOVER".
+EMAIL_NOTIFY="NEWPROB, RECOVER"
+
+# EMAIL_ADDRESS: A space and/or comma seperated list of addresses to
+# email.  If not specified, will be sent to the user that is running
+# the script.  Defaults to "".
+EMAIL_ADDRESS=""
+
+# NOTIFY_HANDER_ARGUMENT: An argument passed to the handler, or for
+# the built in handlers:
+# - email: The address to email
+NOTIFY_HANDLER_ARGUMENT=""
+
 # REPO_HANDLER: This is either a command that exits with the
 # appropriate return codes, or one of the built in handlers:
 # - git
 # - svn
-REPO_HANDLER=<handler>
+REPO_HANDLER="<handler>"
 
 # REPO_URL: The URL to the repository.  Fetching the URL must not ask
 # for a username or password.  Use ~/.netrc or ssh keys for remote
 # repositories.
-REPO_URL=<url>
+REPO_URL="<url>"
 
 # POLL_FREQ: If this is set to a number greater than zero, it will poll the
 # repository using the repo-handler every this many seconds, starting
