@@ -36,18 +36,14 @@ PID_FILE="./mini-ci.pid"
 # "status".
 STATUS_FILE="./status"
 
-# LOG_DIR: The directory where logs are kept.  Defaults to "log".
-LOG_DIR="./log"
+# POLL_LOG: Name of the poll log.  Defaults to "./poll.log".
+POLL_LOG="./poll.log"
 
-# POLL_LOG: Name of the poll log.  Defaults to "${LOG_DIR}/poll.log".
-POLL_LOG="${LOG_DIR}/poll.log"
+# UPDATE_LOG: Name of the update log.  Defaults to "./update.log".
+UPDATE_LOG="./update.log"
 
-# UPDATE_LOG: Name of the update log.  Defaults to "${LOG_DIR}/update.log".
-UPDATE_LOG="${LOG_DIR}/update.log"
+# TASKS_LOG: Name of the tasks log.  Defaults to "./tasks.log".
+TASKS_LOG="./tasks.log"
 
-# TASKS_LOG: Name of the tasks log.  Defaults to "${LOG_DIR}/tasks.log".
-TASKS_LOG="${LOG_DIR}/tasks.log"
-
-# MINICI_LOG: Name of the mini-ci log.  Defaults to
-# "${LOG_DIR}/mini-ci.log".
-MINICI_LOG="${LOG_DIR}/mini-ci.log"
+# MINICI_LOG: Name of the mini-ci log.  Defaults to "./mini-ci.log".
+MINICI_LOG="./mini-ci.log"
