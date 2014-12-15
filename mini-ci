@@ -685,7 +685,7 @@ send_message() {
   esac
 
   local end_time=$(( $(printf '%(%s)T\n' -1) + $timeout ))
-  (echo $@ > $CONTROL_FIFO) &
+  (echo $cmd > $CONTROL_FIFO) &
   local echo_pid=$!
 
   while [[ $(printf '%(%s)T\n' -1) -lt $end_time ]]; do
