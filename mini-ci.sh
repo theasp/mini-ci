@@ -52,7 +52,7 @@ warning() {
 }
 
 log() {
-    msg="$(date +%F-%T) $SHNAME($BASHPID) $@"
+    msg="$(date '+%F %T') $SHNAME($BASHPID) $@"
     echo $msg 1>&2
     if [[ $MINICI_LOG ]]; then
         echo $msg >> $MINICI_LOG
@@ -72,7 +72,9 @@ handle_children() {
             local RC=$?
             set -e
             debug "Child $pid done $RC"
-            $cb $RC
+            if [[ "$cb" ]]; then
+                $cb $RC
+            fi
         else
             tmpPids=(${tmpPids[@]} $pid)
             tmpCBs=(${tmpCBs[@]} $cb)
@@ -154,12 +156,9 @@ repo_poll_start() {
         STATE="poll"
         log "Polling job"
 
-        STATUS_POLL="WORKING"
-        update_status_file
-
         if ! repo_run poll "repo_poll_finish"; then
             STATE="idle"
-            STATUS_POLL="ERROR"
+            update_status "poll" "ERROR"
         fi
     fi
 }
@@ -168,20 +167,19 @@ repo_poll_finish() {
     STATE="idle"
     line=$(tail -n 1 $POLL_LOG)
     if [[ $1 -eq 0 ]]; then
-        STATUS_POLL="OK"
         if [[ "$line" = "OK POLL NEEDED" ]]; then
             log "Poll finished sucessfully, queuing update"
-            STATUS_UPDATE=EXPIRED
-            STATUS_TASKS=EXPIRED
+            #STATUS_UPDATE=EXPIRED
+            #STATUS_TASKS=EXPIRED
             queue "update"
         else
             log "Poll finished sucessfully, no update required"
         fi
+        update_status "poll" "OK"
     else
-        STATUS_POLL="ERROR"
         warning "Poll did not finish sucessfully"
+        update_status "poll" "ERROR"
     fi
-    update_status_file
 }
 
 repo_update_start() {
@@ -190,27 +188,23 @@ repo_update_start() {
 
     test -e $WORK_DIR || mkdir $WORK_DIR
 
-    STATUS_UPDATE="WORKING"
-    update_status_file
-
     if ! repo_run update "repo_update_finish"; then
         STATE="idle"
-        STATUS_POLL="ERROR"
+        update_status "update" "ERROR"
     fi
 }
 
 repo_update_finish() {
     STATE="idle"
     if [[ $1 -eq 0 ]]; then
-        STATUS_UPDATE="OK"
-        STATUS_TASKS=EXPIRED
+        #STATUS_TASKS=EXPIRED
         log "Update finished sucessfully, queuing tasks"
+        update_status "update" "OK"
         queue "tasks"
     else
-        STATUS_UPDATE="ERROR"
+        update_status "update" "ERROR"
         warning "Update did not finish sucessfully"
     fi
-    update_status_file
 }
 
 tasks_start() {
@@ -218,17 +212,11 @@ tasks_start() {
     log "Starting tasks"
 
     if [[ -e $TASKS_DIR ]]; then
-        STATUS_TASKS="WORKING"
-        update_status_file
-
         (run_tasks) > $TASKS_LOG 2>&1 &
         add_child $! "tasks_finish"
-
     else
-        STATUS_TASKS="ERROR"
-        update_status_file
-
         STATE="idle"
+        update_status "tasks" "ERROR"
         warning "The tasks directory $TASKS_DIR does not exist"
     fi
 }
@@ -236,13 +224,12 @@ tasks_start() {
 tasks_finish() {
     STATE="idle"
     if [[ $1 -eq 0 ]]; then
-        STATUS_TASKS="OK"
+        update_status "tasks" "OK"
         log "Tasks finished sucessfully"
     else
-        STATUS_UPDATE="ERROR"
+        update_status "tasks" "ERROR"
         warning "Tasks did not finish sucessfully"
     fi
-    update_status_file
 }
 
 # http://stackoverflow.com/questions/392022/best-way-to-kill-all-child-processes
@@ -286,52 +273,125 @@ abort() {
     CHILD_CBS=()
 
     case $STATE in
-        poll)
-            STATUS_POLL="UNKNOWN"
-            ;;
-
-        update)
-            STATUS_UPDATE="UNKNOWN"
-            ;;
-
-        tasks)
-            STATUS_TASKS="UNKNOWN"
+        poll|update|tasks)
+            CUR_STATUS[$STATE]="UNKNOWN"
             ;;
     esac
-    update_status_file
 
     STATE="idle"
 }
 
-update_status_file() {
-    debug "Updating status file $STATUS_FILE"
+write_status_file() {
+    debug "Write status file $STATUS_FILE"
 
-    cat > $STATUS_FILE.tmp <<EOF
-STATUS_TIME_UTC="$(date -u +%s)"
-STATUS_DATE="$(date)"
-STATUS_POLL="$STATUS_POLL"
-STATUS_UPDATE="$STATUS_UPDATE"
-STATUS_TASKS="$STATUS_TASKS"
+    TMPFILE=$STATUS_FILE.tmp
+
+    cat > $TMPFILE <<EOF
+# Generated $(printf '%(%c)T\n' -1)
+STATE=$STATE
 EOF
 
-    mv $STATUS_FILE.tmp $STATUS_FILE
+    for state in ${!CUR_STATUS[@]}; do
+        echo "CUR_STATUS[$state]=${CUR_STATUS[$state]}"
+    done >> $TMPFILE
+    mv $TMPFILE $STATUS_FILE
 }
 
 read_status_file() {
     debug "Reading status file in $STATUS_FILE"
 
-    test -f $STATUS_FILE && source $STATUS_FILE || true
+    for state in poll update tasks; do
+        CUR_STATUS[$state]=UNKNOWN
+    done
 
-    if [[ -z "$STATUS_POLL" ]] || [[ "$STATUS_POLL" = "WORKING" ]]; then
-        STATUS_POLL="UNKNOWN"
+    if [[ -f $STATUS_FILE ]]; then
+        source $STATUS_FILE
     fi
 
-    if [[ -z "$STATUS_UPDATE" ]] || [[ "$STATUS_UPDATE" = "WORKING" ]]; then
-        STATUS_UPDATE="UNKNOWN"
+    if [[ "$STATE" != "idle" ]]; then
+        debug "Setting status of $STATE to UNKNOWN, previous active state"
+        CUR_STATUS[$STATE]=UNKNOWN
     fi
+}
 
-    if [[ -z "$STATUS_TASKS" ]] || [[ "$STATUS_TASKS" = "WORKING" ]]; then
-        STATUS_TASKS="UNKNOWN"
+declare -A CUR_STATUS
+declare -A CUR_STATUS_TIME
+
+update_status() {
+    local item=$1
+    local NEW_STATUS=$2
+    local NEW_STATUS_TIME=$(printf '%(%s)T\n' -1)
+
+    OLD_STATUS=${CUR_STATUS["$item"]}
+    OLD_STATUS_TIME=${CUR_STATUS["$item"]}
+
+    CUR_STATUS["$item"]=$NEW_STATUS
+    CUR_STATUS_TIME["$item"]=$NEW_STATUS_TIME
+
+    write_status_file
+
+    notify_status $OLD_STATUS $OLD_STATUS_TIME $NEW_STATUS $NEW_STATUS_TIME
+}
+
+notify_status() {
+    local OLD=$1
+    local OLD_TIME=$2
+    local NEW=$3
+    local NEW_TIME=$4
+
+    local -A NOTIFY_STATUS
+
+    case $NEW in
+        OK)
+            NOTIFY_STATUS["OK"]=1
+            if [[ $OLD = "ERROR" ]] || [[ $OLD = "UNKNOWN" ]]; then
+                NOTIFY_STATUS["RECOVER"]=1
+            fi
+            ;;
+        ERROR|UNKNOWN)
+            NOTIFY_STATUS["$NEW"]=1
+            if [[ $OLD = "OK" ]]; then
+                NOTIFY_STATUS["NEWPROB"]=1
+            fi
+            ;;
+    esac
+
+    #do_email_notification $OLD $OLD_TIME $NEW $NEW_TIME $NOTIFY_STATUS
+}
+
+do_email_notification() {
+    local OLD=$1
+    local OLD_TIME=$2
+    local NEW=$3
+    local NEW_TIME=$4
+    local -A NOTIFY_STATUS=$5
+    local SEND
+
+    for notifyState in $EMAIL_NOTIFY; do
+        if [[ "$notifyState" = "NEVER" ]]; then
+            debug "Email notification set to never"
+            return
+        fi
+
+        if [[ $NOTIFY_STATUS[$notifyState] ]]; then
+            SEND=1
+        fi
+    done
+
+    if [[ "$SEND" ]]; then
+        local TMPFILE=$(mktemp /tmp/$SHNAME-email_notication-XXXXXX)
+        local EMAIL_SUBJECT='Mini-CI Notification - $(basename $JOB_DIR)'
+        EMAIL_SUBJECT=$(eval echo $EMAIL_SUBJECT)
+        cat > $TMPFILE <<EOF
+Mini-CI Job Directory: $(pwd)
+New State: $NEW
+Old State: $OLD
+EOF
+        for address in $EMAIL_ADDRESS; do
+            debug "Mailing notification to $address"
+            (mail -s "$EMAIL_SUBJECT" $address < $TMPFILE; rm -f $TMPFILE) &
+            add_child $! ""
+        done
     fi
 }
 
@@ -361,8 +421,8 @@ run_tasks() {
 }
 
 status() {
-    update_status_file
-    log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:$STATUS_POLL Update:$STATUS_UPDATE Tasks:$STATUS_TASKS"
+    debug ${!CUR_STATUS[@]}
+    log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:${CUR_STATUS[poll]} Update:${CUR_STATUS[update]} Tasks:${CUR_STATUS[tasks]}" #
 }
 
 quit() {
@@ -456,6 +516,8 @@ load_config() {
     UPDATE_LOG="${LOG_DIR}/update.log"
     TASKS_LOG="${LOG_DIR}/tasks.log"
     POLL_FREQ=0
+    EMAIL_NOTIFY="NEWERROR, RECOVER"
+    EMAIL_ADDRESS=""
 
     if [[ -f $CONFIG ]]; then
         source $CONFIG
@@ -473,6 +535,16 @@ load_config() {
         mkdir $LOG_DIR
     fi
 
+    # Fix up variables
+    EMAIL_NOTIFY=${EMAIL_NOTIFY//,/ /}
+    EMAIL_NOTIFY=${EMAIL_NOTIFY^^[[:alpha:]]}
+    EMAIL_ADDRESS=${EMAIL_ADDRESS//,/ /}
+
+    if [[ -z $EMAIL_ADDRESS ]]; then
+        EMAIL_ADDRESS=$(whoami)
+    fi
+
+
     export CONTROL_FIFO
     export WORK_DIR
     export TASKS_DIR
@@ -483,6 +555,8 @@ load_config() {
     export UPDATE_LOG
     export TASKS_LOG
     export POLL_FREQ
+    export EMAIL_NOTIFY
+    export EMAIL_ADDRESS
 }
 
 acquire_lock() {
