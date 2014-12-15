@@ -274,8 +274,7 @@ abort() {
 
     case $STATE in
         poll|update|tasks)
-            CUR_STATUS[$STATE]="UNKNOWN"
-            ;;
+            CUR_STATUS[$STATE]="UNKNOWN";;
     esac
 
     STATE="idle"
@@ -442,24 +441,19 @@ read_commands() {
 
             case $CMD in
                 poll|update|clean|tasks)
-                    queue "$CMD"
-                    ;;
+                    queue "$CMD";;
                 status)
-                    status
-                    ;;
+                    status;;
                 abort)
-                    abort
-                    ;;
+                    abort;;
                 reload)
-                    reload_config
-                    ;;
+                    reload_config;;
                 quit|shutdown)
                     RUN=no
                     break
                     ;;
                 *)
-                    warning "Unknown command $CMD"
-                    ;;
+                    warning "Unknown command $CMD";;
             esac
         fi
     done
@@ -475,24 +469,15 @@ process_queue() {
         QUEUE=(${QUEUE[@]:1})
         case $CMD in
             clean)
-                clean
-                ;;
-
+                clean;;
             poll)
-                repo_poll_start
-                ;;
-
+                repo_poll_start;;
             update)
-                repo_update_start
-                ;;
-
+                repo_update_start;;
             tasks)
-                tasks_start
-                ;;
-
+                tasks_start;;
             *)
-                error "Unknown job in queue: $CMD"
-                ;;
+                error "Unknown job in queue: $CMD";;
         esac
     done
 }
