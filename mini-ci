@@ -115,7 +115,7 @@ main() {
   load_config
 
   if [[ $message = "yes" ]]; then
-    unset MINICI_LOG
+    unset LOG_FILE
     if [[ ! -e $CONTROL_FIFO ]]; then
       error "Control fifo $CONTROL_FIFO is missing"
     fi
@@ -638,8 +638,8 @@ load_config() {
 
   # Set this after sourcing the config file to hide the error when
   # running in an empty dir.
-  if [[ -z $MINICI_LOG ]]; then
-    MINICI_LOG="${LOG_DIR}/mini-ci.log"
+  if [[ -z $LOG_FILE ]]; then
+    LOG_FILE="${LOG_DIR}/mini-ci.log"
   fi
 
   if [[ ! -d $LOG_DIR ]]; then
@@ -878,8 +878,8 @@ warning() {
 log() {
   local msg="$(date '+%F %T') $SHNAME/$BASHPID $@"
   echo $msg 1>&2
-  if [[ $MINICI_LOG ]]; then
-    echo $msg >> $MINICI_LOG
+  if [[ $LOG_FILE ]]; then
+    echo $msg >> $LOG_FILE
   fi
 }
 
