@@ -520,6 +520,7 @@ do_email_notification() {
     email_subject=$(eval echo $email_subject)
     cat > $tmpfile <<EOF
 Mini-CI Job Directory: $(pwd)
+Item: $item
 Reason: $send_reason
 New State: $new
 Old State: $old
