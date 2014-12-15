@@ -4,6 +4,11 @@ set -e
 
 SHNAME=$(basename $0)
 
+if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
+    echo "ERROR: You need atleast version 4 of BASH" 1>&2
+    exit 1
+fi
+
 help() {
     cat <<EOF
 Usage: $SHNAME [option ...] [command ...]
