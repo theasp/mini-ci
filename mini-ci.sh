@@ -407,12 +407,13 @@ write_status_file() {
 
   cat > $TMPFILE <<EOF
 # Generated $(printf '%(%c)T\n' -1)
-OLD_STATE=$STATE
+local OLD_STATE=$STATE
 EOF
 
   for state in ${!CUR_STATUS[@]}; do
     echo "CUR_STATUS[$state]=${CUR_STATUS[$state]}"
   done >> $tmpfile
+
   mv $tmpfile $STATUS_FILE
 }
 
