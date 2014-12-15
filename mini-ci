@@ -334,6 +334,8 @@ repo_update_finish() {
     #STATUS_TASKS=EXPIRED
     log "Update finished sucessfully, queuing tasks"
     update_status "update" "OK"
+    # Set poll to ok too, because this did a poll too
+    update_status "poll" "OK"
     queue "tasks"
   else
     warning "Update did not finish sucessfully"
@@ -395,8 +397,7 @@ abort() {
   CHILD_CBS=()
 
   case $STATE in
-    poll|update|tasks)
-      CUR_STATUS[$STATE]="UNKNOWN" ;;
+    poll|update|tasks) update_state $STATE "UNKNOWN" ;;
   esac
 
   STATE="idle"
@@ -423,6 +424,7 @@ read_status_file() {
 
   for state in poll update tasks; do
     CUR_STATUS[$state]=UNKNOWN
+    CUR_STATUS_TIME[$state]=""
   done
 
   if [[ -f $STATUS_FILE ]]; then
@@ -430,8 +432,8 @@ read_status_file() {
   fi
 
   if [[ "$OLD_STATE" ]] && [[ "$OLD_STATE" != "idle" ]]; then
-    debug "Setting status of $STATE to UNKNOWN, previous active state"
-    CUR_STATUS[$STATE]=UNKNOWN
+    debug "Setting status of $OLD_STATE to UNKNOWN, previous active state"
+    update_state $OLD_STATE "UNKNOWN"
   fi
 }
 
