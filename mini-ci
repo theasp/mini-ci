@@ -547,7 +547,7 @@ run_tasks() {
   for task in $(ls -1 $TASKS_DIR | grep -E -e '^[a-zA-Z0-9_-]+$' | sort); do
     local file="$TASKS_DIR/$task"
     if [[ -x $file ]]; then
-      local log_file="${LOG_DIR}/${task}.log"
+      local log_file="task-${task}.log"
       log "Running $task"
       if ! $file > $log_file 2>&1; then
         error "Bad return code $?"
@@ -620,32 +620,24 @@ reload_config() {
 
 load_config() {
   CONTROL_FIFO="./control.fifo"
-  PID_FILE="./mini-ci.pid"
-  WORK_DIR="./workspace"
-  TASKS_DIR="./tasks.d"
-  STATUS_FILE="./status"
-  LOG_DIR="./log"
-  POLL_LOG="${LOG_DIR}/poll.log"
-  UPDATE_LOG="${LOG_DIR}/update.log"
-  TASKS_LOG="${LOG_DIR}/tasks.log"
-  POLL_FREQ=0
-  EMAIL_NOTIFY="NEWPROB, RECOVER"
   EMAIL_ADDRESS=""
+  EMAIL_NOTIFY="NEWPROB, RECOVER"
+  LOG_FILE="./mini-ci.log"
+  PID_FILE="./mini-ci.pid"
+  POLL_FREQ=0
+  POLL_LOG="./poll.log"
+  REPO_HANDLER=""
+  REPO_URL=""
+  STATUS_FILE="./status"
+  TASKS_DIR="./tasks.d"
+  TASKS_LOG="./tasks.log"
+  UPDATE_LOG="./update.log"
+  WORK_DIR="./workspace"
 
   if [[ -f $CONFIG_FILE ]]; then
     source $CONFIG_FILE
   else
     error "Unable to find configuration file $CONFIG_FILE"
-  fi
-
-  # Set this after sourcing the config file to hide the error when
-  # running in an empty dir.
-  if [[ -z $LOG_FILE ]]; then
-    LOG_FILE="${LOG_DIR}/mini-ci.log"
-  fi
-
-  if [[ ! -d $LOG_DIR ]]; then
-    mkdir $LOG_DIR
   fi
 
   # Fix up variables
