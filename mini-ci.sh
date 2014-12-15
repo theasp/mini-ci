@@ -483,7 +483,7 @@ notify_status() {
     fi
   done
 
-  do_email_notification $old $old_time $new $new_time $active_states
+  do_email_notification $old $old_time $new $new_time "$active_states"
 }
 
 do_email_notification() {
