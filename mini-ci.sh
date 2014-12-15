@@ -453,10 +453,10 @@ update_status() {
 
 notify_status() {
   local item=$1
-  local old=$1
-  local old_time=$2
-  local new=$3
-  local new_time=$4
+  local old=$2
+  local old_time=$3
+  local new=$4
+  local new_time=$5
 
   local -A notify_status
 
@@ -482,15 +482,16 @@ notify_status() {
     fi
   done
 
-  do_email_notification $old $old_time $new $new_time "$active_states"
+  do_email_notification $item $old $old_time $new $new_time "$active_states"
 }
 
 do_email_notification() {
-  local old=$1
-  local old_time=$2
-  local new=$3
-  local new_time=$4
-  local active_states=$5
+  local item=$1
+  local old=$2
+  local old_time=$3
+  local new=$4
+  local new_time=$5
+  local active_states=$6
   local send_reason
 
   debug "Active States:$active_states"
