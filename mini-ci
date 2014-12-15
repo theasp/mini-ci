@@ -677,7 +677,7 @@ acquire_lock() {
 
 send_message() {
   local timeout=$1
-  local cmd=$1
+  local cmd=$2
 
   case $cmd in
     status|poll|update|tasks|clean|abort|quit|shutdown|reload) ;;
