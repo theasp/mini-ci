@@ -525,7 +525,7 @@ load_config() {
     UPDATE_LOG="${LOG_DIR}/update.log"
     TASKS_LOG="${LOG_DIR}/tasks.log"
     POLL_FREQ=0
-    EMAIL_NOTIFY="NEWERROR, RECOVER"
+    EMAIL_NOTIFY="NEWPROB, RECOVER"
     EMAIL_ADDRESS=""
 
     if [[ -f $CONFIG ]]; then
