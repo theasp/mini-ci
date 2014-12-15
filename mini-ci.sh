@@ -436,7 +436,7 @@ read_status_file() {
 update_status() {
   local item=$1
   local new_status=$2
-  local new_status_TIME=$(printf '%(%s)T\n' -1)
+  local new_status_time=$(printf '%(%s)T\n' -1)
 
   debug "Setting status of $item to $NEW_STATUS"
 
