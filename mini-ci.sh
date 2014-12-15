@@ -6,14 +6,34 @@
 # AUTHOR: Andrew Phillips <theasp@gmail.com>
 # LICENSE: GPLv2
 
+if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
+  echo "ERROR: You need at least version 4 of BASH" 1>&2
+  exit 1
+fi
+
 set -e
 
 readonly SHNAME=$(basename $0)
 
-if [[ "${BASH_VERSINFO[0]}" -lt 4 ]]; then
-  echo "ERROR: You need atleast version 4 of BASH" 1>&2
-  exit 1
-fi
+declare -A CUR_STATUS=()
+declare -A CUR_STATUS_TIME=()
+
+declare -x CONFIG_FILE
+declare -x CONTROL_FIFO
+declare -x DEBUG
+declare -x EMAIL_ADDRESS
+declare -x EMAIL_NOTIFY
+declare -x JOB_DIR
+declare -x LOG_DIR
+declare -x PID_FILE
+declare -x POLL_FREQ
+declare -x POLL_LOG
+declare -x STATE
+declare -x STATUS_FILE
+declare -x TASKS_DIR
+declare -x TASKS_LOG
+declare -x UPDATE_LOG
+declare -x WORK_DIR
 
 help() {
   cat <<EOF
@@ -47,27 +67,122 @@ will trigger update and tasks if required) then quit.
 EOF
 }
 
-error() {
-  log "ERROR: $@"
-  exit 1
-}
 
-debug() {
-  if [ "$DEBUG" = "yes" ]; then
-    log "DEBUG: $@"
+main() {
+  local temp=$(getopt -o c:,d:,m::,o,D,F,h --long timeout:,config-file:,job-dir:,message::,oknodo,debug,foreground,help -n 'test.sh' -- "$@")
+  eval set -- "$temp"
+
+  local message=no
+  local timeout=5
+  local daemon=yes
+  local oknodo=no
+  DEBUG=no
+  JOB_DIR="."
+  CONFIG_FILE="./config"
+
+  while true; do
+    case "$1" in
+      -c|--config-file)
+        CONFIG_FILE=$2; shift 2 ;;
+      -d|--job-dir)
+        JOB_DIR=$2; shift 2 ;;
+      -m|--message)
+        message=yes
+        if [[ "$2" ]]; then
+
+          timeout=$2
+        fi
+        shift 2
+        ;;
+      -o|--oknodo)
+        oknodo=yes; shift 1 ;;
+      -D|--debug)
+        DEBUG=yes; shift 1 ;;
+      -F|--foreground)
+        daemon=no; shift 1 ;;
+      -h|--help)
+        help
+        exit 0
+        ;;
+      --)
+        shift ; break  ;;
+      *)
+        echo "ERROR: Problem parsing arguments" 1>&2; exit 1 ;;
+    esac
+  done
+
+  cd $JOB_DIR
+  load_config
+
+  if [[ $message = "yes" ]]; then
+    unset MINICI_LOG
+    if [[ ! -e $CONTROL_FIFO ]]; then
+      error "Control fifo $CONTROL_FIFO is missing"
+    fi
+
+    for cmd in $@; do
+      send_message $timeout $cmd
+    done
+    exit 0
+  fi
+
+  acquire_lock $oknodo
+
+  for cmd in $@; do
+    queue $cmd
+  done
+
+  if [[ $daemon = "yes" ]]; then
+    # Based on:
+    # http://blog.n01se.net/blog-n01se-net-p-145.html
+    [[ -t 0 ]] && exec </dev/null || true
+    [[ -t 1 ]] && exec >/dev/null || true
+    [[ -t 2 ]] && exec 2>/dev/null || true
+
+    # Double fork will detach the process
+    (main_loop &) &
+  else
+    main_loop
   fi
 }
 
-warning() {
-  log "WARN: $@"
-}
+main_loop() {
+  log "Starting up"
 
-log() {
-  msg="$(date '+%F %T') $SHNAME/$BASHPID $@"
-  echo $msg 1>&2
-  if [[ $MINICI_LOG ]]; then
-    echo $msg >> $MINICI_LOG
-  fi
+  read_status_file
+
+  rm -f $CONTROL_FIFO
+  mkfifo $CONTROL_FIFO
+
+  exec 3<> $CONTROL_FIFO
+
+  trap reload_config SIGHUP
+  trap quit SIGINT
+  trap quit SIGTERM
+  trap "queue update" SIGUSR1
+  trap "queue build" SIGUSR2
+
+  # Even though this was done before, make a new lock as your PID
+  # may have changed if running as a daemon.
+  acquire_lock
+
+  RUN=yes
+  STATE=idle
+  NEXT_POLL=0
+
+  while [[ "$RUN" = "yes" ]]; do
+    # read_commands has a 1 second timeout
+    read_commands
+    process_queue
+    handle_children
+    if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -ge $NEXT_POLL ]] && [[ $STATE = "idle" ]]; then
+      debug "Poll frequency timeout"
+      queue "poll"
+      schedule_poll
+    fi
+  done
+
+  quit
 }
 
 handle_children() {
@@ -123,7 +238,13 @@ clean() {
     log "Removing workspace $WORK_DIR"
     rm -rf $WORK_DIR
   fi
-  queue "update"
+  a  queue "update"
+}
+
+schedule_poll() {
+  if [[ $POLL_FREQ ]] && [[ $POLL_FREQ -gt 0 ]]; then
+    NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
+  fi
 }
 
 repo_run() {
@@ -243,18 +364,6 @@ tasks_finish() {
   fi
 }
 
-# http://stackoverflow.com/questions/392022/best-way-to-kill-all-child-processes
-killtree() {
-  local _pid=$1
-  local _sig=${2:--TERM}
-  kill -stop ${_pid} # needed to stop quickly forking parent from producing children between child killing and parent killing
-  for _child in $(pgrep -P ${_pid}); do
-    killtree ${_child} ${_sig}
-  done
-  kill -${_sig} ${_pid}
-}
-
-
 abort() {
   unset QUEUE
 
@@ -285,7 +394,7 @@ abort() {
 
   case $STATE in
     poll|update|tasks)
-      CUR_STATUS[$STATE]="UNKNOWN";;
+      CUR_STATUS[$STATE]="UNKNOWN" ;;
   esac
 
   STATE="idle"
@@ -323,9 +432,6 @@ read_status_file() {
     CUR_STATUS[$STATE]=UNKNOWN
   fi
 }
-
-declare -A CUR_STATUS
-declare -A CUR_STATUS_TIME
 
 update_status() {
   local item=$1
@@ -453,13 +559,6 @@ status() {
   log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:${CUR_STATUS[poll]} Update:${CUR_STATUS[update]} Tasks:${CUR_STATUS[tasks]}" #
 }
 
-quit() {
-  log "Shutting down"
-  abort
-  rm -f $PID_FILE
-  exit 0
-}
-
 read_commands() {
   while read -t 1 cmd args <&3; do
     #read CMD ARGS
@@ -467,20 +566,16 @@ read_commands() {
       cmd=$(echo $cmd | tr '[:upper:]' '[:lower:]')
 
       case $cmd in
-        poll|update|clean|tasks)
-          queue "$cmd";;
-        status)
-          status;;
-        abort)
-          abort;;
-        reload)
-          reload_config;;
+        poll|update|clean|tasks) queue "$cmd" ;;
+        status) status ;;
+        abort) abort ;;
+        reload) reload_config ;;
         quit|shutdown)
           RUN=no
           break
           ;;
         *)
-          warning "Unknown command $cmd";;
+          warning "Unknown command $cmd" ;;
       esac
     fi
   done
@@ -496,15 +591,15 @@ process_queue() {
     QUEUE=(${QUEUE[@]:1})
     case $cmd in
       clean)
-        clean;;
+        clean ;;
       poll)
-        repo_poll_start;;
+        repo_poll_start ;;
       update)
-        repo_update_start;;
+        repo_update_start ;;
       tasks)
-        tasks_start;;
+        tasks_start ;;
       *)
-        error "Unknown job in queue: $cmd";;
+        error "Unknown job in queue: $cmd" ;;
     esac
   done
 }
@@ -533,10 +628,10 @@ load_config() {
   EMAIL_NOTIFY="NEWPROB, RECOVER"
   EMAIL_ADDRESS=""
 
-  if [[ -f $CONFIG ]]; then
-    source $CONFIG
+  if [[ -f $CONFIG_FILE ]]; then
+    source $CONFIG_FILE
   else
-    error "Unable to find configuration file $CONFIG"
+    error "Unable to find configuration file $CONFIG_FILE"
   fi
 
   # Set this after sourcing the config file to hide the error when
@@ -557,29 +652,18 @@ load_config() {
   if [[ -z $EMAIL_ADDRESS ]]; then
     EMAIL_ADDRESS=$(whoami)
   fi
-
-  export CONTROL_FIFO
-  export WORK_DIR
-  export TASKS_DIR
-  export WORK_DIR
-  export LOG_DIR
-  export STATUS_FILE
-  export POLL_LOG
-  export UPDATE_LOG
-  export TASKS_LOG
-  export POLL_FREQ
-  export EMAIL_NOTIFY
-  export EMAIL_ADDRESS
 }
 
 acquire_lock() {
+  local oknodo=$1
   local cur_pid=$BASHPID
+
   if [[ -e $PID_FILE ]]; then
     local test_pid=$(< $PID_FILE)
     if [[ $test_pid && $test_pid -ne $cur_pid ]]; then
       debug "Lock file present $PID_FILE, has $test_pid"
       if kill -0 $test_pid >/dev/null 2>&1; then
-        if [[ $OKNODO = "yes" ]]; then
+        if [[ $oknodo = "yes" ]]; then
           debug "Unable to acquire lock.  Is minici running as PID ${TEST_PID}?"
           exit 0
         else
@@ -593,49 +677,42 @@ acquire_lock() {
   echo $cur_pid > $PID_FILE
 }
 
-schedule_poll() {
-  if [[ $POLL_FREQ ]] && [[ $POLL_FREQ -gt 0 ]]; then
-    NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
+send_message() {
+  local timeout=$1
+  local cmd=$1
+
+  case $cmd in
+    status|poll|update|tasks|clean|abort|quit|shutdown|reload) ;;
+    *) error "Unknown command $cmd" ;;
+  esac
+
+  local end_time=$(( $(printf '%(%s)T\n' -1) + $timeout ))
+  (echo $@ > $CONTROL_FIFO) &
+  local echo_pid=$!
+
+  while [[ $(printf '%(%s)T\n' -1) -lt $end_time ]]; do
+    if ! kill -0 $echo_pid >/dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
+
+  if kill -0 $echo_pid >/dev/null 2>&1; then
+    kill -KILL $echo_pid
+    error "Timeout writing $cmd to $CONTROL_FIFO"
+  fi
+
+  wait $echo_pid
+  if [[ $? -ne 0 ]]; then
+    error "Error writing to $CONTROL_FIFO"
   fi
 }
 
-main_loop() {
-  log "Starting up"
-
-  read_status_file
-
-  rm -f $CONTROL_FIFO
-  mkfifo $CONTROL_FIFO
-
-  exec 3<> $CONTROL_FIFO
-
-  trap reload_config SIGHUP
-  trap quit SIGINT
-  trap quit SIGTERM
-  trap "queue update" SIGUSR1
-  trap "queue build" SIGUSR2
-
-  # Even though this was done before, make a new lock as your PID
-  # may have changed if running as a daemon.
-  acquire_lock
-
-  RUN=yes
-  STATE=idle
-  NEXT_POLL=0
-
-  while [[ "$RUN" = "yes" ]]; do
-    # read_commands has a 1 second timeout
-    read_commands
-    process_queue
-    handle_children
-    if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -ge $NEXT_POLL ]] && [[ $STATE = "idle" ]]; then
-      debug "Poll frequency timeout"
-      queue "poll"
-      schedule_poll
-    fi
-  done
-
-  quit
+quit() {
+  log "Shutting down"
+  abort
+  rm -f $PID_FILE
+  exit 0
 }
 
 _git() {
@@ -770,114 +847,37 @@ _svn() {
   cd -
 }
 
-send_message() {
-  local cmd=$1
-
-  case $cmd in
-    status|poll|update|tasks|clean|abort|quit|shutdown|reload)
-    ;;
-    *)
-      error "Unknown command $cmd"
-      ;;
-  esac
-
-  local END_TIME=$(( $(printf '%(%s)T\n' -1) + $TIMEOUT))
-  (echo $@ > $CONTROL_FIFO) &
-  local ECHO_PID=$!
-
-  while [[ $(printf '%(%s)T\n' -1) -lt $END_TIME ]]; do
-    if ! kill -0 $ECHO_PID >/dev/null 2>&1; then
-      break
-    fi
-    sleep 1
+# http://stackoverflow.com/questions/392022/best-way-to-kill-all-child-processes
+killtree() {
+  local _pid=$1
+  local _sig=${2:--TERM}
+  kill -stop ${_pid} # needed to stop quickly forking parent from producing children between child killing and parent killing
+  for _child in $(pgrep -P ${_pid}); do
+    killtree ${_child} ${_sig}
   done
+  kill -${_sig} ${_pid}
+}
 
-  if kill -0 $ECHO_PID >/dev/null 2>&1; then
-    kill -KILL $ECHO_PID
-    error "Timeout writing $cmd to $CONTROL_FIFO"
-  fi
+error() {
+  log "ERROR: $@"
+  exit 1
+}
 
-  wait $ECHO_PID
-  if [[ $? -ne 0 ]]; then
-    error "Error writing to $CONTROL_FIFO"
+debug() {
+  if [ "$DEBUG" = "yes" ]; then
+    log "DEBUG: $@"
   fi
 }
 
+warning() {
+  log "WARN: $@"
+}
 
-main() {
-  local temp=$(getopt -o c:,d:,m::,o,D,F,h --long timeout:,config-file:,job-dir:,message::,oknodo,debug,foreground,help -n 'test.sh' -- "$@")
-  eval set -- "$temp"
-
-  MESSAGE=no
-  TIMEOUT=5
-  DEBUG=no
-  DAEMON=yes
-  JOB_DIR="."
-  CONFIG="config"
-  OKNODO=no
-
-  while true; do
-    case "$1" in
-      -c|--config-file)
-        CONFIG_FILE=$2; shift 2;;
-      -d|--job-dir)
-        JOB_DIR=$2; shift 2;;
-      -m|--message)
-        MESSAGE=yes
-        if [[ "$2" ]]; then
-          TIMEOUT=$2
-        fi
-        shift 2
-        ;;
-      -o|--oknodo)
-        OKNODO=yes; shift 1;;
-      -D|--debug)
-        DEBUG=yes; shift 1;;
-      -F|--foreground)
-        DAEMON=no; shift 1;;
-      -h|--help)
-        help
-        exit 0
-        ;;
-      --)
-        shift ; break ;;
-      *)
-        echo "ERROR: Problem parsing arguments" 1>&2; exit 1;;
-    esac
-  done
-
-  cd $JOB_DIR
-  load_config
-
-  if [[ $MESSAGE = "yes" ]]; then
-    unset MINICI_LOG
-    if [[ ! -e $CONTROL_FIFO ]]; then
-      error "Control fifo $CONTROL_FIFO is missing"
-    fi
-
-    for cmd in $@; do
-      send_message $cmd
-    done
-    exit 0
-  fi
-
-  acquire_lock
-
-  for cmd in $@; do
-    queue $cmd
-  done
-
-  if [[ $DAEMON = "yes" ]]; then
-    # Based on:
-    # http://blog.n01se.net/blog-n01se-net-p-145.html
-    [[ -t 0 ]] && exec </dev/null || true
-    [[ -t 1 ]] && exec >/dev/null || true
-    [[ -t 2 ]] && exec 2>/dev/null || true
-
-    # Double fork will detach the process
-    (main_loop &) &
-  else
-    main_loop
+log() {
+  msg="$(date '+%F %T') $SHNAME/$BASHPID $@"
+  echo $msg 1>&2
+  if [[ $MINICI_LOG ]]; then
+    echo $msg >> $MINICI_LOG
   fi
 }
 
