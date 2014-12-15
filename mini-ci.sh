@@ -207,8 +207,8 @@ repo_update_finish() {
         update_status "update" "OK"
         queue "tasks"
     else
-        update_status "update" "ERROR"
         warning "Update did not finish sucessfully"
+        update_status "update" "ERROR"
     fi
 }
 
@@ -220,9 +220,9 @@ tasks_start() {
         (run_tasks) > $TASKS_LOG 2>&1 &
         add_child $! "tasks_finish"
     else
+        warning "The tasks directory $TASKS_DIR does not exist"
         STATE="idle"
         update_status "tasks" "ERROR"
-        warning "The tasks directory $TASKS_DIR does not exist"
     fi
 }
 
@@ -232,8 +232,8 @@ tasks_finish() {
         update_status "tasks" "OK"
         log "Tasks finished sucessfully"
     else
-        update_status "tasks" "ERROR"
         warning "Tasks did not finish sucessfully"
+        update_status "tasks" "ERROR"
     fi
 }
 
