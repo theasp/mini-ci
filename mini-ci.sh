@@ -875,7 +875,7 @@ warning() {
 }
 
 log() {
-  msg="$(date '+%F %T') $SHNAME/$BASHPID $@"
+  local msg="$(date '+%F %T') $SHNAME/$BASHPID $@"
   echo $msg 1>&2
   if [[ $MINICI_LOG ]]; then
     echo $msg >> $MINICI_LOG
