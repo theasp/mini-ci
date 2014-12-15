@@ -288,7 +288,7 @@ write_status_file() {
 
     cat > $TMPFILE <<EOF
 # Generated $(printf '%(%c)T\n' -1)
-STATE=$STATE
+OLD_STATE=$STATE
 EOF
 
     for state in ${!CUR_STATUS[@]}; do
@@ -308,7 +308,7 @@ read_status_file() {
         source $STATUS_FILE
     fi
 
-    if [[ "$STATE" != "idle" ]]; then
+    if [[ "$OLD_STATE" ]] && [[ "$OLD_STATE" != "idle" ]]; then
         debug "Setting status of $STATE to UNKNOWN, previous active state"
         CUR_STATUS[$STATE]=UNKNOWN
     fi
