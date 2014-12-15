@@ -362,7 +362,14 @@ notify_status() {
             ;;
     esac
 
-    #do_email_notification $OLD $OLD_TIME $NEW $NEW_TIME $NOTIFY_STATUS
+    local ACTIVE_STATES
+    for i in ${!NOTIFY_STATUS[@]}; do
+        if [[ ${NOTIFY_STATUS[$i]} -eq 1 ]]; then
+            ACTIVE_STATES="$i ";
+        fi
+    done
+
+    do_email_notification $OLD $OLD_TIME $NEW $NEW_TIME $ACTIVE_STATES
 }
 
 do_email_notification() {
@@ -370,8 +377,10 @@ do_email_notification() {
     local OLD_TIME=$2
     local NEW=$3
     local NEW_TIME=$4
-    local -A NOTIFY_STATUS=$5
-    local SEND
+    local ACTIVE_STATES=$5
+    local SEND_REASON
+
+    debug "Active States:$ACTIVE_STATES"
 
     for notifyState in $EMAIL_NOTIFY; do
         if [[ "$notifyState" = "NEVER" ]]; then
@@ -379,22 +388,30 @@ do_email_notification() {
             return
         fi
 
-        if [[ $NOTIFY_STATUS[$notifyState] ]]; then
-            SEND=1
+        for i in $ACTIVE_STATES; do
+            if [[ "$i" = "$notifyState" ]]; then
+                SEND_REASON=$notifyState
+                break
+            fi
+        done
+
+        if [[ "$SEND_REASON" ]]; then
+            break
         fi
     done
 
-    if [[ "$SEND" ]]; then
+    if [[ "$SEND_REASON" ]]; then
         local TMPFILE=$(mktemp /tmp/$SHNAME-email_notication-XXXXXX)
         local EMAIL_SUBJECT='Mini-CI Notification - $(basename $JOB_DIR)'
         EMAIL_SUBJECT=$(eval echo $EMAIL_SUBJECT)
         cat > $TMPFILE <<EOF
 Mini-CI Job Directory: $(pwd)
+Reason: $SEND_REASON
 New State: $NEW
 Old State: $OLD
 EOF
         for address in $EMAIL_ADDRESS; do
-            debug "Mailing notification to $address"
+            debug "Mailing notification to $address due to $SEND_REASON (New:$NEW Old:$OLD)"
             (mail -s "$EMAIL_SUBJECT" $address < $TMPFILE; rm -f $TMPFILE) &
             add_child $! ""
         done
