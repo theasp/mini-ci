@@ -28,6 +28,8 @@ declare -x LOG_DIR
 declare -x PID_FILE
 declare -x POLL_FREQ
 declare -x POLL_LOG
+declare -x REPO_HANDLER
+declare -x REPO_URL
 declare -x STATE
 declare -x STATUS_FILE
 declare -x TASKS_DIR
