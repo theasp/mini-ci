@@ -559,9 +559,32 @@ Reason: $send_reason
 New State: $new
 Old State: $old
 EOF
+
+    case $item in
+      poll)
+        echo "Poll Log:" >> $tmpfile
+        cat $POLL_LOG >> $tmpfile
+        ;;
+      update)
+        echo "Update Log:" >> $tmpfile
+        cat $UPDATE_LOG >> $tmpfile
+        ;;
+      tasks)
+        echo "Run Number: $RUN_NUM" >> $tmpfile
+        echo "Run Output Directory: $CUR_RUN_DIR" >> $tmpfile
+        echo "Update Log:" >> $tmpfile
+        cat $UPDATE_LOG >> $tmpfile
+        local last_task_log=$(ls -1 $CUR_RUN_DIR/ | grep '^task-.*\.log$' | sort | tail -n 1)
+        if [[ -n "$CUR_RUN_DIR/$last_task_log" ]]; then
+          echo >> $tmpfile
+          echo "Last task log: ($last_task_log)" >> $tmpfile
+          tail -n 100 "$CUR_RUN_DIR/$last_task_log" >> $tmpfile
+        fi
+    esac
+
     for address in $EMAIL_ADDRESS; do
       debug "Mailing notification to $address due to $send_reason (New:$new Old:$old)"
-      (mail -s "$email_subject" $address < $tmpfile; rm -f $tmpfile) &
+      (mail -s "$EMAIL_SUBJECT" $address < $tmpfile; rm -f $tmpfile) &
       add_child $! ""
     done
   fi
