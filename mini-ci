@@ -674,6 +674,14 @@ load_config() {
   if [[ -z $EMAIL_ADDRESS ]]; then
     EMAIL_ADDRESS=$(whoami)
   fi
+
+  if [[ -z "$JOB_NAME" ]]; then
+    JOB_NAME="$(basename $JOB_DIR)"
+  fi
+
+  if [[ -z "$EMAIL_SUBJECT" ]]; then
+    EMAIL_SUBJECT="Mini-CI Notification - $JOB_NAME"
+  fi
 }
 
 acquire_lock() {
