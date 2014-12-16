@@ -271,7 +271,7 @@ repo_run() {
           ;;
       esac
 
-      ($cmd $operation "$WORK_DIR" $REPO_URL > $log_file 2>&1) &
+      (cd $WORK_DIR && $cmd $operation "$WORK_DIR" < /dev/null $REPO_URL > $log_file 2>&1) &
       add_child $! $callback
       return 0
     else
@@ -322,6 +322,7 @@ repo_update_start() {
   log "Updating workspace"
 
   test -e $WORK_DIR || mkdir $WORK_DIR
+  WORK_DIR=$(make_full_path "$WORK_DIR")
 
   if ! repo_run update "repo_update_finish" "$UPDATE_LOG"; then
     STATE="idle"
@@ -739,8 +740,6 @@ _git() {
     error "Missing argument repo"
   fi
 
-  cd $dir
-
   case $operation in
     update)
       if [ ! -d .git ]; then
@@ -870,8 +869,12 @@ _svn() {
       error "Unknown operation $operation"
       ;;
   esac
+}
 
-  cd -
+make_full_path() {
+  local dir=$1
+
+  (cd $dir && echo $PWD)
 }
 
 # http://stackoverflow.com/questions/392022/best-way-to-kill-all-child-processes
