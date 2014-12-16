@@ -413,9 +413,9 @@ write_status_file() {
 
   cat > $tmpfile <<EOF
 # Generated $(printf '%(%c)T\n' -1)
-local old_state=$STATE
-declare -A old_status=${status_str#*=}
-declare -A old_status_time=${status_time_str#*=}
+state=$STATE
+status=${status_str#*=}
+status_time=${status_time_str#*=}
 EOF
 
   mv $tmpfile $STATUS_FILE
@@ -430,17 +430,19 @@ read_status_file() {
   done
 
   if [[ -f $STATUS_FILE ]]; then
+    local status
+    local status_time
+    local state
+
     source $STATUS_FILE
 
-    for state in ${!old_status[@]}; do
-      CUR_STATUS[$state]=${old_status[$state]}
-      CUR_STATUS_TIME[$state]=${old_status_time[$state]}
-    done
-  fi
+    eval "CUR_STATUS=${status}"
+    eval "CUR_TIME=${status_time}"
 
-  if [[ "$OLD_STATE" ]] && [[ "$OLD_STATE" != "idle" ]]; then
-    debug "Setting status of $OLD_STATE to UNKNOWN, previous active state"
-    update_state $OLD_STATE "UNKNOWN"
+    if [[ "$state" ]] && [[ "$state" != "idle" ]]; then
+      debug "Setting status of $state to UNKNOWN, previous active state"
+      update_state $state "UNKNOWN"
+    fi
   fi
 }
 
