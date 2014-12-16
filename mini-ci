@@ -36,6 +36,8 @@ declare -x STATE
 declare -x STATUS_FILE
 declare -x TASKS_DIR
 declare -x TASKS_LOG
+declare -x RUN_DIR # DOC
+declare -x CUR_RUN_DIR
 declare -x UPDATE_LOG
 declare -x WORK_DIR
 
@@ -349,10 +351,19 @@ repo_update_finish() {
 
 tasks_start() {
   STATE="tasks"
-  log "Starting tasks"
+  if [[ -d $TASKS_DIR ]]; then
+    TASKS_DIR=$(make_full_path "$TASKS_DIR")
 
-  if [[ -e $TASKS_DIR ]]; then
-    (run_tasks) > $TASKS_LOG 2>&1 &
+    test -d "$RUN_DIR" || mkdir "$RUN_DIR"
+    RUN_DIR=$(make_full_path "$RUN_DIR")
+
+    # TODO: Make subdir with run number
+    CUR_RUN_DIR=$RUN_DIR
+
+    test -d "$CUR_RUN_DIR" || mkdir "$CUR_RUN_DIR"
+
+    log "Starting tasks"
+    run_tasks < /dev/null > $TASKS_LOG 2>&1 &
     add_child $! "tasks_finish"
   else
     warning "The tasks directory $TASKS_DIR does not exist"
@@ -364,8 +375,8 @@ tasks_start() {
 tasks_finish() {
   STATE="idle"
   if [[ $1 -eq 0 ]]; then
-    update_status "tasks" "OK"
     log "Tasks finished sucessfully"
+    update_status "tasks" "OK"
   else
     warning "Tasks did not finish sucessfully"
     update_status "tasks" "ERROR"
@@ -549,31 +560,24 @@ EOF
 }
 
 run_tasks() {
-  log "Running tasks"
-
-  if [[ ! -d $TASKS_DIR ]]; then
-    error "Can't find tasks directory $TASKS_DIR"
-  fi
-
   cd $WORK_DIR
-
   for task in $(ls -1 $TASKS_DIR | grep -E -e '^[a-zA-Z0-9_-]+$' | sort); do
     local file="$TASKS_DIR/$task"
     if [[ -x $file ]]; then
-      local log_file="task-${task}.log"
-      log "Running $task"
-      if ! $file > $log_file 2>&1; then
-        error "Bad return code $?"
+      local log_file="${CUR_RUN_DIR}/task-${task}.log"
+      log "Running task $task, logging to ${CUR_RUN_DIR}/task-${task}.log"
+      if $file > $log_file 2>&1; then
+        log "Task $task returned code $?"
+      else
+        error "Task $task returned code $?"
       fi
     fi
   done
-
-  cd -
 }
 
 status() {
   debug ${!CUR_STATUS[@]}
-  log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:${CUR_STATUS[poll]} Update:${CUR_STATUS[update]} Tasks:${CUR_STATUS[tasks]}" #
+  log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:${CUR_STATUS[poll]} Update:${CUR_STATUS[update]} Tasks:${CUR_STATUS[tasks]}"
 }
 
 read_commands() {
@@ -643,6 +647,7 @@ load_config() {
   REPO_URL=""
   STATUS_FILE="./status"
   TASKS_DIR="./tasks.d"
+  RUN_DIR="./run"
   TASKS_LOG="./tasks.log"
   UPDATE_LOG="./update.log"
   WORK_DIR="./workspace"
