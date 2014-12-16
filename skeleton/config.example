@@ -1,5 +1,8 @@
 # All paths are relative to the job directory.
 
+# JOB_NAME: The name of the job.  Defaults to "$(basename $JOB_DIR)"
+JOB_NAME="$(basename $JOB_DIR)"
+
 # WORK_DIR: The directory where the repository will be checked out
 # into, and where tasks are launched.  Defaults to "./workspace".
 WORK_DIR="./workspace"
@@ -15,6 +18,10 @@ EMAIL_NOTIFY="NEWPROB, RECOVER"
 # email.  If not specified, will be sent to the user that is running
 # the script.  Defaults to "".
 EMAIL_ADDRESS=""
+
+# EMAIL_SUBJECT: The subject to have for notification emails.
+# Defaults to "Mini-CI Notification - $JOB_NAME".
+EMAIL_SUBJECT="Mini-CI Notification - $JOB_NAME"
 
 # NOTIFY_HANDER_ARGUMENT: An argument passed to the handler, or for
 # the built in handlers:
@@ -40,6 +47,10 @@ POLL_FREQ=600
 # TASKS_DIR: The directory which holds the tasks to be performed on
 # the checked out repository.  Defaults to "./tasks.d"
 TASKS_DIR="./tasks.d"
+
+# RUN_DIR: The directory which stores the output when tasks run.
+# Defaults to "./run".
+RUN_DIR="./run"
 
 # CONTROL_FIFO: The fifo that mini-ci will read to accept commands.
 # Defaults to "./control.fifo".

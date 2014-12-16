@@ -21,11 +21,11 @@ declare -A CUR_STATUS_TIME=()
 declare -x CONFIG_FILE
 declare -x CONTROL_FIFO
 declare -x DEBUG
-declare -x EMAIL_SUBJECT # DOC
+declare -x EMAIL_SUBJECT
 declare -x EMAIL_ADDRESS
 declare -x EMAIL_NOTIFY
 declare -x JOB_DIR
-declare -x JOB_NAME # DOC
+declare -x JOB_NAME
 declare -x LOG_DIR
 declare -x PID_FILE
 declare -x POLL_FREQ
@@ -37,7 +37,7 @@ declare -x STATE
 declare -x STATUS_FILE
 declare -x TASKS_DIR
 declare -x TASKS_LOG
-declare -x RUN_DIR # DOC
+declare -x RUN_DIR
 declare -x CUR_RUN_DIR
 declare -x UPDATE_LOG
 declare -x WORK_DIR
