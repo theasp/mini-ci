@@ -21,9 +21,11 @@ declare -A CUR_STATUS_TIME=()
 declare -x CONFIG_FILE
 declare -x CONTROL_FIFO
 declare -x DEBUG
+declare -x EMAIL_SUBJECT # DOC
 declare -x EMAIL_ADDRESS
 declare -x EMAIL_NOTIFY
 declare -x JOB_DIR
+declare -x JOB_NAME # DOC
 declare -x LOG_DIR
 declare -x PID_FILE
 declare -x POLL_FREQ
@@ -530,8 +532,7 @@ do_email_notification() {
 
   if [[ "$send_reason" ]]; then
     local tmpfile=$(mktemp /tmp/$SHNAME-email_notication-XXXXXX)
-    local email_subject='Mini-CI Notification - $(basename $JOB_DIR)'
-    email_subject=$(eval echo $email_subject)
+    local email_subject="Mini-CI Notification - $JOB_NAME"
     cat > $tmpfile <<EOF
 Mini-CI Job Directory: $(pwd)
 Item: $item
