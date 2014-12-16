@@ -408,14 +408,15 @@ write_status_file() {
   debug "Write status file $STATUS_FILE"
 
   local tmpfile=$STATUS_FILE.tmp
+  local status_str=$(declare -p CUR_STATUS)
+  local status_time_str=$(declare -p CUR_STATUS_TIME)
 
   cat > $tmpfile <<EOF
 # Generated $(printf '%(%c)T\n' -1)
-local OLD_STATE=$STATE
+local old_state=$STATE
+declare -A old_status=${status_str#*=}
+declare -A old_status_time=${status_time_str#*=}
 EOF
-
-  declare -p CUR_STATUS >> $tmpfile
-  declare -p CUR_STATUS_TIME >> $tmpfile
 
   mv $tmpfile $STATUS_FILE
 }
@@ -430,6 +431,11 @@ read_status_file() {
 
   if [[ -f $STATUS_FILE ]]; then
     source $STATUS_FILE
+
+    for state in ${!old_status[@]}; do
+      CUR_STATUS[$state]=${old_status[$state]}
+      CUR_STATUS_TIME[$state]=${old_status_time[$state]}
+    done
   fi
 
   if [[ "$OLD_STATE" ]] && [[ "$OLD_STATE" != "idle" ]]; then
