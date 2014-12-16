@@ -563,16 +563,19 @@ EOF
 
     case $item in
       poll)
+        echo >> $tmpfile
         echo "Poll Log:" >> $tmpfile
         cat $POLL_LOG >> $tmpfile
         ;;
       update)
+        echo >> $tmpfile
         echo "Update Log:" >> $tmpfile
         cat $UPDATE_LOG >> $tmpfile
         ;;
       tasks)
         echo "Run Number: $RUN_NUM" >> $tmpfile
         echo "Run Output Directory: $CUR_RUN_DIR" >> $tmpfile
+        echo >> $tmpfile
         echo "Update Log:" >> $tmpfile
         cat $UPDATE_LOG >> $tmpfile
         local last_task_log=$(ls -1 $CUR_RUN_DIR/ | grep '^task-.*\.log$' | sort | tail -n 1)
