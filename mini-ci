@@ -465,7 +465,7 @@ update_status() {
   local new_status=$2
   local new_status_time=$(printf '%(%s)T\n' -1)
 
-  debug "Setting status of $item to $NEW_STATUS"
+  debug "Setting status of $item to $new_status"
 
   local old_status=${CUR_STATUS["$item"]}
   local old_status_time=${CUR_STATUS["$item"]}
