@@ -747,10 +747,13 @@ _git() {
           exit 1
         fi
       else
+        local old_local=$(git rev-parse @)
         if ! git pull --rebase; then
           echo "ERR UPDATE PULL"
           exit 1
         fi
+        local new_local=$(git rev-parse @)
+        git log $old_local..$new_local
       fi
       echo "OK UPDATE"
       exit 0
