@@ -801,14 +801,15 @@ _git() {
       error "Unknown operation $operation"
       ;;
   esac
-
-  cd -
 }
 
+# TODO: Error handling, stop asking for passwords
 _svn() {
   local operation=$1
   local dir=$2
   local repo=$3
+
+  local svn_cmd="svn --non-interactive"
 
   if [ -z "$operation" ]; then
     error "Missing argument operation"
@@ -822,12 +823,10 @@ _svn() {
     error "Missing argument repo"
   fi
 
-  cd $dir
-
   case $operation in
     update)
       if [ ! -d .svn ]; then
-        if ! svn checkout $repo .; then
+        if ! $svn_cmd checkout $repo . < /dev/null; then
           echo "ERR UPDATE CHECKOUT"
           exit 1
         fi
@@ -841,10 +840,10 @@ _svn() {
 
         if [[ "$old_local" = "$new_local" ]]; then
           echo "Last commit $old_local:"
-          svn log -r $old_local
+          $svn_cmd log -r $old_local
         else
           echo "Commits between $old_local and new_local:"
-          svn log -r $old_local:$new_local
+          $svn_cmd -r $old_local:$new_local
         fi
       fi
       echo "OK UPDATE"
@@ -852,8 +851,8 @@ _svn() {
       ;;
 
     poll)
-      local local=$(svn info | grep '^Last Changed Rev' | cut -f 2 -d :)
-      local remote=$(svn info -r HEAD| grep '^Last Changed Rev' | cut -f 2 -d :)
+      local local=$($svn_cmd info | grep '^Last Changed Rev' | cut -f 2 -d :)
+      local remote=$($svn_cmd -r HEAD| grep '^Last Changed Rev' | cut -f 2 -d :)
 
       echo "Local: $local"
       echo "Remote: $remote"
