@@ -753,43 +753,49 @@ _git() {
           exit 1
         fi
         local new_local=$(git rev-parse @)
-        git log $old_local..$new_local
-      fi
-      echo "OK UPDATE"
-      exit 0
-      ;;
-
-    poll)
-      if ! git remote update; then
-        echo "ERR POLL UPDATE"
-        exit 1
-      fi
-
-      local local=$(git rev-parse @)
-      local remote=$(git rev-parse @{u})
-      local base=$(git merge-base @ @{u})
-
-      echo "Local: $local"
-      echo "Remote: $remote"
-      echo "Base: $base"
-
-      if [ $local = $remote ]; then
-        echo "OK POLL CURRENT"
+        echo
+        echo "Changes between $(echo $old_local | cut -b 1-7) and $(echo $new_local | cut -b 1-7):"
+        if [[ "$old_local" = "$new_local" ]]; then
+          echo "None"
+        else
+          git log $old_local..$new_local
+        fi
+        echo
+        echo "OK UPDATE"
         exit 0
-      elif [ $local = $base ]; then
-        echo "OK POLL NEEDED"
-        exit 0
-      elif [ $remote = $base ]; then
-        echo "ERR POLL localCOMMITS"
-        exit 1
-      else
-        echo "ERR POLL DIVERGED"
-        exit 1
-      fi
-      ;;
-    *)
-      error "Unknown operation $operation"
-      ;;
+        ;;
+
+        poll)
+          if ! git remote update; then
+            echo "ERR POLL UPDATE"
+            exit 1
+          fi
+
+          local local=$(git rev-parse @)
+          local remote=$(git rev-parse @{u})
+          local base=$(git merge-base @ @{u})
+
+          echo "Local: $local"
+          echo "Remote: $remote"
+          echo "Base: $base"
+
+          if [ $local = $remote ]; then
+            echo "OK POLL CURRENT"
+            exit 0
+          elif [ $local = $base ]; then
+            echo "OK POLL NEEDED"
+            exit 0
+          elif [ $remote = $base ]; then
+            echo "ERR POLL localCOMMITS"
+            exit 1
+          else
+            echo "ERR POLL DIVERGED"
+            exit 1
+          fi
+          ;;
+        *)
+          error "Unknown operation $operation"
+          ;;
   esac
 
   cd -
