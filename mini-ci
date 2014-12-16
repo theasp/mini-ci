@@ -754,10 +754,11 @@ _git() {
         fi
         local new_local=$(git rev-parse @)
         echo ""
-        echo "Changes between $(echo $old_local | cut -b 1-7) and $(echo $new_local | cut -b 1-7):"
         if [[ "$old_local" = "$new_local" ]]; then
-          echo "None"
+          echo "Last commit $(echo $old_local | cut -b 1-7):"
+          git log -1
         else
+          echo "Commits between $(echo $old_local | cut -b 1-7) and $(echo $new_local | cut -b 1-7):"
           git log $old_local..$new_local
         fi
         echo ""
@@ -829,9 +830,19 @@ _svn() {
           exit 1
         fi
       else
+        local old_local=$(svn info | grep '^Last Changed Rev' | cut -f 2 -d :)
         if ! svn update; then
           echo "ERR UPDATE UPDATE"
           exit 1
+        fi
+        local new_local=$(svn info | grep '^Last Changed Rev' | cut -f 2 -d :)
+
+        if [[ "$old_local" = "$new_local" ]]; then
+          echo "Last commit $old_local:"
+          svn log -r $old_local
+        else
+          echo "Commits between $old_local and new_local:"
+          svn log -r $old_local:$new_local
         fi
       fi
       echo "OK UPDATE"
