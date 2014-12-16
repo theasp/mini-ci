@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -ex
+
+# Copy the workspace into $CUR_RUN_DUR/workspace
+cp -a $WORK_DIR $CUR_RUN_DIR/workspace
