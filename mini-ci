@@ -119,6 +119,7 @@ main() {
   done
 
   cd $JOB_DIR
+  JOB_DIR=$(pwd)
   load_config
 
   if [[ $message = "yes" ]]; then
