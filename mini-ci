@@ -358,13 +358,14 @@ tasks_start() {
     test -d "$RUN_DIR" || mkdir "$RUN_DIR"
     RUN_DIR=$(make_full_path "$RUN_DIR")
 
-    RUN_NUM=$(( $RUN_NUM + 1 ))
-
-    # TODO: Make subdir with run number
-    CUR_RUN_DIR="$RUN_DIR/$RUN_NUM"
+    CUR_RUN_DIR="$RUN_DIR"
+    while [[ -d "$CUR_RUN_DIR" ]]; do
+      RUN_NUM=$(( $RUN_NUM + 1 ))
+      CUR_RUN_DIR="$RUN_DIR/$RUN_NUM"
+    done
 
     test -d "$CUR_RUN_DIR" || mkdir "$CUR_RUN_DIR"
-    test -f "$UPDATE_LOG" && cp "$CUR_RUN_DIR/$UPDATE_LOG"
+    test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$CUR_RUN_DIR/"
 
     log "Starting tasks"
     run_tasks < /dev/null > $TASKS_LOG 2>&1 &
