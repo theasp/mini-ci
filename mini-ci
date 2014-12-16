@@ -30,6 +30,7 @@ declare -x LOG_DIR
 declare -x PID_FILE
 declare -x POLL_FREQ
 declare -x POLL_LOG
+declare -x RUN_NUM
 declare -x REPO_HANDLER
 declare -x REPO_URL
 declare -x STATE
@@ -357,10 +358,13 @@ tasks_start() {
     test -d "$RUN_DIR" || mkdir "$RUN_DIR"
     RUN_DIR=$(make_full_path "$RUN_DIR")
 
+    RUN_NUM=$(( $RUN_NUM + 1 ))
+
     # TODO: Make subdir with run number
-    CUR_RUN_DIR=$RUN_DIR
+    CUR_RUN_DIR="$RUN_DIR/$RUN_NUM"
 
     test -d "$CUR_RUN_DIR" || mkdir "$CUR_RUN_DIR"
+    test -f "$UPDATE_LOG" && cp "$CUR_RUN_DIR/$UPDATE_LOG"
 
     log "Starting tasks"
     run_tasks < /dev/null > $TASKS_LOG 2>&1 &
@@ -428,6 +432,7 @@ write_status_file() {
   cat > $tmpfile <<EOF
 # Generated $(printf '%(%c)T\n' -1)
 state=$STATE
+run_num=$RUN_NUM
 status=${status_str#*=}
 status_time=${status_time_str#*=}
 EOF
@@ -447,11 +452,13 @@ read_status_file() {
     local status
     local status_time
     local state
+    local run_num
 
     source $STATUS_FILE
 
     eval "CUR_STATUS=${status}"
     eval "CUR_TIME=${status_time}"
+    RUN_NUM=$run_num
 
     if [[ "$state" ]] && [[ "$state" != "idle" ]]; then
       debug "Setting status of $state to UNKNOWN, previous active state"
