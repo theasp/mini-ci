@@ -15,6 +15,8 @@ set -e
 
 readonly SHNAME=$(basename $0)
 
+# Clear all global variables.  This prevents a problem where their
+# values leak when testing mini-ci inside of mini-ci.
 declare -A CUR_STATUS=()
 declare -A CUR_STATUS_TIME=()
 
