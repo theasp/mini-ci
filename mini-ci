@@ -557,6 +557,9 @@ do_email_notification() {
     local tmpfile=$(mktemp /tmp/$SHNAME-email_notication-XXXXXX)
     local email_subject="Mini-CI Notification - $JOB_NAME"
     cat > $tmpfile <<EOF
+
+This copy of Mini-CI is running on $(hostname -f) as user $(whoami).
+
 Mini-CI Job Directory: $(pwd)
 Item: $item
 Reason: $send_reason
