@@ -292,6 +292,7 @@ repo_run() {
 
 repo_poll_start() {
   if [[ ! -e $WORK_DIR ]]; then
+    (LOG_FILE=$POLL_LOG; log "Missing workdir, doing update instead")
     repo_update_start
   else
     STATE="poll"
