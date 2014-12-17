@@ -595,13 +595,12 @@ EOF
 }
 
 run_tasks() {
-  cd $WORK_DIR
   for task in $(ls -1 $TASKS_DIR | grep -E -e '^[a-zA-Z0-9_-]+$' | sort); do
     local file="$TASKS_DIR/$task"
     if [[ -x $file ]]; then
       local log_file="${CUR_RUN_DIR}/task-${task}.log"
       log "Running task $task, logging to ${CUR_RUN_DIR}/task-${task}.log"
-      if $file > $log_file 2>&1; then
+      if (cd $WORK_DIR && $file) > $log_file 2>&1; then
         log "Task $task returned code $?"
       else
         error "Task $task returned code $?"
