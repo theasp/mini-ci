@@ -3,7 +3,7 @@
 SHNAME=$(basename $0)
 CURDIR=$PWD
 
-testRunsTasks() {
+testRunTasks() {
     TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
     WORK_DIR=$TMPDIR/workspace
 
