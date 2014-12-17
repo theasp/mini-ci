@@ -796,12 +796,12 @@ _git() {
           exit 1
         fi
       else
-        local old_local=$(git rev-parse @)
+        local old_local=$(git rev-parse @{0})
         if ! git pull; then
           echo "ERR UPDATE PULL"
           exit 1
         fi
-        local new_local=$(git rev-parse @)
+        local new_local=$(git rev-parse @{0})
         echo ""
         if [[ "$old_local" = "$new_local" ]]; then
           echo "Last commit $(echo $old_local | cut -b 1-7):"
