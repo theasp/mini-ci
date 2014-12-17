@@ -36,7 +36,7 @@ EOF
     assertTrue "Good task didn't execute" "[ -e '${WORK_DIR}/good-task' ]"
     assertTrue "Good task didn't have log file" "[ -e '${TMPDIR}/run/1/task-01-good-task.log' ]"
     assertTrue "Worse task did execute" "[ ! -e '${WORK_DIR}/worse-task' ]"
-
+    find $TMPDIR
     rm -rf $TMPDIR
 }
 
