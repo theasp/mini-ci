@@ -277,7 +277,7 @@ repo_run() {
           ;;
       esac
 
-      (cd $WORK_DIR && $cmd $operation "$WORK_DIR" < /dev/null $REPO_URL > $log_file 2>&1) &
+      (cd $WORK_DIR && $cmd $operation "$WORK_DIR" "$REPO_URL") < /dev/null > $log_file 2>&1 &
       add_child $! $callback
       return 0
     else
