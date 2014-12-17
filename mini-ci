@@ -371,7 +371,7 @@ tasks_start() {
     test -d "$CUR_RUN_DIR" || mkdir "$CUR_RUN_DIR"
     test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$CUR_RUN_DIR/"
 
-    log "Starting tasks"
+    log "Starting tasks as run number $RUN_NUM"
     run_tasks < /dev/null > $TASKS_LOG 2>&1 &
     add_child $! "tasks_finish"
   else
@@ -384,10 +384,10 @@ tasks_start() {
 tasks_finish() {
   STATE="idle"
   if [[ $1 -eq 0 ]]; then
-    log "Tasks finished sucessfully"
+    log "Tasks finished sucessfully, run number $RUN_NUM"
     update_status "tasks" "OK"
   else
-    warning "Tasks did not finish sucessfully"
+    warning "Tasks did not finish sucessfully, run number $RUN_NUM"
     update_status "tasks" "ERROR"
   fi
 }
