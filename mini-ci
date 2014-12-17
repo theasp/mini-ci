@@ -822,9 +822,9 @@ _git() {
         exit 1
       fi
 
-      local local=$(git rev-parse @)
+      local local=$(git rev-parse @{0})
       local remote=$(git rev-parse @{u})
-      local base=$(git merge-base @ @{u})
+      local base=$(git merge-base @{0} @{u})
 
       echo "Local: $local"
       echo "Remote: $remote"
