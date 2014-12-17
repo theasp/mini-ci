@@ -1,0 +1,19 @@
+#!/bin/bash
+
+SHNAME=$(basename $0)
+CURDIR=$PWD
+
+testExit() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+
+    cat > $TMPDIR/config <<EOF
+EMAIL_NOTIFY="NEVER"
+EOF
+    
+    (cd $TMPDIR && $CURDIR/mini-ci -F quit)
+    assertEquals "Wrong return code" $? 0 || return
+
+    rm -rf $TMPDIR
+}
+
+. shunit2

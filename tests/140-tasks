@@ -1,0 +1,43 @@
+#!/bin/bash
+
+SHNAME=$(basename $0)
+CURDIR=$PWD
+
+testRunsTasks() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+    WORK_DIR=$TMPDIR/workspace
+
+    cat > $TMPDIR/config <<EOF
+EMAIL_NOTIFY="NEVER"
+REPO_HANDLER=""
+WORK_DIR="./workspace"
+EOF
+
+    mkdir -p $TMPDIR/workspace
+    mkdir -p $TMPDIR/tasks.d
+    cat > $TMPDIR/tasks.d/01-good-task <<EOF
+#!/bin/sh
+touch good-task
+EOF
+    cat > $TMPDIR/tasks.d/02-bad-task <<EOF
+#!/bin/sh
+exit 1
+EOF
+
+    cat > $TMPDIR/tasks.d/03-worse-task <<EOF
+#!/bin/sh
+touch worse-task
+EOF
+    chmod +x $TMPDIR/tasks.d/*
+
+    (cd $TMPDIR && $CURDIR/mini-ci -D -F tasks quit)
+    assertEquals "Wrong return code" 0 $?
+
+    assertTrue "Good task didn't execute" "[ -e '${WORK_DIR}/good-task' ]"
+    assertTrue "Good task didn't have log file" "[ -e '${TMPDIR}/run/1/task-01-good-task.log' ]"
+    assertTrue "Worse task did execute" "[ ! -e '${WORK_DIR}/worse-task' ]"
+
+    rm -rf $TMPDIR
+}
+
+. shunit2

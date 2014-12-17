@@ -1,0 +1,36 @@
+#!/bin/bash
+
+SHNAME=$(basename $0)
+TMPDIR=$(mktemp -u -d "/tmp/${SHNAME}-XXXXXX")
+
+testLongHelp() {
+    CMD="./mini-ci --help"
+
+    $CMD > /dev/null 2>&1
+    assertEquals "Wrong return code" $? 0 || return
+
+    LINES=$($CMD | wc -l)
+    assertTrue "Help output is too short" "[ '$LINES' -gt 10 ]"
+}
+
+testShortHelp() {
+    CMD="./mini-ci --h"
+
+    $CMD > /dev/null 2>&1
+    assertEquals "Wrong return code" $? 0 || return
+    
+    LINES=$($CMD | wc -l)
+    assertTrue "Help output is too short" "[ '$LINES' -gt 10 ]"
+}
+
+testUnrecognizedOption() {
+    CMD="./mini-ci --cause-an-error"
+
+    $CMD > /dev/null 2>&1
+    assertNotEquals "Wrong return code" $? 0 || return
+    
+    LINES=$($CMD 2>&1 | wc -l)
+    assertTrue "Help output is too short" "[ '$LINES' -gt 0 ]"
+}
+
+. shunit2
