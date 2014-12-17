@@ -645,14 +645,18 @@ process_queue() {
     local cmd=${QUEUE[0]}
     QUEUE=(${QUEUE[@]:1})
     case $cmd in
-      clean)
-        clean ;;
-      poll)
-        repo_poll_start ;;
-      update)
-        repo_update_start ;;
-      tasks)
-        tasks_start ;;
+      quit|shutdown)
+        RUN=no
+        break
+        ;;
+      poll|update|clean|tasks) queue "$cmd" ;;
+      status) status ;;
+      abort) abort ;;
+      reload) reload_config ;;
+      clean) clean ;;
+      poll) repo_poll_start ;;
+      update) repo_update_start ;;
+      tasks) tasks_start ;;
       *)
         error "Unknown job in queue: $cmd" ;;
     esac
