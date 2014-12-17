@@ -797,7 +797,7 @@ _git() {
         fi
       else
         local old_local=$(git rev-parse @)
-        if ! git pull --rebase; then
+        if ! git pull; then
           echo "ERR UPDATE PULL"
           exit 1
         fi
