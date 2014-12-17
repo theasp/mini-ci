@@ -50,30 +50,34 @@ Table of Contents
 ═══════
 
   ┌────
-  │ ./mini-ci --help
+  │ Usage: mini-ci [option ...] [command ...]
+  │ 
+  │ Options:
+  │   -d|--job-dir <dir>       directory for job
+  │   -c|--config-file <file>  config file to use, relative to job-dir
+  │   -m|--message [timeout]   send commands to running daemon, then exit
+  │   -o|--oknodo              exit quietly if already running
+  │   -D|--debug               log debugging information
+  │   -F|--foreground          do not become a daemon, run in foreground
+  │   -h|--help                show usage information and exit
+  │ 
+  │ Commands:
+  │   status  log the current status
+  │   poll    poll the source code repository for updates, queue update if
+  │           updates are available
+  │   update  update the source code repository, queue tasks if updates are made
+  │   tasks   run the tasks in the tasks directory
+  │   clean   remove the work directory
+  │   abort   abort the currently running command
+  │   quit|shutdown
+  │           shutdown the daemon, aborting any running command
+  │   reload  reread the config file, aborting any running command
+  │ 
+  │ Commands given while not in message mode will be queued.  For instance
+  │ the following command will have a repository polled for updates (which
+  │ will trigger update and tasks if required) then quit.
+  │   mini-ci -d <dir> -F poll quit
   └────
-
-  Usage: mini-ci [option …] [command …]
-
-  Options: -d|–job-dir <dir> directory for job -c|–config-file <file>
-  config file to use, relative to job-dir -m|–message [timeout]  send
-  commands to running daemon, then exit -o|–oknodo  exit quietly if
-  already running -D|–debug  log debugging information -F|–foreground
-  do not become a daemon, run in foreground -h|–help  show usage
-  information and exit
-
-  Commands: status  log the current status poll  poll the source code
-    repository for updates, queue update if updates are available update
-    update the source code repository, queue tasks if updates are made
-    tasks  run the tasks in the tasks directory clean  remove the work
-    directory abort  abort the currently running command quit|shutdown
-    shutdown the daemon, aborting any running command reload  reread the
-    config file, aborting any running command
-
-  Commands given while not in message mode will be queued.  For instance
-  the following command will have a repository polled for updates (which
-  will trigger update and tasks if required) then quit.  mini-ci -d
-  <dir> -F poll quit
 
 
 4 Configuration

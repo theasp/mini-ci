@@ -22,12 +22,20 @@ Mini-CI is a small daemon to perform continuous integration (CI) for a single re
 - Can monitor any repository and use any build system.  
   - The only limits are the scripts you provide.
 * Usage
-#+BEGIN_SRC sh :exports output :results drawer :eval no-export
+#+name: example_wrap
+#+begin_src sh :var data="" :results output :exports none
+echo "#+BEGIN_EXAMPLE"
+echo "$data"
+echo "#+END_EXAMPLE"
+#+end_src
+
+#+BEGIN_SRC sh :exports results :results drawer :eval no-export :post example_wrap(data=*this*)
 ./mini-ci --help
 #+END_SRC
 
 #+RESULTS:
 :RESULTS:
+#+BEGIN_EXAMPLE
 Usage: mini-ci [option ...] [command ...]
 
 Options:
@@ -55,6 +63,7 @@ Commands given while not in message mode will be queued.  For instance
 the following command will have a repository polled for updates (which
 will trigger update and tasks if required) then quit.
   mini-ci -d <dir> -F poll quit
+#+END_EXAMPLE
 :END:
 
 * Configuration
