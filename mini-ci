@@ -649,7 +649,6 @@ process_queue() {
         RUN=no
         break
         ;;
-      poll|update|clean|tasks) queue "$cmd" ;;
       status) status ;;
       abort) abort ;;
       reload) reload_config ;;
