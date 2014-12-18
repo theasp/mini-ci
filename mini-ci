@@ -20,12 +20,15 @@ readonly SHNAME=$(basename $0)
 declare -A CUR_STATUS=()
 declare -A CUR_STATUS_TIME=()
 
+declare -x BUILD_DISPLAY_NAME=""
+declare -x BUILD_ID=""
+declare -x BUILD_NUMBER=""
+declare -x BUILD_TAG=""
 declare -x CUR_RUN_DIR=""
 declare -x JOB_DIR=""
 declare -x JOB_NAME=""
 declare -x REPO_URL=""
 declare -x RUN_DIR=""
-declare -x BUILD_NUMBER=""
 declare -x WORKSPACE=""
 declare CONFIG_FILE=""
 declare CONTROL_FIFO=""
@@ -366,6 +369,9 @@ tasks_start() {
     test -d "$CUR_RUN_DIR" || mkdir "$CUR_RUN_DIR"
     test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$CUR_RUN_DIR/"
 
+    BUILD_ID=$(date +%Y-%m-%d_%H-%M-%S)
+    BUILD_DISPLAY_NAME="#${BUILD_NUMBER}"
+    BUILD_TAG="${SHNAME}-${JOB_NAME}-${BUILD_NUMBER}"
     log "Starting tasks as run number $BUILD_NUMBER"
     run_tasks < /dev/null > $TASKS_LOG 2>&1 &
     add_child $! "tasks_finish"
@@ -432,7 +438,7 @@ write_status_file() {
   cat > $tmpfile <<EOF
 # Generated $(printf '%(%c)T\n' -1)
 state=$STATE
-run_num=$BUILD_NUMBER
+build_number=$BUILD_NUMBER
 status=${status_str#*=}
 status_time=${status_time_str#*=}
 EOF
@@ -452,13 +458,13 @@ read_status_file() {
     local status
     local status_time
     local state
-    local run_num
+    local build_number
 
     source $STATUS_FILE
 
     eval "CUR_STATUS=${status}"
     eval "CUR_TIME=${status_time}"
-    BUILD_NUMBER=$run_num
+    BUILD_NUMBER=$build_number
 
     if [[ "$state" ]] && [[ "$state" != "idle" ]]; then
       debug "Setting status of $state to UNKNOWN, previous active state"
