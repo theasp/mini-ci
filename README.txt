@@ -13,7 +13,13 @@ Table of Contents
 2 Features
 3 Usage
 4 Configuration
-5 Examples
+5 Contents of a Job Directory
+.. 5.1 `config'
+.. 5.2 `tasks.d'
+6 Examples
+.. 6.1 Mini-CI Job Directory
+.. 6.2 Starting the Mini-CI Daemon as a User
+.. 6.3 Notifying a Mini-CI Daemon from GIT
 
 
 
@@ -49,6 +55,7 @@ Table of Contents
 3 Usage
 ═══════
 
+  From the output of `mini-ci --help':
   ┌────
   │ Usage: mini-ci [option ...] [command ...]
   │ 
@@ -83,6 +90,222 @@ Table of Contents
 4 Configuration
 ═══════════════
 
+  You can configure a Mini-CI job by copying the `skeleton' directory
+  somewhere and then editing where required.  This directory is referred
+  to has the "job directory".  The skeleton contains the file `config'
+  and the directory `tasks.d', see their description later.  Once you
+  have the configuration in place you can try it by running `mini-ci -F'
+  in the directory you created, which will run Mini-CI in the
+  foreground.
 
-5 Examples
+
+5 Contents of a Job Directory
+═════════════════════════════
+
+  • `config': The configuration file for the job.
+  • `tasks.d': Contains all the tasks that would be executed during a
+    build of your repository
+  • `builds': The builds directory contains the output of each build of
+    a job in numbered directories.
+  • `workspace': The directory your repository is checked out into, and
+    built in.
+  • `mini-ci.log': The main log for Mini-CI.
+  • `poll.log': The log for the last poll operation.
+  • `tasks.log': The log for the last tasks operation.
+  • `update.log': The log for the last update operation.
+  • `control.fifo': This is a FIFO used to communicate with the Mini-CI
+    daemon.
+
+
+5.1 `config'
+────────────
+
+  The `config' file is a shell script that is sourced when Mini-CI is
+  started which contains the configuration to use for your job.  Every
+  option should have sane defaults, so feel free to only have the
+  entries you wish to use.  If you want a variable exported during your
+  job, for instance `PATH', this would also be a good place to do so.
+
+  The `config' file in `skeleton' is:
+  ┌────
+  │ # All paths are relative to the job directory.
+  │ 
+  │ # JOB_NAME: The name of the job.  Defaults to "$(basename $JOB_DIR)"
+  │ JOB_NAME="$(basename $JOB_DIR)"
+  │ 
+  │ # EMAIL_NOTIFY: A space and/or comma separated list of conditions to
+  │ # notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",
+  │ # "RECOVER" (when a state changes from "ERROR" or "UNKNOWN" to "OK")
+  │ # and "NEWPROB" (when a state changes from "OK" to "ERROR" or
+  │ # "UNKNOWN").  Defaults to "NEWPROB, RECOVER".
+  │ EMAIL_NOTIFY="NEWPROB, RECOVER"
+  │ 
+  │ # EMAIL_ADDRESS: A space and/or comma seperated list of addresses to
+  │ # email.  If not specified, will be sent to the user that is running
+  │ # the script.  Defaults to "".
+  │ EMAIL_ADDRESS=""
+  │ 
+  │ # EMAIL_SUBJECT: The subject to have for notification emails.
+  │ # Defaults to "Mini-CI Notification - $JOB_NAME".
+  │ EMAIL_SUBJECT="Mini-CI Notification - $JOB_NAME"
+  │ 
+  │ # REPO_HANDLER: This is either a command that exits with the
+  │ # appropriate return codes, or one of the built in handlers:
+  │ # - git
+  │ # - svn
+  │ REPO_HANDLER="<handler>"
+  │ 
+  │ # REPO_URL: The URL to the repository.  Fetching the URL must not ask
+  │ # for a username or password.  Use ~/.netrc or ssh keys for remote
+  │ # repositories.
+  │ REPO_URL="<url>"
+  │ 
+  │ # POLL_FREQ: If this is set to a number greater than zero, it will poll the
+  │ # repository using the repo-handler every this many seconds, starting
+  │ # at startup.  To have a more complicated scheme, use cron.
+  │ POLL_FREQ=600
+  │ 
+  │ # BUILD_KEEP: If this is set to a number greater than zero, only this
+  │ # many build log directories will be kept.  Defaults to "0".
+  │ BUILD_KEEP=0
+  │ 
+  │ # WORKSPACE: The directory where the repository will be checked out
+  │ # into, and where tasks are launched.  Defaults to "./workspace".
+  │ WORKSPACE="./workspace"
+  │ 
+  │ # BUILD_ARCHIVE_WORKSPACE: When set to "yes" will copy the workspace into
+  │ # the $BUILDS_DIR/$BUILD_NUM/workspace.  Defaults to "".
+  │ BUILD_ARCHIVE_WORKSPACE=""
+  │ 
+  │ # TASKS_DIR: The directory which holds the tasks to be performed on
+  │ # the checked out repository.  Defaults to "./tasks.d"
+  │ TASKS_DIR="./tasks.d"
+  │ 
+  │ # BUILDS_DIR: The directory which stores the output of each build when
+  │ # tasks run.  Defaults to "./builds".
+  │ BUILDS_DIR="./builds"
+  │ 
+  │ # CONTROL_FIFO: The fifo that mini-ci will read to accept commands.
+  │ # Defaults to "./control.fifo".
+  │ CONTROL_FIFO="./control.fifo"
+  │ 
+  │ # PID_FILE: The file containing the process ID for mini-ci.  Defaults
+  │ # to "./minici.pid".
+  │ PID_FILE="./mini-ci.pid"
+  │ 
+  │ # STATUS_FILE: A file where status information is kept.  Defaults to
+  │ # "./status".
+  │ STATUS_FILE="./status"
+  │ 
+  │ # POLL_LOG: Name of the poll log.  Defaults to "./poll.log".
+  │ POLL_LOG="./poll.log"
+  │ 
+  │ # UPDATE_LOG: Name of the update log.  Defaults to "./update.log".
+  │ UPDATE_LOG="./update.log"
+  │ 
+  │ # TASKS_LOG: Name of the tasks log.  Defaults to "./tasks.log".
+  │ TASKS_LOG="./tasks.log"
+  │ 
+  │ # MINICI_LOG: Name of the mini-ci log.  Defaults to "./mini-ci.log".
+  │ MINICI_LOG="./mini-ci.log"
+  └────
+
+
+5.2 `tasks.d'
+─────────────
+
+  The `tasks.d' directory contains all the tasks that would be executed
+  during a build of your repository.  The `skeleton' contains a few
+  examples.  Each script must match the regular expression
+  `^[a-zA-Z0-9_-]+$' and will be ran in sort order, therefore it is
+  recommended that each script be named in the form
+  `<nnn>-<description_of_task>'.  If a script exits with a return code
+  that is not zero, it is considered a build error and no further
+  scripts are executed.
+
+
+6 Examples
 ══════════
+
+6.1 Mini-CI Job Directory
+─────────────────────────
+
+  This example will configure to monitor Mini-CI's GIT repository and
+  run tests whenever it's updated.
+
+  Create a directory called `mini-ci-job', then place the following in
+  `config':
+  ┌────
+  │ REPO_HANDLER="git"
+  │ REPO_URL="https://github.com/theasp/mini-ci"
+  │ POLL_FREQ=600
+  └────
+
+  This configuration will use the GIT repository handler with the URL to
+  the Mini-CI repository, and then poll it every 10 minutes.
+
+  Create the directory `tasks.d', then place the following file in
+  `tasks.d/500-run_tests':
+  ┌────
+  │ #!/bin/sh
+  │ ./tests.sh
+  └────
+
+  Run `chmod +x tasks.d/500-run_tests' to make the script executable.
+  Now when you run `mini-ci -F' in the job directory you will get:
+
+  ┌────
+  │ 2014-12-18 17:20:03 mini-ci/7145 Starting up
+  │ 2014-12-18 17:20:05 mini-ci/7369 Missing workdir, doing update instead
+  │ 2014-12-18 17:20:05 mini-ci/7145 Updating workspace
+  │ 2014-12-18 17:20:06 mini-ci/7145 Update finished sucessfully, queuing tasks
+  │ 2014-12-18 17:20:06 mini-ci/7145 Mailing update notification to user due to RECOVER (New:OK Old:UNKNOWN)
+  │ 2014-12-18 17:20:06 mini-ci/7145 Mailing poll notification to user due to RECOVER (New:OK Old:UNKNOWN)
+  │ 2014-12-18 17:20:07 mini-ci/7145 Starting tasks as run number 1
+  │ 2014-12-18 17:20:07 mini-ci/7145 Tasks finished sucessfully, run number 1
+  │ 2014-12-18 17:20:07 mini-ci/7145 Mailing tasks notification to user due to RECOVER (New:OK Old:UNKNOWN)
+  └────
+
+  Mini-CI started in foreground mode, downloaded the repository, then
+  ran all the tasks in the `tasks.d' directory.  Notice that it also
+  sent 3 mail notifications due to update, poll and tasks transitioning
+  from `UNKNOWN' to `RECOVER'.  The default email settings will only
+  send mail when they change state.  The process is still running and
+  will check the repository for changes every 10 minutes.
+
+  You can stop the daemon by pressing `ctrl-c', or by running `mini-ci
+  -m quit' in the job directory in another shell.
+
+
+6.2 Starting the Mini-CI Daemon as a User
+─────────────────────────────────────────
+
+  The easiest way to run Mini-CI as a user is to have `cron' start it.
+  For instance, the following crontab will start Mini-CI every 10
+  minutes, and if it is already running for that job directory it will
+  exit quietly:
+  ┌────
+  │ */10 * * * * mini-ci --oknodo -d ~/some-mini-ci-job-directory
+  └────
+
+  Mini-CI will run in the background doing it's thing whenever it needs
+  to.
+
+
+6.3 Notifying a Mini-CI Daemon from GIT
+───────────────────────────────────────
+
+  You can have git notify Mini-CI upon every push to a repository, which
+  makes polling the repository unnecessary.  Put this in
+  `hooks/post-update' in your git repository directory (or
+  `.git/hooks/post-update' if you aren't using a bare repository), and
+  it will send a message to Mini-CI to do an update.
+  ┌────
+  │ #!/bin/sh
+  │ 
+  │ set -e
+  │ mini-ci -d ~/some-mini-ci-job-directory -m update
+  └────
+
+  You can easily change the above script to SSH to another system, or
+  user.

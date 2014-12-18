@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2014-12-17 Wed 08:25 -->
+<!-- 2014-12-18 Thu 17:36 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -147,7 +147,19 @@ for the JavaScript code in this tag.
 <li><a href="#sec-2">2. Features</a></li>
 <li><a href="#sec-3">3. Usage</a></li>
 <li><a href="#sec-4">4. Configuration</a></li>
-<li><a href="#sec-5">5. Examples</a></li>
+<li><a href="#sec-5">5. Contents of a Job Directory</a>
+<ul>
+<li><a href="#sec-5-1">5.1. <code>config</code></a></li>
+<li><a href="#sec-5-2">5.2. <code>tasks.d</code></a></li>
+</ul>
+</li>
+<li><a href="#sec-6">6. Examples</a>
+<ul>
+<li><a href="#sec-6-1">6.1. Mini-CI Job Directory</a></li>
+<li><a href="#sec-6-2">6.2. Starting the Mini-CI Daemon as a User</a></li>
+<li><a href="#sec-6-3">6.3. Notifying a Mini-CI Daemon from GIT</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -190,7 +202,7 @@ Mini-CI is a small daemon to perform continuous integration (CI) for a single re
 </li>
 </ul>
 </li>
-<li>Can monitor any repository and use any build system.  
+<li>Can monitor any repository and use any build system.
 <ul class="org-ul">
 <li>The only limits are the scripts you provide.
 </li>
@@ -202,6 +214,9 @@ Mini-CI is a small daemon to perform continuous integration (CI) for a single re
 <div id="outline-container-sec-3" class="outline-2">
 <h2 id="sec-3"><span class="section-number-2">3</span> Usage</h2>
 <div class="outline-text-2" id="text-3">
+<p>
+From the output of <code>mini-ci --help</code>:
+</p>
 <pre class="example">
 Usage: mini-ci [option ...] [command ...]
 
@@ -233,17 +248,247 @@ will trigger update and tasks if required) then quit.
 </pre>
 </div>
 </div>
-
 <div id="outline-container-sec-4" class="outline-2">
 <h2 id="sec-4"><span class="section-number-2">4</span> Configuration</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+You can configure a Mini-CI job by copying the <code>skeleton</code> directory somewhere and then editing where required.  This directory is referred to has the "job directory".  The skeleton contains the file <code>config</code> and the directory <code>tasks.d</code>, see their description later.  Once you have the configuration in place you can try it by running <code>mini-ci -F</code> in the directory you created, which will run Mini-CI in the foreground.
+</p>
 </div>
+</div>
+
 <div id="outline-container-sec-5" class="outline-2">
-<h2 id="sec-5"><span class="section-number-2">5</span> Examples</h2>
+<h2 id="sec-5"><span class="section-number-2">5</span> Contents of a Job Directory</h2>
+<div class="outline-text-2" id="text-5">
+<ul class="org-ul">
+<li><code>config</code>: The configuration file for the job.
+</li>
+<li><code>tasks.d</code>: Contains all the tasks that would be executed during a build of your repository
+</li>
+<li><code>builds</code>: The builds directory contains the output of each build of a job in numbered directories.
+</li>
+<li><code>workspace</code>: The directory your repository is checked out into, and built in.
+</li>
+<li><code>mini-ci.log</code>: The main log for Mini-CI.
+</li>
+<li><code>poll.log</code>: The log for the last poll operation.
+</li>
+<li><code>tasks.log</code>: The log for the last tasks operation.
+</li>
+<li><code>update.log</code>: The log for the last update operation.
+</li>
+<li><code>control.fifo</code>: This is a FIFO used to communicate with the Mini-CI daemon.
+</li>
+</ul>
+</div>
+
+<div id="outline-container-sec-5-1" class="outline-3">
+<h3 id="sec-5-1"><span class="section-number-3">5.1</span> <code>config</code></h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+The <code>config</code> file is a shell script that is sourced when Mini-CI is started which contains the configuration to use for your job.  Every option should have sane defaults, so feel free to only have the entries you wish to use.  If you want a variable exported during your job, for instance <code>PATH</code>, this would also be a good place to do so.
+</p>
+
+<p>
+The <code>config</code> file in <code>skeleton</code> is:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">All paths are relative to the job directory.</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">JOB_NAME: The name of the job.  Defaults to "$(</span><span style="color: #fa8072;">basename</span><span style="color: #ff7f24;"> $JOB_DIR)"</span>
+<span style="color: #eedd82;">JOB_NAME</span>=<span style="color: #ffa07a;">"$(</span><span style="color: #fa8072;">basename</span><span style="color: #ffa07a;"> $JOB_DIR)"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_NOTIFY: A space and/or comma separated list of conditions to</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"RECOVER" (when a state changes from "ERROR" or "UNKNOWN" to "OK")</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">and "NEWPROB" (when a state changes from "OK" to "ERROR" or</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"UNKNOWN").  Defaults to "NEWPROB, RECOVER".</span>
+<span style="color: #eedd82;">EMAIL_NOTIFY</span>=<span style="color: #ffa07a;">"NEWPROB, RECOVER"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_ADDRESS: A space and/or comma seperated list of addresses to</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">email.  If not specified, will be sent to the user that is running</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the script.  Defaults to "".</span>
+<span style="color: #eedd82;">EMAIL_ADDRESS</span>=<span style="color: #ffa07a;">""</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_SUBJECT: The subject to have for notification emails.</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Defaults to "Mini-CI Notification - $JOB_NAME".</span>
+<span style="color: #eedd82;">EMAIL_SUBJECT</span>=<span style="color: #ffa07a;">"Mini-CI Notification - $JOB_NAME"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">REPO_HANDLER: This is either a command that exits with the</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">appropriate return codes, or one of the built in handlers:</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- git</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- svn</span>
+<span style="color: #eedd82;">REPO_HANDLER</span>=<span style="color: #ffa07a;">"<handler>"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">REPO_URL: The URL to the repository.  Fetching the URL must not ask</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
+<span style="color: #eedd82;">REPO_URL</span>=<span style="color: #ffa07a;">"<url>"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_FREQ: If this is set to a number greater than zero, it will poll the</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repository using the repo-handler every this many seconds, starting</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">at startup.  To have a more complicated scheme, use cron.</span>
+<span style="color: #eedd82;">POLL_FREQ</span>=600
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_KEEP: If this is set to a number greater than zero, only this</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">many build log directories will be kept.  Defaults to "0".</span>
+<span style="color: #eedd82;">BUILD_KEEP</span>=0
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">WORKSPACE: The directory where the repository will be checked out</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">into, and where tasks are launched.  Defaults to "./workspace".</span>
+<span style="color: #eedd82;">WORKSPACE</span>=<span style="color: #ffa07a;">"./workspace"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_ARCHIVE_WORKSPACE: When set to "yes" will copy the workspace into</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the $BUILDS_DIR/$BUILD_NUM/workspace.  Defaults to "".</span>
+<span style="color: #eedd82;">BUILD_ARCHIVE_WORKSPACE</span>=<span style="color: #ffa07a;">""</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">TASKS_DIR: The directory which holds the tasks to be performed on</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the checked out repository.  Defaults to "./tasks.d"</span>
+<span style="color: #eedd82;">TASKS_DIR</span>=<span style="color: #ffa07a;">"./tasks.d"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILDS_DIR: The directory which stores the output of each build when</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">tasks run.  Defaults to "./builds".</span>
+<span style="color: #eedd82;">BUILDS_DIR</span>=<span style="color: #ffa07a;">"./builds"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">CONTROL_FIFO: The fifo that mini-ci will read to accept commands.</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Defaults to "./control.fifo".</span>
+<span style="color: #eedd82;">CONTROL_FIFO</span>=<span style="color: #ffa07a;">"./control.fifo"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">PID_FILE: The file containing the process ID for mini-ci.  Defaults</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">to "./minici.pid".</span>
+<span style="color: #eedd82;">PID_FILE</span>=<span style="color: #ffa07a;">"./mini-ci.pid"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">STATUS_FILE: A file where status information is kept.  Defaults to</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"./status".</span>
+<span style="color: #eedd82;">STATUS_FILE</span>=<span style="color: #ffa07a;">"./status"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_LOG: Name of the poll log.  Defaults to "./poll.log".</span>
+<span style="color: #eedd82;">POLL_LOG</span>=<span style="color: #ffa07a;">"./poll.log"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">UPDATE_LOG: Name of the update log.  Defaults to "./update.log".</span>
+<span style="color: #eedd82;">UPDATE_LOG</span>=<span style="color: #ffa07a;">"./update.log"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">TASKS_LOG: Name of the tasks log.  Defaults to "./tasks.log".</span>
+<span style="color: #eedd82;">TASKS_LOG</span>=<span style="color: #ffa07a;">"./tasks.log"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">MINICI_LOG: Name of the mini-ci log.  Defaults to "./mini-ci.log".</span>
+<span style="color: #eedd82;">MINICI_LOG</span>=<span style="color: #ffa07a;">"./mini-ci.log"</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-5-2" class="outline-3">
+<h3 id="sec-5-2"><span class="section-number-3">5.2</span> <code>tasks.d</code></h3>
+<div class="outline-text-3" id="text-5-2">
+<p>
+The <code>tasks.d</code> directory contains all the tasks that would be executed during a build of your repository.  The <code>skeleton</code> contains a few examples.  Each script must match the regular expression <code>^[a-zA-Z0-9_-]+$</code> and will be ran in sort order, therefore it is recommended that each script be named in the form <code><nnn>-<description_of_task></code>.  If a script exits with a return code that is not zero, it is considered a build error and no further scripts are executed.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Examples</h2>
+<div class="outline-text-2" id="text-6">
+</div><div id="outline-container-sec-6-1" class="outline-3">
+<h3 id="sec-6-1"><span class="section-number-3">6.1</span> Mini-CI Job Directory</h3>
+<div class="outline-text-3" id="text-6-1">
+<p>
+This example will configure to monitor Mini-CI's GIT repository and run tests whenever it's updated.
+</p>
+
+<p>
+Create a directory called <code>mini-ci-job</code>, then place the following in <code>config</code>:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #eedd82;">REPO_HANDLER</span>=<span style="color: #ffa07a;">"git"</span>
+<span style="color: #eedd82;">REPO_URL</span>=<span style="color: #ffa07a;">"https://github.com/theasp/mini-ci"</span>
+<span style="color: #eedd82;">POLL_FREQ</span>=600
+</pre>
+</div>
+
+<p>
+This configuration will use the GIT repository handler with the URL to the Mini-CI repository, and then poll it every 10 minutes.
+</p>
+
+<p>
+Create the directory <code>tasks.d</code>, then place the following file in <code>tasks.d/500-run_tests</code>:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">!/bin/</span><span style="color: #00ffff;">sh</span>
+./tests.sh
+</pre>
+</div>
+
+<p>
+Run <code>chmod +x tasks.d/500-run_tests</code> to make the script executable.  Now when you run <code>mini-ci -F</code> in the job directory you will get:
+</p>
+
+<pre class="example">
+2014-12-18 17:20:03 mini-ci/7145 Starting up
+2014-12-18 17:20:05 mini-ci/7369 Missing workdir, doing update instead
+2014-12-18 17:20:05 mini-ci/7145 Updating workspace
+2014-12-18 17:20:06 mini-ci/7145 Update finished sucessfully, queuing tasks
+2014-12-18 17:20:06 mini-ci/7145 Mailing update notification to user due to RECOVER (New:OK Old:UNKNOWN)
+2014-12-18 17:20:06 mini-ci/7145 Mailing poll notification to user due to RECOVER (New:OK Old:UNKNOWN)
+2014-12-18 17:20:07 mini-ci/7145 Starting tasks as run number 1
+2014-12-18 17:20:07 mini-ci/7145 Tasks finished sucessfully, run number 1
+2014-12-18 17:20:07 mini-ci/7145 Mailing tasks notification to user due to RECOVER (New:OK Old:UNKNOWN)
+</pre>
+
+<p>
+Mini-CI started in foreground mode, downloaded the repository, then ran all the tasks in the <code>tasks.d</code> directory.  Notice that it also sent 3 mail notifications due to update, poll and tasks transitioning from <code>UNKNOWN</code> to <code>RECOVER</code>.  The default email settings will only send mail when they change state.  The process is still running and will check the repository for changes every 10 minutes.
+</p>
+
+<p>
+You can stop the daemon by pressing <code>ctrl-c</code>, or by running <code>mini-ci -m quit</code> in the job directory in another shell.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6-2" class="outline-3">
+<h3 id="sec-6-2"><span class="section-number-3">6.2</span> Starting the Mini-CI Daemon as a User</h3>
+<div class="outline-text-3" id="text-6-2">
+<p>
+The easiest way to run Mini-CI as a user is to have <code>cron</code> start it.  For instance, the following crontab will start Mini-CI every 10 minutes, and if it is already running for that job directory it will exit quietly:
+</p>
+<pre class="example">
+*/10 * * * * mini-ci --oknodo -d ~/some-mini-ci-job-directory
+</pre>
+
+<p>
+Mini-CI will run in the background doing it's thing whenever it needs to.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-6-3" class="outline-3">
+<h3 id="sec-6-3"><span class="section-number-3">6.3</span> Notifying a Mini-CI Daemon from GIT</h3>
+<div class="outline-text-3" id="text-6-3">
+<p>
+You can have git notify Mini-CI upon every push to a repository, which makes polling the repository unnecessary.  Put this in <code>hooks/post-update</code> in your git repository directory (or <code>.git/hooks/post-update</code> if you aren't using a bare repository), and it will send a message to Mini-CI to do an update.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">!/bin/</span><span style="color: #00ffff;">sh</span>
+
+<span style="color: #b0c4de;">set</span> -e
+mini-ci -d ~/some-mini-ci-job-directory -m update
+</pre>
+</div>
+
+<p>
+You can easily change the above script to SSH to another system, or user.
+</p>
+</div>
+</div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Andrew Phillips <<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>></p>
-<p class="date">Date: 2014-12-17 Wed 08:25</p>
+<p class="date">Date: 2014-12-18 Thu 17:36</p>
 </div>
 </body>
 </html>
