@@ -1,5 +1,0 @@
-*.log
-mini-ci.pid
-status
-workspace/
-control.fifo
