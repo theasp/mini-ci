@@ -597,8 +597,8 @@ EOF
         cat $UPDATE_LOG >> $tmpfile
         ;;
       tasks)
-        echo "Run Number: $BUILD_NUMBER" >> $tmpfile
-        echo "Run Output Directory: $BUILD_LOG_DIR" >> $tmpfile
+        echo "Build Number: $BUILD_NUMBER" >> $tmpfile
+        echo "Build Log Directory: $BUILD_LOG_DIR" >> $tmpfile
         echo >> $tmpfile
         echo "Update Log:" >> $tmpfile
         cat $UPDATE_LOG >> $tmpfile
