@@ -915,7 +915,7 @@ _svn() {
 
     poll)
       local local=$($svn_cmd info | grep '^Last Changed Rev' | cut -f 2 -d :)
-      local remote=$($svn_cmd -r HEAD| grep '^Last Changed Rev' | cut -f 2 -d :)
+      local remote=$($svn_cmd info -r HEAD| grep '^Last Changed Rev' | cut -f 2 -d :)
 
       echo "Local: $local"
       echo "Remote: $remote"
