@@ -9,7 +9,6 @@ testRunTasks() {
     cat > $TMPDIR/config <<EOF
 EMAIL_NOTIFY="NEVER"
 REPO_HANDLER=""
-WORK_DIR="./workspace"
 EOF
 
     mkdir -p $TMPDIR/workspace
