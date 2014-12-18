@@ -29,6 +29,7 @@ declare -x JOB_DIR=""
 declare -x JOB_NAME=""
 declare -x REPO_URL=""
 declare -x WORKSPACE=""
+declare BUILD_KEEP=""
 declare CONFIG_FILE=""
 declare CONTROL_FIFO=""
 declare DEBUG=""
@@ -367,6 +368,16 @@ tasks_start() {
     done
 
     test -d "$BUILD_LOG_DIR" || mkdir "$BUILD_LOG_DIR"
+
+    if [[ "$BUILD_KEEP" -gt 0 ]]; then
+      seq 1 $(( $BUILD_NUMBER - $BUILD_KEEP)) \
+        | while read num; do
+            if [[ -d "$RUN_DIR/$num" ]]; then
+              rm -r "$RUN_DIR/$num"
+            fi
+          done
+    fi
+
     test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$BUILD_LOG_DIR/"
 
     BUILD_ID=$(date +%Y-%m-%d_%H-%M-%S)
@@ -680,6 +691,7 @@ reload_config() {
 }
 
 load_config() {
+  BUILD_KEEP=0
   CONTROL_FIFO="./control.fifo"
   EMAIL_ADDRESS=""
   EMAIL_NOTIFY="NEWPROB, RECOVER"
