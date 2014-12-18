@@ -279,7 +279,7 @@ repo_run() {
           ;;
       esac
 
-      (cd $WORK_DIR && $cmd $operation "$WORK_DIR" "$REPO_URL") < /dev/null > $log_file 2>&1 &
+      (cd $WORK_DIR && LOG_FILE=/dev/stdout $cmd $operation "$REPO_URL") < /dev/null > $log_file 2>&1 &
       add_child $! $callback
       return 0
     else
@@ -790,15 +790,10 @@ quit() {
 
 _git() {
   local operation=$1
-  local dir=$2
-  local repo=$3
+  local repo=$2
 
   if [ -z "$operation" ]; then
     error "Missing argument operation"
-  fi
-
-  if [ -z "$dir" ]; then
-    error "Missing argument dir"
   fi
 
   if [ -z "$repo" ]; then
@@ -870,17 +865,12 @@ _git() {
 # TODO: Error handling, stop asking for passwords
 _svn() {
   local operation=$1
-  local dir=$2
-  local repo=$3
+  local repo=$2
 
   local svn_cmd="svn --non-interactive"
 
   if [ -z "$operation" ]; then
     error "Missing argument operation"
-  fi
-
-  if [ -z "$dir" ]; then
-    error "Missing argument dir"
   fi
 
   if [ -z "$repo" ]; then
