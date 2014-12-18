@@ -8,6 +8,7 @@ testPoll() {
     REPO_URL=$TMPDIR/repo.git
     WORK_DIR=$TMPDIR/workspace
     POLL_LOG=$TMPDIR/poll.log
+    UPDATE_LOG=$TMPDIR/update.log
     
     git --bare init $REPO_URL || return
     
@@ -15,14 +16,14 @@ testPoll() {
 EMAIL_NOTIFY="NEVER"
 REPO_HANDLER=git
 REPO_URL=$REPO_URL
-POLL_LOG=$POLL_LOG
 EOF
 
-    (cd $TMPDIR && $CURDIR/mini-ci -F poll quit)
+    ./mini-ci -d $TMPDIR -F poll quit
     assertEquals "Wrong return code" $? 0
 
     assertTrue "Did not checkout repository" "[ -d '${WORK_DIR}/.git' ]"
     assertTrue "Did not create $(basename "${POLL_LOG}")" "[ -f '${POLL_LOG}' ]"
+    assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
 
     if [ -f "${POLL_LOG}" ]; then
         LINES=$(wc -l < "$POLL_LOG")
@@ -36,6 +37,7 @@ testInitialUpdate() {
     TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
     REPO_URL=$TMPDIR/repo.git
     WORK_DIR=$TMPDIR/workspace
+    UPDATE_LOG=$TMPDIR/update.log
 
     git --bare init $REPO_URL || return
     
@@ -45,10 +47,11 @@ REPO_HANDLER=git
 REPO_URL=$REPO_URL
 EOF
 
-    (cd $TMPDIR && $CURDIR/mini-ci -F update quit)
+    ./mini-ci -d $TMPDIR -F update quit
     assertEquals "Wrong return code" $? 0
 
     assertTrue "Did not checkout repository" "[ -d '${WORK_DIR}/.git' ]"
+    assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
     rm -rf $TMPDIR
 }
 
@@ -56,8 +59,14 @@ testNextUpdate() {
     TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
     REPO_URL=$TMPDIR/repo
     WORK_DIR=$TMPDIR/workspace
+    POLL_LOG=$TMPDIR/poll.log
+    UPDATE_LOG=$TMPDIR/update.log
 
     git init $REPO_URL || return
+    (cd $REPO_URL;
+     date > initial-commit;
+     git add initial-commit;
+     git commit -m 'Initial commit')
     
     cat > $TMPDIR/config <<EOF
 EMAIL_NOTIFY="NEVER"
@@ -65,20 +74,24 @@ REPO_HANDLER=git
 REPO_URL=$REPO_URL
 EOF
 
-    (cd $TMPDIR && $CURDIR/mini-ci -F update quit)
+    (cd $TMPDIR && $CURDIR/mini-ci -F poll quit)
     assertEquals "Wrong return code" $? 0
 
     assertTrue "Did not checkout repository" "[ -d '${WORK_DIR}/.git' ]"
+    assertTrue "Did not create $(basename "${POLL_LOG}")" "[ -f '${POLL_LOG}' ]"
+    assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
+    rm -f $UPDATE_LOG
 
     (cd $REPO_URL;
-     date > $REPO_URL/test-file;
+     date > test-file;
      git add test-file;
-     git commit test-file -m 'Added test-file')
+     git commit -m 'Added test-file')
 
-    (cd $TMPDIR && $CURDIR/mini-ci -F update quit)
+    ./mini-ci -d $TMPDIR -F update quit
     assertEquals "Wrong return code" $? 0
 
     assertTrue "Did not find new file" "[ -f '${WORK_DIR}/test-file' ]"
+    assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
     
     rm -rf $TMPDIR
 }
