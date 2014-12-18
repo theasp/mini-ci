@@ -842,13 +842,13 @@ _git() {
       echo "Remote: $remote"
       echo "Base: $base"
 
-      if [ $local = $remote ]; then
+      if [ "$local" = "$remote" ]; then
         echo "OK POLL CURRENT"
         exit 0
-      elif [ $local = $base ]; then
+      elif [ "$local" = "$base" ]; then
         echo "OK POLL NEEDED"
         exit 0
-      elif [ $remote = $base ]; then
+      elif [ "$remote" = "$base" ]; then
         echo "ERR POLL localCOMMITS"
         exit 1
       else
