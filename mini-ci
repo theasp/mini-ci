@@ -360,14 +360,14 @@ tasks_start() {
   if [[ -d $TASKS_DIR ]]; then
     test -d "$RUN_DIR" || mkdir "$RUN_DIR"
 
-    CUR_RUN_DIR="$RUN_DIR"
-    while [[ -d "$CUR_RUN_DIR" ]]; do
+    BUILD_LOG_DIR="$RUN_DIR"
+    while [[ -d "$BUILD_LOG_DIR" ]]; do
       BUILD_NUMBER=$(( $BUILD_NUMBER + 1 ))
-      CUR_RUN_DIR="$RUN_DIR/$BUILD_NUMBER"
+      BUILD_LOG_DIR="$RUN_DIR/$BUILD_NUMBER"
     done
 
-    test -d "$CUR_RUN_DIR" || mkdir "$CUR_RUN_DIR"
-    test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$CUR_RUN_DIR/"
+    test -d "$BUILD_LOG_DIR" || mkdir "$BUILD_LOG_DIR"
+    test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$BUILD_LOG_DIR/"
 
     BUILD_ID=$(date +%Y-%m-%d_%H-%M-%S)
     BUILD_DISPLAY_NAME="#${BUILD_NUMBER}"
@@ -581,15 +581,15 @@ EOF
         ;;
       tasks)
         echo "Run Number: $BUILD_NUMBER" >> $tmpfile
-        echo "Run Output Directory: $CUR_RUN_DIR" >> $tmpfile
+        echo "Run Output Directory: $BUILD_LOG_DIR" >> $tmpfile
         echo >> $tmpfile
         echo "Update Log:" >> $tmpfile
         cat $UPDATE_LOG >> $tmpfile
-        local last_task_log=$(ls -1 $CUR_RUN_DIR/ | grep '^task-.*\.log$' | sort | tail -n 1)
-        if [[ -n "$CUR_RUN_DIR/$last_task_log" ]]; then
+        local last_task_log=$(ls -1 $BUILD_LOG_DIR/ | grep '^task-.*\.log$' | sort | tail -n 1)
+        if [[ -n "$BUILD_LOG_DIR/$last_task_log" ]]; then
           echo >> $tmpfile
           echo "Last task log: ($last_task_log)" >> $tmpfile
-          tail -n 100 "$CUR_RUN_DIR/$last_task_log" >> $tmpfile
+          tail -n 100 "$BUILD_LOG_DIR/$last_task_log" >> $tmpfile
         fi
     esac
 
@@ -605,8 +605,8 @@ run_tasks() {
   for task in $(ls -1 $TASKS_DIR | grep -E -e '^[a-zA-Z0-9_-]+$' | sort); do
     local file="$TASKS_DIR/$task"
     if [[ -x $file ]]; then
-      local log_file="${CUR_RUN_DIR}/task-${task}.log"
-      log "Running task $task, logging to ${CUR_RUN_DIR}/task-${task}.log"
+      local log_file="${BUILD_LOG_DIR}/task-${task}.log"
+      log "Running task $task, logging to ${BUILD_LOG_DIR}/task-${task}.log"
       if (cd $WORKSPACE && $file) > $log_file 2>&1; then
         log "Task $task returned code $?"
       else
