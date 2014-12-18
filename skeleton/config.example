@@ -47,9 +47,9 @@ WORKSPACE="./workspace"
 # the checked out repository.  Defaults to "./tasks.d"
 TASKS_DIR="./tasks.d"
 
-# RUN_DIR: The directory which stores the output when tasks run.
-# Defaults to "./run".
-RUN_DIR="./run"
+# BUILDS_DIR: The directory which stores the output of each build when
+# tasks run.  Defaults to "./builds".
+BUILDS_DIR="./builds"
 
 # CONTROL_FIFO: The fifo that mini-ci will read to accept commands.
 # Defaults to "./control.fifo".
