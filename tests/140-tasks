@@ -4,7 +4,7 @@ SHNAME=$(basename $0)
 
 testRunTasks() {
     TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
-    WORK_DIR=$TMPDIR/workspace
+    WORKSPACE=$TMPDIR/workspace
 
     cat > $TMPDIR/config <<EOF
 EMAIL_NOTIFY="NEVER"
@@ -36,19 +36,19 @@ EOF
     ./mini-ci -d $TMPDIR -D -F tasks quit
     assertEquals "Wrong return code" 0 $?
 
-    assertTrue "Env task didn't execute" "[ -f '${WORK_DIR}/env.txt' ]"
-    assertTrue "BUILD_DISPLAY_NAME not set" "egrep '^BUILD_DISPLAY_NAME=..+$' ${WORK_DIR}/env.txt"
-    assertTrue "BUILD_ID not set" "egrep '^BUILD_ID=..+$' ${WORK_DIR}/env.txt"
-    assertTrue "BUILD_NUMBER not set" "egrep '^BUILD_NUMBER=.+$' ${WORK_DIR}/env.txt"
-    assertTrue "BUILD_TAG not set" "egrep '^BUILD_TAG=..+$' ${WORK_DIR}/env.txt"
-    assertTrue "JOB_DIR not set" "egrep '^JOB_DIR=..+$' ${WORK_DIR}/env.txt"
-    assertTrue "JOB_NAME not set" "egrep '^JOB_NAME=..+$' ${WORK_DIR}/env.txt"
-    assertTrue "REPO_URL not set" "egrep '^REPO_URL=.*$' ${WORK_DIR}/env.txt"
-    assertTrue "WORKSPACE not set" "egrep '^WORKSPACE=..+$' ${WORK_DIR}/env.txt"
-    assertTrue "Good task didn't execute" "[ -f '${WORK_DIR}/good-task' ]"
+    assertTrue "Env task didn't execute" "[ -f '${WORKSPACE}/env.txt' ]"
+    assertTrue "BUILD_DISPLAY_NAME not set" "egrep '^BUILD_DISPLAY_NAME=#1$' ${WORKSPACE}/env.txt"
+    assertTrue "BUILD_ID not set" "egrep '^BUILD_ID=..+$' ${WORKSPACE}/env.txt"
+    assertTrue "BUILD_NUMBER not set" "egrep '^BUILD_NUMBER=1$' ${WORKSPACE}/env.txt"
+    assertTrue "BUILD_TAG not set" "egrep '^BUILD_TAG=..+$' ${WORKSPACE}/env.txt"
+    assertTrue "JOB_DIR not set" "egrep '^JOB_DIR=..+$' ${WORKSPACE}/env.txt"
+    assertTrue "JOB_NAME not set" "egrep '^JOB_NAME=..+$' ${WORKSPACE}/env.txt"
+    assertTrue "REPO_URL not set" "egrep '^REPO_URL=$' ${WORKSPACE}/env.txt"
+    assertTrue "WORKSPACE not set" "egrep '^WORKSPACE=..+$' ${WORKSPACE}/env.txt"
+    assertTrue "Good task didn't execute" "[ -f '${WORKSPACE}/good-task' ]"
     assertTrue "run/1 directory missing" "[ -d '${TMPDIR}/run/1/' ]"
     assertTrue "Good task didn't have log file" "[ -f '${TMPDIR}/run/1/task-02-good-task.log' ]"
-    assertTrue "Worse task did execute" "[ ! -f '${WORK_DIR}/worse-task' ]"
+    assertTrue "Worse task did execute" "[ ! -f '${WORKSPACE}/worse-task' ]"
 
     rm -rf $TMPDIR
 }
