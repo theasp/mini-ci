@@ -25,7 +25,7 @@ declare -x JOB_DIR=""
 declare -x JOB_NAME=""
 declare -x REPO_URL=""
 declare -x RUN_DIR=""
-declare -x RUN_NUM=""
+declare -x BUILD_ID=""
 declare -x WORKSPACE=""
 declare CONFIG_FILE=""
 declare CONTROL_FIFO=""
@@ -359,14 +359,14 @@ tasks_start() {
 
     CUR_RUN_DIR="$RUN_DIR"
     while [[ -d "$CUR_RUN_DIR" ]]; do
-      RUN_NUM=$(( $RUN_NUM + 1 ))
-      CUR_RUN_DIR="$RUN_DIR/$RUN_NUM"
+      BUILD_ID=$(( $BUILD_ID + 1 ))
+      CUR_RUN_DIR="$RUN_DIR/$BUILD_ID"
     done
 
     test -d "$CUR_RUN_DIR" || mkdir "$CUR_RUN_DIR"
     test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$CUR_RUN_DIR/"
 
-    log "Starting tasks as run number $RUN_NUM"
+    log "Starting tasks as run number $BUILD_ID"
     run_tasks < /dev/null > $TASKS_LOG 2>&1 &
     add_child $! "tasks_finish"
   else
@@ -379,10 +379,10 @@ tasks_start() {
 tasks_finish() {
   STATE="idle"
   if [[ $1 -eq 0 ]]; then
-    log "Tasks finished sucessfully, run number $RUN_NUM"
+    log "Tasks finished sucessfully, run number $BUILD_ID"
     update_status "tasks" "OK"
   else
-    warning "Tasks did not finish sucessfully, run number $RUN_NUM"
+    warning "Tasks did not finish sucessfully, run number $BUILD_ID"
     update_status "tasks" "ERROR"
   fi
 }
@@ -432,7 +432,7 @@ write_status_file() {
   cat > $tmpfile <<EOF
 # Generated $(printf '%(%c)T\n' -1)
 state=$STATE
-run_num=$RUN_NUM
+run_num=$BUILD_ID
 status=${status_str#*=}
 status_time=${status_time_str#*=}
 EOF
@@ -458,7 +458,7 @@ read_status_file() {
 
     eval "CUR_STATUS=${status}"
     eval "CUR_TIME=${status_time}"
-    RUN_NUM=$run_num
+    BUILD_ID=$run_num
 
     if [[ "$state" ]] && [[ "$state" != "idle" ]]; then
       debug "Setting status of $state to UNKNOWN, previous active state"
@@ -574,7 +574,7 @@ EOF
         cat $UPDATE_LOG >> $tmpfile
         ;;
       tasks)
-        echo "Run Number: $RUN_NUM" >> $tmpfile
+        echo "Run Number: $BUILD_ID" >> $tmpfile
         echo "Run Output Directory: $CUR_RUN_DIR" >> $tmpfile
         echo >> $tmpfile
         echo "Update Log:" >> $tmpfile
