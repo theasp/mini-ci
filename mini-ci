@@ -29,6 +29,8 @@ declare -x JOB_DIR=""
 declare -x JOB_NAME=""
 declare -x REPO_URL=""
 declare -x WORKSPACE=""
+declare BUILDS_DIR=""
+declare BUILD_ARCHIVE_WORKSPACE=""
 declare BUILD_KEEP=""
 declare CONFIG_FILE=""
 declare CONTROL_FIFO=""
@@ -40,7 +42,6 @@ declare PID_FILE=""
 declare POLL_FREQ=""
 declare POLL_LOG=""
 declare REPO_HANDLER=""
-declare BUILDS_DIR=""
 declare STATE=""
 declare STATUS_FILE=""
 declare TASKS_DIR=""
@@ -402,6 +403,11 @@ tasks_finish() {
     warning "Tasks did not finish sucessfully, run number $BUILD_NUMBER"
     update_status "tasks" "ERROR"
   fi
+
+  if [[ "$BUILD_ARCHIVE_WORKSPACE" = "yes" ]]; then
+    log "Archiving workspace for build $BUILD_NUMBER"
+    cp -a $WORKSPACE $BUILD_LOG_DIR/workspace
+  fi
 }
 
 abort() {
@@ -691,6 +697,8 @@ reload_config() {
 }
 
 load_config() {
+  BUILDS_DIR="./builds"
+  BUILD_ARCHIVE_WORKSPACE=""
   BUILD_KEEP=0
   CONTROL_FIFO="./control.fifo"
   EMAIL_ADDRESS=""
@@ -703,7 +711,6 @@ load_config() {
   REPO_URL=""
   STATUS_FILE="./status"
   TASKS_DIR="./tasks.d"
-  BUILDS_DIR="./builds"
   TASKS_LOG="./tasks.log"
   UPDATE_LOG="./update.log"
   WORKSPACE="./workspace"
@@ -736,13 +743,13 @@ load_config() {
   fi
 
   cd "$JOB_DIR"
+  BUILDS_DIR=$(make_full_path "$BUILDS_DIR")
   CONTROL_FIFO=$(make_full_path "$CONTROL_FIFO")
   LOG_FILE=$(make_full_path "$LOG_FILE")
   PID_FILE=$(make_full_path "$PID_FILE")
   POLL_LOG=$(make_full_path "$POLL_LOG")
   STATUS_FILE=$(make_full_path "$STATUS_FILE")
   TASKS_DIR=$(make_full_path "$TASKS_DIR")
-  BUILDS_DIR=$(make_full_path "$BUILDS_DIR")
   TASKS_LOG=$(make_full_path "$TASKS_LOG")
   UPDATE_LOG=$(make_full_path "$UPDATE_LOG")
   WORKSPACE=$(make_full_path "$WORKSPACE")
