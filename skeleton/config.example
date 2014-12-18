@@ -3,9 +3,9 @@
 # JOB_NAME: The name of the job.  Defaults to "$(basename $JOB_DIR)"
 JOB_NAME="$(basename $JOB_DIR)"
 
-# WORK_DIR: The directory where the repository will be checked out
+# WORKSPACE: The directory where the repository will be checked out
 # into, and where tasks are launched.  Defaults to "./workspace".
-WORK_DIR="./workspace"
+WORKSPACE="./workspace"
 
 # EMAIL_NOTIFY: A space and/or comma seperated list of conditions to
 # notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",
