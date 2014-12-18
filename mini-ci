@@ -22,9 +22,9 @@ declare -A CUR_STATUS_TIME=()
 
 declare -x BUILD_DISPLAY_NAME=""
 declare -x BUILD_ID=""
+declare -x BUILD_LOG_DIR=""
 declare -x BUILD_NUMBER=""
 declare -x BUILD_TAG=""
-declare -x CUR_RUN_DIR=""
 declare -x JOB_DIR=""
 declare -x JOB_NAME=""
 declare -x REPO_URL=""
