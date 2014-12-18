@@ -1,7 +1,6 @@
 #!/bin/bash
 
 SHNAME=$(basename $0)
-CURDIR=$PWD
 
 testRunTasks() {
     TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
@@ -30,14 +29,14 @@ touch worse-task
 EOF
     chmod +x $TMPDIR/tasks.d/*
 
-    (cd $TMPDIR && $CURDIR/mini-ci -D -F tasks quit)
+    ./mini-ci -d $TMPDIR -D -F tasks quit
     assertEquals "Wrong return code" 0 $?
 
     assertTrue "Good task didn't execute" "[ -f '${WORK_DIR}/good-task' ]"
     assertTrue "run/1 directory missing" "[ -d '${TMPDIR}/run/1/' ]"
     assertTrue "Good task didn't have log file" "[ -f '${TMPDIR}/run/1/task-01-good-task.log' ]"
     assertTrue "Worse task did execute" "[ ! -f '${WORK_DIR}/worse-task' ]"
-    find $TMPDIR
+
     rm -rf $TMPDIR
 }
 
