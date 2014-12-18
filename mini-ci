@@ -40,7 +40,7 @@ declare PID_FILE=""
 declare POLL_FREQ=""
 declare POLL_LOG=""
 declare REPO_HANDLER=""
-declare RUN_DIR=""
+declare BUILDS_DIR=""
 declare STATE=""
 declare STATUS_FILE=""
 declare TASKS_DIR=""
@@ -359,12 +359,12 @@ repo_update_finish() {
 tasks_start() {
   STATE="tasks"
   if [[ -d $TASKS_DIR ]]; then
-    test -d "$RUN_DIR" || mkdir "$RUN_DIR"
+    test -d "$BUILDS_DIR" || mkdir "$BUILDS_DIR"
 
-    BUILD_LOG_DIR="$RUN_DIR"
+    BUILD_LOG_DIR="$BUILDS_DIR"
     while [[ -d "$BUILD_LOG_DIR" ]]; do
       BUILD_NUMBER=$(( $BUILD_NUMBER + 1 ))
-      BUILD_LOG_DIR="$RUN_DIR/$BUILD_NUMBER"
+      BUILD_LOG_DIR="$BUILDS_DIR/$BUILD_NUMBER"
     done
 
     test -d "$BUILD_LOG_DIR" || mkdir "$BUILD_LOG_DIR"
@@ -372,8 +372,8 @@ tasks_start() {
     if [[ "$BUILD_KEEP" -gt 0 ]]; then
       seq 1 $(( $BUILD_NUMBER - $BUILD_KEEP)) \
         | while read num; do
-            if [[ -d "$RUN_DIR/$num" ]]; then
-              rm -r "$RUN_DIR/$num"
+            if [[ -d "$BUILDS_DIR/$num" ]]; then
+              rm -r "$BUILDS_DIR/$num"
             fi
           done
     fi
@@ -703,7 +703,7 @@ load_config() {
   REPO_URL=""
   STATUS_FILE="./status"
   TASKS_DIR="./tasks.d"
-  RUN_DIR="./run"
+  BUILDS_DIR="./builds"
   TASKS_LOG="./tasks.log"
   UPDATE_LOG="./update.log"
   WORKSPACE="./workspace"
@@ -742,7 +742,7 @@ load_config() {
   POLL_LOG=$(make_full_path "$POLL_LOG")
   STATUS_FILE=$(make_full_path "$STATUS_FILE")
   TASKS_DIR=$(make_full_path "$TASKS_DIR")
-  RUN_DIR=$(make_full_path "$RUN_DIR")
+  BUILDS_DIR=$(make_full_path "$BUILDS_DIR")
   TASKS_LOG=$(make_full_path "$TASKS_LOG")
   UPDATE_LOG=$(make_full_path "$UPDATE_LOG")
   WORKSPACE=$(make_full_path "$WORKSPACE")

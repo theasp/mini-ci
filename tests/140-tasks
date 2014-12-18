@@ -46,8 +46,8 @@ EOF
     assertTrue "REPO_URL not set" "egrep '^REPO_URL=$' ${WORKSPACE}/env.txt"
     assertTrue "WORKSPACE not set" "egrep '^WORKSPACE=..+$' ${WORKSPACE}/env.txt"
     assertTrue "Good task didn't execute" "[ -f '${WORKSPACE}/good-task' ]"
-    assertTrue "run/1 directory missing" "[ -d '${TMPDIR}/run/1/' ]"
-    assertTrue "Good task didn't have log file" "[ -f '${TMPDIR}/run/1/task-02-good-task.log' ]"
+    assertTrue "run/1 directory missing" "[ -d '${TMPDIR}/builds/1/' ]"
+    assertTrue "Good task didn't have log file" "[ -f '${TMPDIR}/builds/1/task-02-good-task.log' ]"
     assertTrue "Worse task did execute" "[ ! -f '${WORKSPACE}/worse-task' ]"
 
     rm -rf $TMPDIR
