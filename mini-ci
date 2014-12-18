@@ -603,7 +603,7 @@ EOF
         echo "Update Log:" >> $tmpfile
         cat $UPDATE_LOG >> $tmpfile
         local last_task_log=$(ls -1 $BUILD_LOG_DIR/ | grep '^task-.*\.log$' | sort | tail -n 1)
-        if [[ -n "$BUILD_LOG_DIR/$last_task_log" ]]; then
+        if [[ -n "$last_task_log" ]]; then
           echo >> $tmpfile
           echo "Last task log: ($last_task_log)" >> $tmpfile
           tail -n 100 "$BUILD_LOG_DIR/$last_task_log" >> $tmpfile
