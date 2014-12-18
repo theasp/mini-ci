@@ -331,7 +331,6 @@ repo_update_start() {
   log "Updating workspace"
 
   test -e $WORK_DIR || mkdir $WORK_DIR
-  WORK_DIR=$(make_full_path "$WORK_DIR")
 
   if ! repo_run update "repo_update_finish" "$UPDATE_LOG"; then
     STATE="idle"
@@ -357,10 +356,7 @@ repo_update_finish() {
 tasks_start() {
   STATE="tasks"
   if [[ -d $TASKS_DIR ]]; then
-    TASKS_DIR=$(make_full_path "$TASKS_DIR")
-
     test -d "$RUN_DIR" || mkdir "$RUN_DIR"
-    RUN_DIR=$(make_full_path "$RUN_DIR")
 
     CUR_RUN_DIR="$RUN_DIR"
     while [[ -d "$CUR_RUN_DIR" ]]; do
@@ -717,6 +713,18 @@ load_config() {
   if [[ -z "$EMAIL_SUBJECT" ]]; then
     EMAIL_SUBJECT="Mini-CI Notification - $JOB_NAME"
   fi
+
+  cd "$JOB_DIR"
+  CONTROL_FIFO=$(make_full_path "$CONTROL_FIFO")
+  LOG_FILE=$(make_full_path "$LOG_FILE")
+  PID_FILE=$(make_full_path "$PID_FILE")
+  POLL_LOG=$(make_full_path "$POLL_LOG")
+  STATUS_FILE=$(make_full_path "$STATUS_FILE")
+  TASKS_DIR=$(make_full_path "$TASKS_DIR")
+  RUN_DIR=$(make_full_path "$RUN_DIR")
+  TASKS_LOG=$(make_full_path "$TASKS_LOG")
+  UPDATE_LOG=$(make_full_path "$UPDATE_LOG")
+  WORK_DIR=$(make_full_path "$WORK_DIR")
 }
 
 acquire_lock() {
@@ -928,10 +936,30 @@ _svn() {
   esac
 }
 
+# This is from here, but ported to BASH:
+# https://code.google.com/p/shunit2/wiki/HOWTO_TestAbsolutePathFn#Fourth_Go
 make_full_path() {
-  local dir=$1
+  #set -x
+  local shlib_path_=$1
+  local shlib_old
+  local shlib_new
 
-  (cd $dir && echo $PWD)
+  # prepend current directory to relative paths
+  if [[ ! "${shlib_path_}" =~ ^/ ]]; then
+    shlib_path_="$(pwd)/${shlib_path_}"
+  fi
+
+  # clean up the path. if all seds supported true regular expressions, then
+  # this is what it would be:
+  shlib_old_=${shlib_path_}
+
+  while true; do
+    shlib_new_=$(echo "${shlib_old_}" | sed 's![^/]*/\.\.\/*!!g; s!/\.\/!/!g')
+    test "${shlib_old_}" = "${shlib_new_}" && break
+    shlib_old_=${shlib_new_}
+  done
+  #set +x
+  echo "${shlib_new_}"
 }
 
 # http://stackoverflow.com/questions/392022/best-way-to-kill-all-child-processes
