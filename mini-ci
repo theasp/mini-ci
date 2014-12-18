@@ -611,7 +611,7 @@ EOF
     esac
 
     for address in $EMAIL_ADDRESS; do
-      log "Mailing notification to $address due to $send_reason (New:$new Old:$old)"
+      log "Mailing $item notification to $address due to $send_reason (New:$new Old:$old)"
       (mail -s "$EMAIL_SUBJECT" $address < $tmpfile; rm -f $tmpfile) &
       add_child $! ""
     done
