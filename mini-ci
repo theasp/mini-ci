@@ -678,7 +678,7 @@ load_config() {
   CONTROL_FIFO="./control.fifo"
   EMAIL_ADDRESS=""
   EMAIL_NOTIFY="NEWPROB, RECOVER"
-  LOG_FILE="./mini-ci.log"
+  LOG_FILE=""
   PID_FILE="./mini-ci.pid"
   POLL_FREQ=0
   POLL_LOG="./poll.log"
@@ -712,6 +712,10 @@ load_config() {
 
   if [[ -z "$EMAIL_SUBJECT" ]]; then
     EMAIL_SUBJECT="Mini-CI Notification - $JOB_NAME"
+  fi
+
+  if [[ -z "$LOG_FILE" ]]; then
+    LOG_FILE="./mini-ci.log"
   fi
 
   cd "$JOB_DIR"
