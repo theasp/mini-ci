@@ -1,10 +1,10 @@
-declare EMAIL_ADDRESS=""
-declare EMAIL_NOTIFY=""
-declare EMAIL_SUBJECT=""
+declare EMAIL_ADDRESS
+declare EMAIL_NOTIFY
+declare EMAIL_SUBJECT
 
 plugin_config_default_notify_email() {
   EMAIL_ADDRESS=""
-  EMAIL_NOTIFY=""
+  EMAIL_NOTIFY="NEWPROB, RECOVER"
   EMAIL_SUBJECT=""
 }
 
