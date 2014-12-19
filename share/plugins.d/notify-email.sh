@@ -49,12 +49,12 @@ plugin_notify_email() {
       fi
     done
 
-    if [[ "$send_reason" ]]; then
+    if [[ -n "$send_reason" ]]; then
       break
     fi
   done
 
-  if [[ "$send_reason" ]]; then
+  if [[ -n "$send_reason" ]]; then
     local tmpfile=$(mktemp /tmp/$SHNAME-email_notication-XXXXXX)
     local email_subject="Mini-CI Notification - $JOB_NAME"
     cat > $tmpfile <<EOF
