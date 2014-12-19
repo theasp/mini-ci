@@ -18,7 +18,7 @@ infodir = $(datarootdir)/info
 INSTALL_BIN=install
 INSTALL_DATA=install -m 0644
 
-MINI_CI=mini-ci.sh
+MINI_CI=mini-ci-header.sh mini-ci.sh
 MINI_CI_DATA=share/mini-ci.sh share/functions.sh
 MINI_CI_DATA_PLUGINS=share/plugins.d/*.sh
 
@@ -39,10 +39,13 @@ install: $(DESTS)
 .PHONY: clean
 clean:
 	$(RM) -f $(DESTS)
+	$(RM) -f mini-ci-header.sh
 
 mini-ci: $(MINI_CI)
 	cat $^ > $@
-	sed -i -e "s!MINI_CI_DIR=.*!MINI_CI_DIR=$(datadir)!" $@
-	sed -i -e "s!MINI_CI_VER=.*!MINI_CI_VER=$(VERSION)!" $@
 	chmod +x $@
 
+mini-ci-header.sh:
+	echo "#!/bin/bash"
+	echo "MINI_CI_DIR=$(datadir)!" > $@
+	echo "MINI_CI_VER=$(VERSION)!" >> $@

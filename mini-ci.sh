@@ -1,5 +1,3 @@
-#!/bin/bash
-#
 # Mini-CI is a small daemon to perform continuous integration (CI) for
 # a single repository/project.
 #
