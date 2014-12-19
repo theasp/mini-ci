@@ -19,6 +19,9 @@ INSTALL_BIN=install
 INSTALL_DATA=install -m 0644
 
 MINI_CI=mini-ci.sh
+MINI_CI_DATA=share/mini-ci.sh share/functions.sh
+MINI_CI_DATA_PLUGINS=share/plugins.d/*.sh
+
 DESTS=mini-ci
 
 .PHONY: all
@@ -26,10 +29,12 @@ all: $(DESTS)
 
 .PHONY: install
 install: $(DESTS)
-	install -d $(bindir)
-	install -d $(datadir)
+	install -d $(DESTDIR)$(bindir)
+	install -d $(DESTDIR)$(datadir)
+	install -d $(DESTDIR)$(datadir)/plugins.d
 	$(INSTALL_BIN) mini-ci $(DESTDIR)$(bindir)
-	$(INSTALL_DATA) share/* $(DESTDIR)$(datadir)
+	$(INSTALL_DATA) $(MINI_CI_DATA) $(DESTDIR)$(datadir)
+	$(INSTALL_DATA) $(MINI_CI_DATA_PLUGINS) $(DESTDIR)$(datadir)/plugins.d
 
 .PHONY: clean
 clean:
