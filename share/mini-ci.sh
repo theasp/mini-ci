@@ -27,7 +27,6 @@ declare -x BUILD_NUMBER=""
 declare -x BUILD_TAG=""
 declare -x JOB_DIR=""
 declare -x JOB_NAME=""
-declare -x REPO_URL=""
 declare -x WORKSPACE=""
 declare BUILDS_DIR=""
 declare BUILD_ARCHIVE_WORKSPACE=""
@@ -35,13 +34,10 @@ declare BUILD_KEEP=""
 declare CONFIG_FILE=""
 declare CONTROL_FIFO=""
 declare DEBUG=""
-declare EMAIL_ADDRESS=""
-declare EMAIL_NOTIFY=""
-declare EMAIL_SUBJECT=""
 declare PID_FILE=""
 declare POLL_FREQ=""
 declare POLL_LOG=""
-declare REPO_HANDLER=""
+declare REPO_PLUGIN=""
 declare STATE=""
 declare STATUS_FILE=""
 declare TASKS_DIR=""
@@ -126,6 +122,17 @@ main() {
 
   cd $JOB_DIR
   JOB_DIR=$(pwd)
+
+  # Load the plugins.  Has to be done here
+  for dir in "${MINI_CI_DIR}/plugins.d" "${JOB_DIR}/plugins.d"; do
+    if [[ -d $dir ]]; then
+      for plugin in $(ls -1 $dir/*.sh); do
+        debug "Loading plugin $plugin"
+        source "$plugin"
+      done
+    fi
+  done
+
   load_config
 
   if [[ $message = "yes" ]]; then
@@ -226,11 +233,11 @@ clean() {
     log "Removing workspace $WORKSPACE"
     rm -rf $WORKSPACE
   fi
-  a  queue "update"
+  queue "update"
 }
 
 schedule_poll() {
-  if [[ $POLL_FREQ ]] && [[ $POLL_FREQ -gt 0 ]]; then
+  if [[ "$POLL_FREQ" -gt 0 ]]; then
     NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
   fi
 }
@@ -240,34 +247,19 @@ repo_run() {
   local callback=$2
   local log_file=$3
 
-  if [[ $REPO_URL ]]; then
-    if [[ $REPO_HANDLER ]]; then
-      case $REPO_HANDLER in
-        git|svn) # These are built in
-          cmd="_$REPO_HANDLER"
-          ;;
-
-        *)
-          if [[ -x $REPO_HANDLER ]]; then
-            cmd=$REPO_HANDLER
-          else
-            warning "Unable to $operation on $REPO_URL, $REPO_HANDLER is not executable"
-            return 1
-          fi
-          ;;
-      esac
-
-      (cd $WORKSPACE && LOG_FILE=/dev/stdout $cmd $operation "$REPO_URL") < /dev/null > $log_file 2>&1 &
+  if [[ -n "$REPO_PLUGIN" ]]; then
+    local f=$(find_plugin_function "repo_${operation}_${REPO_PLUGIN}")
+    if [[ -n "$f" ]]; then
+      (cd $WORKSPACE && LOG_FILE=/dev/stdout $f) < /dev/null > $log_file 2>&1 &
       add_child $! $callback
       return 0
     else
-      warning "Unable to $operation on $REPO_URL, REPO_HANDLER not set"
+      warning "Unable to $operation, plugin $REPO_PLUGIN not found"
       return 1
     fi
-  else
-    warning "No REPO_URL defined"
-    return 1
   fi
+  warning "No repo plugin defined"
+  return 1
 }
 
 repo_poll_start() {
@@ -289,14 +281,11 @@ repo_poll_finish() {
   STATE="idle"
   local line=$(tail -n 1 $POLL_LOG)
   if [[ $1 -eq 0 ]]; then
-    if [[ "$line" = "OK POLL NEEDED" ]]; then
-      log "Poll finished sucessfully, queuing update"
-      #STATUS_UPDATE=EXPIRED
-      #STATUS_TASKS=EXPIRED
-      queue "update"
-    else
-      log "Poll finished sucessfully, no update required"
-    fi
+    log "Poll finished sucessfully, no update required"
+    update_status "poll" "OK"
+  elif [[ $1 -eq 2 ]]; then
+    log "Poll finished sucessfully, queuing update"
+    queue "update"
     update_status "poll" "OK"
   else
     warning "Poll did not finish sucessfully"
@@ -319,7 +308,6 @@ repo_update_start() {
 repo_update_finish() {
   STATE="idle"
   if [[ $1 -eq 0 ]]; then
-    #STATUS_TASKS=EXPIRED
     log "Update finished sucessfully, queuing tasks"
     update_status "update" "OK"
     # Set poll to ok too, because this did a poll too
@@ -345,12 +333,11 @@ tasks_start() {
     test -d "$BUILD_LOG_DIR" || mkdir "$BUILD_LOG_DIR"
 
     if [[ "$BUILD_KEEP" -gt 0 ]]; then
-      seq 1 $(( $BUILD_NUMBER - $BUILD_KEEP)) \
-        | while read num; do
-            if [[ -d "$BUILDS_DIR/$num" ]]; then
-              rm -r "$BUILDS_DIR/$num"
-            fi
-          done
+      while read num; do
+        if [[ -d "$BUILDS_DIR/$num" ]]; then
+          rm -r "$BUILDS_DIR/$num"
+        fi
+      done < <(seq 1 $(( $BUILD_NUMBER - $BUILD_KEEP)))
     fi
 
     test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$BUILD_LOG_DIR/"
@@ -358,6 +345,7 @@ tasks_start() {
     BUILD_ID=$(date +%Y-%m-%d_%H-%M-%S)
     BUILD_DISPLAY_NAME="#${BUILD_NUMBER}"
     BUILD_TAG="${SHNAME}-${JOB_NAME}-${BUILD_NUMBER}"
+
     log "Starting tasks as run number $BUILD_NUMBER"
     run_tasks < /dev/null > $TASKS_LOG 2>&1 &
     add_child $! "tasks_finish"
@@ -513,83 +501,11 @@ notify_status() {
     fi
   done
 
-  do_email_notification $item $old $old_time $new $new_time "$active_states"
-}
-
-do_email_notification() {
-  local item=$1
-  local old=$2
-  local old_time=$3
-  local new=$4
-  local new_time=$5
-  local active_states=$6
-  local send_reason
-
-  debug "Active States:$active_states"
-
-  for notifyState in $EMAIL_NOTIFY; do
-    if [[ "$notifyState" = "NEVER" ]]; then
-      debug "Email notification set to never"
-      return
-    fi
-
-    for i in $active_states; do
-      if [[ "$i" = "$notifyState" ]]; then
-        send_reason=$notifyState
-        break
-      fi
-    done
-
-    if [[ "$send_reason" ]]; then
-      break
-    fi
+  for f in $(find_plugin_functions "notify"); do
+    debug "Running notify plugin $f"
+    # Run in subshell to prevent side effects
+    $f $item $old $old_time $new $new_time "$active_states"
   done
-
-  if [[ "$send_reason" ]]; then
-    local tmpfile=$(mktemp /tmp/$SHNAME-email_notication-XXXXXX)
-    local email_subject="Mini-CI Notification - $JOB_NAME"
-    cat > $tmpfile <<EOF
-
-This copy of Mini-CI is running on $(hostname -f) as user $(whoami).
-
-Mini-CI Job Directory: $(pwd)
-Item: $item
-Reason: $send_reason
-New State: $new
-Old State: $old
-EOF
-
-    case $item in
-      poll)
-        echo >> $tmpfile
-        echo "Poll Log:" >> $tmpfile
-        cat $POLL_LOG >> $tmpfile
-        ;;
-      update)
-        echo >> $tmpfile
-        echo "Update Log:" >> $tmpfile
-        cat $UPDATE_LOG >> $tmpfile
-        ;;
-      tasks)
-        echo "Build Number: $BUILD_NUMBER" >> $tmpfile
-        echo "Build Log Directory: $BUILD_LOG_DIR" >> $tmpfile
-        echo >> $tmpfile
-        echo "Update Log:" >> $tmpfile
-        cat $UPDATE_LOG >> $tmpfile
-        local last_task_log=$(ls -1 $BUILD_LOG_DIR/ | grep '^task-.*\.log$' | sort | tail -n 1)
-        if [[ -n "$last_task_log" ]]; then
-          echo >> $tmpfile
-          echo "Last task log: ($last_task_log)" >> $tmpfile
-          tail -n 100 "$BUILD_LOG_DIR/$last_task_log" >> $tmpfile
-        fi
-    esac
-
-    for address in $EMAIL_ADDRESS; do
-      log "Mailing $item notification to $address due to $send_reason (New:$new Old:$old)"
-      (mail -s "$EMAIL_SUBJECT" $address < $tmpfile; rm -f $tmpfile) &
-      add_child $! ""
-    done
-  fi
 }
 
 run_tasks() {
@@ -675,13 +591,11 @@ load_config() {
   BUILD_ARCHIVE_WORKSPACE=""
   BUILD_KEEP=0
   CONTROL_FIFO="./control.fifo"
-  EMAIL_ADDRESS=""
-  EMAIL_NOTIFY="NEWPROB, RECOVER"
   LOG_FILE=""
   PID_FILE="./mini-ci.pid"
   POLL_FREQ=0
   POLL_LOG="./poll.log"
-  REPO_HANDLER=""
+  REPO_PLUGIN=""
   REPO_URL=""
   STATUS_FILE="./status"
   TASKS_DIR="./tasks.d"
@@ -689,27 +603,18 @@ load_config() {
   UPDATE_LOG="./update.log"
   WORKSPACE="./workspace"
 
+  for f in $(find_plugin_functions config_default); do
+    $f
+  done
+
   if [[ -f $CONFIG_FILE ]]; then
     source $CONFIG_FILE
   else
     error "Unable to find configuration file $CONFIG_FILE"
   fi
 
-  # Fix up variables
-  EMAIL_NOTIFY=${EMAIL_NOTIFY//,/ /}
-  EMAIL_NOTIFY=${EMAIL_NOTIFY^^[[:alpha:]]}
-  EMAIL_ADDRESS=${EMAIL_ADDRESS//,/ /}
-
-  if [[ -z $EMAIL_ADDRESS ]]; then
-    EMAIL_ADDRESS=$(whoami)
-  fi
-
   if [[ -z "$JOB_NAME" ]]; then
     JOB_NAME="$(basename $JOB_DIR)"
-  fi
-
-  if [[ -z "$EMAIL_SUBJECT" ]]; then
-    EMAIL_SUBJECT="Mini-CI Notification - $JOB_NAME"
   fi
 
   if [[ -z "$LOG_FILE" ]]; then
@@ -727,6 +632,10 @@ load_config() {
   TASKS_LOG=$(make_full_path "$TASKS_LOG")
   UPDATE_LOG=$(make_full_path "$UPDATE_LOG")
   WORKSPACE=$(make_full_path "$WORKSPACE")
+
+  for f in $(find_plugin_functions config_fix); do
+    $f
+  done
 }
 
 acquire_lock() {
@@ -790,143 +699,7 @@ quit() {
   exit 0
 }
 
-_git() {
-  local operation=$1
-  local repo=$2
-
-  if [ -z "$operation" ]; then
-    error "Missing argument operation"
-  fi
-
-  if [ -z "$repo" ]; then
-    error "Missing argument repo"
-  fi
-
-  case $operation in
-    update)
-      if [ ! -d .git ]; then
-        if ! git clone $repo .; then
-          echo "ERR UPDATE CLONE"
-          exit 1
-        fi
-      else
-        local old_local=$(git rev-parse @{0})
-        if ! git pull; then
-          echo "ERR UPDATE PULL"
-          exit 1
-        fi
-        local new_local=$(git rev-parse @{0})
-        echo ""
-        if [[ "$old_local" = "$new_local" ]]; then
-          echo "Last commit $(echo $old_local | cut -b 1-7):"
-          git log -1
-        else
-          echo "Commits between $(echo $old_local | cut -b 1-7) and $(echo $new_local | cut -b 1-7):"
-          git log $old_local..$new_local
-        fi
-        echo ""
-        echo "OK UPDATE"
-        exit 0
-      fi
-      ;;
-
-    poll)
-      if ! git remote update; then
-        echo "ERR POLL UPDATE"
-        exit 1
-      fi
-
-      local local=$(git rev-parse @{0})
-      local remote=$(git rev-parse @{u})
-      local base=$(git merge-base @{0} @{u})
-
-      echo "Local: $local"
-      echo "Remote: $remote"
-      echo "Base: $base"
-
-      if [ "$local" = "$remote" ]; then
-        echo "OK POLL CURRENT"
-        exit 0
-      elif [ "$local" = "$base" ]; then
-        echo "OK POLL NEEDED"
-        exit 0
-      elif [ "$remote" = "$base" ]; then
-        echo "ERR POLL localCOMMITS"
-        exit 1
-      else
-        echo "ERR POLL DIVERGED"
-        exit 1
-      fi
-      ;;
-    *)
-      error "Unknown operation $operation"
-      ;;
-  esac
-}
-
 # TODO: Error handling, stop asking for passwords
-_svn() {
-  local operation=$1
-  local repo=$2
-
-  local svn_cmd="svn --non-interactive"
-
-  if [ -z "$operation" ]; then
-    error "Missing argument operation"
-  fi
-
-  if [ -z "$repo" ]; then
-    error "Missing argument repo"
-  fi
-
-  case $operation in
-    update)
-      if [ ! -d .svn ]; then
-        if ! $svn_cmd checkout $repo . < /dev/null; then
-          echo "ERR UPDATE CHECKOUT"
-          exit 1
-        fi
-      else
-        local old_local=$(svn info | grep '^Last Changed Rev' | cut -f 2 -d :)
-        if ! svn update; then
-          echo "ERR UPDATE UPDATE"
-          exit 1
-        fi
-        local new_local=$(svn info | grep '^Last Changed Rev' | cut -f 2 -d :)
-
-        if [[ "$old_local" = "$new_local" ]]; then
-          echo "Last commit $old_local:"
-          $svn_cmd log -r $old_local
-        else
-          echo "Commits between $old_local and new_local:"
-          $svn_cmd -r $old_local:$new_local
-        fi
-      fi
-      echo "OK UPDATE"
-      exit 0
-      ;;
-
-    poll)
-      local local=$($svn_cmd info | grep '^Last Changed Rev' | cut -f 2 -d :)
-      local remote=$($svn_cmd info -r HEAD| grep '^Last Changed Rev' | cut -f 2 -d :)
-
-      echo "Local: $local"
-      echo "Remote: $remote"
-
-      if [[ $local -eq $remote ]]
-      then
-        echo "OK POLL CURRENT"
-        exit 0
-      else
-        echo "OK POLL NEEDED"
-        exit 0
-      fi
-      ;;
-    *)
-      error "Unknown operation $operation"
-      ;;
-  esac
-}
 
 handle_children() {
   local tmpPids=()
@@ -952,6 +725,27 @@ handle_children() {
 
   CHILD_PIDS=(${tmpPids[@]})
   CHILD_CBS=(${tmpCBs[@]})
+}
+
+find_plugin_functions() {
+  local test_re="(plugin_$1_[A-Za-z0-9_]+) \(\)"
+  while read line; do
+    if [[ "$line" =~ $test_re ]]; then
+      echo ${BASH_REMATCH[1]}
+    fi
+  done < <(set)
+}
+
+find_plugin_function() {
+  local test_re="(plugin_$1) \(\)"
+  debug "Looking for function matching $test_re"
+  while read line; do
+    if [[ "$line" =~ $test_re ]]; then
+      debug "Found function ${BASH_REMATCH[1]}"
+      echo ${BASH_REMATCH[1]}
+      return
+    fi
+  done < <(set)
 }
 
 # Local Variables:

@@ -5,17 +5,17 @@ CURDIR=$PWD
 
 testPoll() {
     TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
-    REPO_URL=$TMPDIR/repo.git
+    GIT_URL=$TMPDIR/repo.git
     WORK_DIR=$TMPDIR/workspace
     POLL_LOG=$TMPDIR/poll.log
     UPDATE_LOG=$TMPDIR/update.log
     
-    git --bare init $REPO_URL || return
+    git --bare init $GIT_URL || return
     
     cat > $TMPDIR/config <<EOF
 EMAIL_NOTIFY="NEVER"
-REPO_HANDLER=git
-REPO_URL=$REPO_URL
+REPO_PLUGIN=git
+GIT_URL=$GIT_URL
 EOF
 
     ./mini-ci -d $TMPDIR -F poll quit
@@ -35,16 +35,16 @@ EOF
 
 testInitialUpdate() {
     TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
-    REPO_URL=$TMPDIR/repo.git
+    GIT_URL=$TMPDIR/repo.git
     WORK_DIR=$TMPDIR/workspace
     UPDATE_LOG=$TMPDIR/update.log
 
-    git --bare init $REPO_URL || return
+    git --bare init $GIT_URL || return
     
     cat > $TMPDIR/config <<EOF
 EMAIL_NOTIFY="NEVER"
-REPO_HANDLER=git
-REPO_URL=$REPO_URL
+REPO_PLUGIN=git
+GIT_URL=$GIT_URL
 EOF
 
     ./mini-ci -d $TMPDIR -F update quit
@@ -57,21 +57,21 @@ EOF
 
 testNextUpdate() {
     TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
-    REPO_URL=$TMPDIR/repo
+    GIT_URL=$TMPDIR/repo
     WORK_DIR=$TMPDIR/workspace
     POLL_LOG=$TMPDIR/poll.log
     UPDATE_LOG=$TMPDIR/update.log
 
-    git init $REPO_URL || return
-    (cd $REPO_URL;
+    git init $GIT_URL || return
+    (cd $GIT_URL;
      date > initial-commit;
      git add initial-commit;
      git commit -m 'Initial commit')
     
     cat > $TMPDIR/config <<EOF
 EMAIL_NOTIFY="NEVER"
-REPO_HANDLER=git
-REPO_URL=$REPO_URL
+REPO_PLUGIN=git
+GIT_URL=$GIT_URL
 EOF
 
     (cd $TMPDIR && $CURDIR/mini-ci -F poll quit)
@@ -82,7 +82,7 @@ EOF
     assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
     rm -f $UPDATE_LOG
 
-    (cd $REPO_URL;
+    (cd $GIT_URL;
      date > test-file;
      git add test-file;
      git commit -m 'Added test-file')
@@ -93,7 +93,7 @@ EOF
     assertTrue "Did not find new file" "[ -f '${WORK_DIR}/test-file' ]"
     assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
     
-    rm -rf $TMPDIR
+    #rm -rf $TMPDIR
 }
 
 

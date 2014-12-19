@@ -43,7 +43,6 @@ EOF
     assertTrue "BUILD_TAG not set" "egrep '^BUILD_TAG=..+$' ${WORKSPACE}/env.txt"
     assertTrue "JOB_DIR not set" "egrep '^JOB_DIR=..+$' ${WORKSPACE}/env.txt"
     assertTrue "JOB_NAME not set" "egrep '^JOB_NAME=..+$' ${WORKSPACE}/env.txt"
-    assertTrue "REPO_URL not set" "egrep '^REPO_URL=$' ${WORKSPACE}/env.txt"
     assertTrue "WORKSPACE not set" "egrep '^WORKSPACE=..+$' ${WORKSPACE}/env.txt"
     assertTrue "Good task didn't execute" "[ -f '${WORKSPACE}/good-task' ]"
     assertTrue "run/1 directory missing" "[ -d '${TMPDIR}/builds/1/' ]"
