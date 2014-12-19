@@ -36,11 +36,6 @@ install: $(DESTS)
 	$(INSTALL_DATA) $(MINI_CI_DATA) $(DESTDIR)$(datadir)
 	$(INSTALL_DATA) $(MINI_CI_DATA_PLUGINS) $(DESTDIR)$(datadir)/plugins.d
 
-.PHONY: clean
-clean:
-	$(RM) -f $(DESTS)
-	$(RM) -f mini-ci-header.sh
-
 mini-ci: $(MINI_CI)
 	cat $^ > $@
 	chmod +x $@
@@ -49,3 +44,13 @@ mini-ci-header.sh:
 	echo "#!/bin/bash"
 	echo "MINI_CI_DIR=$(datadir)!" > $@
 	echo "MINI_CI_VER=$(VERSION)!" >> $@
+
+.PHONY: test
+test:
+	./tests.sh
+
+.PHONY: clean
+clean:
+	$(RM) -f $(DESTS)
+	$(RM) -f mini-ci-header.sh
+
