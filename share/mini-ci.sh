@@ -700,6 +700,7 @@ quit() {
   log "Shutting down"
   abort
   rm -f $PID_FILE
+  rm -f $CONTROL_FILE
   exit 0
 }
 
