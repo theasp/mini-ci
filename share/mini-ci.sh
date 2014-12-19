@@ -670,6 +670,10 @@ send_message() {
     *) error "Unknown command $cmd" ;;
   esac
 
+  if [[ ! -p "$CONTROL_FIFO" ]]; then
+    error "$CONTROL_FIFO is not a FIFO"
+  fi
+
   local end_time=$(( $(printf '%(%s)T\n' -1) + $timeout ))
   (echo $cmd > $CONTROL_FIFO) &
   local echo_pid=$!
