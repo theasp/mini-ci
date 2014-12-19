@@ -233,8 +233,8 @@ Table of Contents
   This example will configure to monitor Mini-CI's GIT repository and
   run tests whenever it's updated.
 
-  Create a directory called `mini-ci-job', then place the following in
-  `config':
+  Create and enter a directory called `mini-ci-job', then place the
+  following in `config':
   ┌────
   │ REPO_HANDLER="git"
   │ REPO_URL="https://github.com/theasp/mini-ci"
@@ -245,7 +245,17 @@ Table of Contents
   the Mini-CI repository, and then poll it every 10 minutes.
 
   Create the directory `tasks.d', then place the following file in
-  `tasks.d/500-run_tests':
+  `tasks.d/100-make'
+  ┌────
+  │ #!/bin/sh
+  │ 
+  │ set -ex
+  │ 
+  │ # Override datadir to match the pre-installed structure
+  │ make datadir=$(pwd)/share
+  └────
+
+  Place the following file in `tasks.d/500-run_tests':
   ┌────
   │ #!/bin/sh
   │ ./tests.sh
