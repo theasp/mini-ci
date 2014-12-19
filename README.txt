@@ -46,6 +46,7 @@ Table of Contents
       account.
   • NO support for multiple projects!
     • You can run it more than once…
+  • Plugin system
   • Low resource requirements.
     • Just a small bash script.
   • Can monitor any repository and use any build system.
@@ -130,35 +131,18 @@ Table of Contents
   ┌────
   │ # All paths are relative to the job directory.
   │ 
+  │ ####################
+  │ # Main Configuration
+  │ 
   │ # JOB_NAME: The name of the job.  Defaults to "$(basename $JOB_DIR)"
   │ JOB_NAME="$(basename $JOB_DIR)"
   │ 
-  │ # EMAIL_NOTIFY: A space and/or comma separated list of conditions to
-  │ # notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",
-  │ # "RECOVER" (when a state changes from "ERROR" or "UNKNOWN" to "OK")
-  │ # and "NEWPROB" (when a state changes from "OK" to "ERROR" or
-  │ # "UNKNOWN").  Defaults to "NEWPROB, RECOVER".
-  │ EMAIL_NOTIFY="NEWPROB, RECOVER"
-  │ 
-  │ # EMAIL_ADDRESS: A space and/or comma seperated list of addresses to
-  │ # email.  If not specified, will be sent to the user that is running
-  │ # the script.  Defaults to "".
-  │ EMAIL_ADDRESS=""
-  │ 
-  │ # EMAIL_SUBJECT: The subject to have for notification emails.
-  │ # Defaults to "Mini-CI Notification - $JOB_NAME".
-  │ EMAIL_SUBJECT="Mini-CI Notification - $JOB_NAME"
-  │ 
-  │ # REPO_HANDLER: This is either a command that exits with the
-  │ # appropriate return codes, or one of the built in handlers:
+  │ # REPO_PLUGIN: This is the name of a plugin that will handle
+  │ # repository actions.  The following plugins come with Mini-CI:
   │ # - git
   │ # - svn
-  │ REPO_HANDLER="<handler>"
-  │ 
-  │ # REPO_URL: The URL to the repository.  Fetching the URL must not ask
-  │ # for a username or password.  Use ~/.netrc or ssh keys for remote
-  │ # repositories.
-  │ REPO_URL="<url>"
+  │ # - external
+  │ REPO_PLUGIN="<plugin>"
   │ 
   │ # POLL_FREQ: If this is set to a number greater than zero, it will poll the
   │ # repository using the repo-handler every this many seconds, starting
@@ -208,6 +192,35 @@ Table of Contents
   │ 
   │ # MINICI_LOG: Name of the mini-ci log.  Defaults to "./mini-ci.log".
   │ MINICI_LOG="./mini-ci.log"
+  │ 
+  │ ####################
+  │ # Plugin Configuration
+  │ 
+  │ # GIT_URL: The URL to the repository.  Fetching the URL must not ask
+  │ # for a username or password.  Use ~/.netrc or ssh keys for remote
+  │ # repositories.
+  │ #GIT_URL="<url>"
+  │ 
+  │ # SVN_URL: The URL to the repository.  Fetching the URL must not ask
+  │ # for a username or password.  Use ~/.netrc or ssh keys for remote
+  │ # repositories.
+  │ #SVN_URL="<url>"
+  │ 
+  │ # EMAIL_NOTIFY: A space and/or comma separated list of conditions to
+  │ # notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",
+  │ # "RECOVER" (when a state changes from "ERROR" or "UNKNOWN" to "OK")
+  │ # and "NEWPROB" (when a state changes from "OK" to "ERROR" or
+  │ # "UNKNOWN").  Defaults to "NEWPROB, RECOVER".
+  │ EMAIL_NOTIFY="NEWPROB, RECOVER"
+  │ 
+  │ # EMAIL_ADDRESS: A space and/or comma separated list of addresses to
+  │ # email.  If not specified, will be sent to the user that is running
+  │ # the script.  Defaults to "".
+  │ EMAIL_ADDRESS=""
+  │ 
+  │ # EMAIL_SUBJECT: The subject to have for notification emails.
+  │ # Defaults to "Mini-CI Notification - $JOB_NAME".
+  │ EMAIL_SUBJECT="Mini-CI Notification - $JOB_NAME"
   └────
 
 
@@ -236,8 +249,8 @@ Table of Contents
   Create and enter a directory called `mini-ci-job', then place the
   following in `config':
   ┌────
-  │ REPO_HANDLER="git"
-  │ REPO_URL="https://github.com/theasp/mini-ci"
+  │ REPO_PLGUIN="git"
+  │ GIT_URL="https://github.com/theasp/mini-ci"
   │ POLL_FREQ=600
   └────
 

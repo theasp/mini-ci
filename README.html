@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2014-12-19 Fri 10:40 -->
+<!-- 2014-12-19 Fri 14:37 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -196,6 +196,8 @@ Mini-CI is a small daemon to perform continuous integration (CI) for a single re
 </li>
 </ul>
 </li>
+<li>Plugin system
+</li>
 <li>Low resource requirements.
 <ul class="org-ul">
 <li>Just a small bash script.
@@ -296,35 +298,18 @@ The <code>config</code> file in <code>skeleton</code> is:
 
 <pre class="src src-sh"><span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">All paths are relative to the job directory.</span>
 
+<span style="color: #ff7f24;">####################</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Main Configuration</span>
+
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">JOB_NAME: The name of the job.  Defaults to "$(</span><span style="color: #fa8072;">basename</span><span style="color: #ff7f24;"> $JOB_DIR)"</span>
 <span style="color: #eedd82;">JOB_NAME</span>=<span style="color: #ffa07a;">"$(</span><span style="color: #fa8072;">basename</span><span style="color: #ffa07a;"> $JOB_DIR)"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_NOTIFY: A space and/or comma separated list of conditions to</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"RECOVER" (when a state changes from "ERROR" or "UNKNOWN" to "OK")</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">and "NEWPROB" (when a state changes from "OK" to "ERROR" or</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"UNKNOWN").  Defaults to "NEWPROB, RECOVER".</span>
-<span style="color: #eedd82;">EMAIL_NOTIFY</span>=<span style="color: #ffa07a;">"NEWPROB, RECOVER"</span>
-
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_ADDRESS: A space and/or comma seperated list of addresses to</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">email.  If not specified, will be sent to the user that is running</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the script.  Defaults to "".</span>
-<span style="color: #eedd82;">EMAIL_ADDRESS</span>=<span style="color: #ffa07a;">""</span>
-
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_SUBJECT: The subject to have for notification emails.</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Defaults to "Mini-CI Notification - $JOB_NAME".</span>
-<span style="color: #eedd82;">EMAIL_SUBJECT</span>=<span style="color: #ffa07a;">"Mini-CI Notification - $JOB_NAME"</span>
-
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">REPO_HANDLER: This is either a command that exits with the</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">appropriate return codes, or one of the built in handlers:</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">REPO_PLUGIN: This is the name of a plugin that will handle</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repository actions.  The following plugins come with Mini-CI:</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- git</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- svn</span>
-<span style="color: #eedd82;">REPO_HANDLER</span>=<span style="color: #ffa07a;">"&lt;handler&gt;"</span>
-
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">REPO_URL: The URL to the repository.  Fetching the URL must not ask</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
-<span style="color: #eedd82;">REPO_URL</span>=<span style="color: #ffa07a;">"&lt;url&gt;"</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- external</span>
+<span style="color: #eedd82;">REPO_PLUGIN</span>=<span style="color: #ffa07a;">"&lt;plugin&gt;"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_FREQ: If this is set to a number greater than zero, it will poll the</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repository using the repo-handler every this many seconds, starting</span>
@@ -374,6 +359,35 @@ The <code>config</code> file in <code>skeleton</code> is:
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">MINICI_LOG: Name of the mini-ci log.  Defaults to "./mini-ci.log".</span>
 <span style="color: #eedd82;">MINICI_LOG</span>=<span style="color: #ffa07a;">"./mini-ci.log"</span>
+
+<span style="color: #ff7f24;">####################</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Plugin Configuration</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">GIT_URL: The URL to the repository.  Fetching the URL must not ask</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
+<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">GIT_URL="&lt;url&gt;"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">SVN_URL: The URL to the repository.  Fetching the URL must not ask</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
+<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">SVN_URL="&lt;url&gt;"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_NOTIFY: A space and/or comma separated list of conditions to</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"RECOVER" (when a state changes from "ERROR" or "UNKNOWN" to "OK")</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">and "NEWPROB" (when a state changes from "OK" to "ERROR" or</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"UNKNOWN").  Defaults to "NEWPROB, RECOVER".</span>
+<span style="color: #eedd82;">EMAIL_NOTIFY</span>=<span style="color: #ffa07a;">"NEWPROB, RECOVER"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_ADDRESS: A space and/or comma separated list of addresses to</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">email.  If not specified, will be sent to the user that is running</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the script.  Defaults to "".</span>
+<span style="color: #eedd82;">EMAIL_ADDRESS</span>=<span style="color: #ffa07a;">""</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_SUBJECT: The subject to have for notification emails.</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Defaults to "Mini-CI Notification - $JOB_NAME".</span>
+<span style="color: #eedd82;">EMAIL_SUBJECT</span>=<span style="color: #ffa07a;">"Mini-CI Notification - $JOB_NAME"</span>
 </pre>
 </div>
 </div>
@@ -402,8 +416,8 @@ Create and enter a directory called <code>mini-ci-job</code>, then place the fol
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #eedd82;">REPO_HANDLER</span>=<span style="color: #ffa07a;">"git"</span>
-<span style="color: #eedd82;">REPO_URL</span>=<span style="color: #ffa07a;">"https://github.com/theasp/mini-ci"</span>
+<pre class="src src-sh"><span style="color: #eedd82;">REPO_PLGUIN</span>=<span style="color: #ffa07a;">"git"</span>
+<span style="color: #eedd82;">GIT_URL</span>=<span style="color: #ffa07a;">"https://github.com/theasp/mini-ci"</span>
 <span style="color: #eedd82;">POLL_FREQ</span>=600
 </pre>
 </div>
@@ -502,7 +516,7 @@ You can easily change the above script to SSH to another system, or user.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Andrew Phillips &lt;<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>&gt;</p>
-<p class="date">Date: 2014-12-19 Fri 10:40</p>
+<p class="date">Date: 2014-12-19 Fri 14:37</p>
 </div>
 </body>
 </html>
