@@ -1,7 +1,3 @@
-# Local variables:
-# org-ascii-charset: utf-8
-# eval: (add-hook 'after-save-hook '(lambda () (org-ascii-export-to-ascii) (org-html-export-to-html) ) nil t)
-# end:
 #+TITLE: Mini-CI
 #+OPTIONS: toc:4 H:4 p:t
 #+AUTHOR: Andrew Phillips
@@ -227,3 +223,7 @@ mini-ci -d ~/some-mini-ci-job-directory -m update
 #+END_SRC
 
 You can easily change the above script to SSH to another system, or user.
+# Local variables:
+# org-ascii-charset: utf-8
+# eval: (add-hook 'after-save-hook '(lambda () (org-ascii-export-to-ascii) (org-html-export-to-html) ) nil t)
+# end:
