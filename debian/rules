@@ -28,5 +28,8 @@ DH_ALWAYS_EXCLUDE=.git
 #	dh_auto_configure -- \
 #	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
 
+override_dh_auto_build:
+	make prefix=/usr
+
 override_dh_auto_install:
 	make install DESTDIR=$$(pwd)/debian/mini-ci prefix=/usr
