@@ -264,14 +264,14 @@ Table of Contents
   │ 
   │ set -ex
   │ 
-  │ # Override datadir to match the pre-installed structure
-  │ make datadir=$(pwd)/share
+  │ # Override the prefix to install into ~/opt/mini-ci
+  │ make prefix=~/opt/mini-ci
   └────
 
   Place the following file in `tasks.d/500-run_tests':
   ┌────
   │ #!/bin/sh
-  │ ./tests.sh
+  │ make test
   └────
 
   Run `chmod +x tasks.d/500-run_tests' to make the script executable.

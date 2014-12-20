@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2014-12-19 Fri 14:37 -->
+<!-- 2014-12-19 Fri 20:14 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -192,7 +192,7 @@ Mini-CI is a small daemon to perform continuous integration (CI) for a single re
 </li>
 <li>NO support for multiple projects!
 <ul class="org-ul">
-<li>You can run it more than once&#x2026;
+<li>You can run it more than once…
 </li>
 </ul>
 </li>
@@ -223,8 +223,8 @@ From the output of <code>mini-ci --help</code>:
 Usage: mini-ci [option ...] [command ...]
 
 Options:
-  -d|--job-dir &lt;dir&gt;       directory for job
-  -c|--config-file &lt;file&gt;  config file to use, relative to job-dir
+  -d|--job-dir <dir>       directory for job
+  -c|--config-file <file>  config file to use, relative to job-dir
   -m|--message [timeout]   send commands to running daemon, then exit
   -o|--oknodo              exit quietly if already running
   -D|--debug               log debugging information
@@ -246,7 +246,7 @@ Commands:
 Commands given while not in message mode will be queued.  For instance
 the following command will have a repository polled for updates (which
 will trigger update and tasks if required) then quit.
-  mini-ci -d &lt;dir&gt; -F poll quit
+  mini-ci -d <dir> -F poll quit
 </pre>
 </div>
 </div>
@@ -309,7 +309,7 @@ The <code>config</code> file in <code>skeleton</code> is:
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- git</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- svn</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- external</span>
-<span style="color: #eedd82;">REPO_PLUGIN</span>=<span style="color: #ffa07a;">"&lt;plugin&gt;"</span>
+<span style="color: #eedd82;">REPO_PLUGIN</span>=<span style="color: #ffa07a;">"<plugin>"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_FREQ: If this is set to a number greater than zero, it will poll the</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repository using the repo-handler every this many seconds, starting</span>
@@ -366,12 +366,12 @@ The <code>config</code> file in <code>skeleton</code> is:
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">GIT_URL: The URL to the repository.  Fetching the URL must not ask</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
-<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">GIT_URL="&lt;url&gt;"</span>
+<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">GIT_URL="<url>"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">SVN_URL: The URL to the repository.  Fetching the URL must not ask</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
-<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">SVN_URL="&lt;url&gt;"</span>
+<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">SVN_URL="<url>"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_NOTIFY: A space and/or comma separated list of conditions to</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",</span>
@@ -396,7 +396,7 @@ The <code>config</code> file in <code>skeleton</code> is:
 <h3 id="sec-5-2"><span class="section-number-3">5.2</span> <code>tasks.d</code></h3>
 <div class="outline-text-3" id="text-5-2">
 <p>
-The <code>tasks.d</code> directory contains all the tasks that would be executed during a build of your repository.  The <code>skeleton</code> contains a few examples.  Each script must match the regular expression <code>^[a-zA-Z0-9_-]+$</code> and will be ran in sort order, therefore it is recommended that each script be named in the form <code>&lt;nnn&gt;-&lt;description_of_task&gt;</code>.  If a script exits with a return code that is not zero, it is considered a build error and no further scripts are executed.
+The <code>tasks.d</code> directory contains all the tasks that would be executed during a build of your repository.  The <code>skeleton</code> contains a few examples.  Each script must match the regular expression <code>^[a-zA-Z0-9_-]+$</code> and will be ran in sort order, therefore it is recommended that each script be named in the form <code><nnn>-<description_of_task></code>.  If a script exits with a return code that is not zero, it is considered a build error and no further scripts are executed.
 </p>
 </div>
 </div>
@@ -435,8 +435,8 @@ Create the directory <code>tasks.d</code>, then place the following file in <cod
 
 <span style="color: #b0c4de;">set</span> -ex
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Override datadir to match the pre-installed structure</span>
-make <span style="color: #eedd82;">datadir</span>=$(<span style="color: #fa8072;">pwd</span>)/share
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Override the prefix to install into ~/opt/mini-ci</span>
+make <span style="color: #eedd82;">prefix</span>=~/opt/mini-ci
 </pre>
 </div>
 
@@ -446,7 +446,7 @@ Place the following file in <code>tasks.d/500-run_tests</code>:
 <div class="org-src-container">
 
 <pre class="src src-sh"><span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">!/bin/</span><span style="color: #00ffff;">sh</span>
-./tests.sh
+make test
 </pre>
 </div>
 
@@ -515,8 +515,8 @@ You can easily change the above script to SSH to another system, or user.
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Andrew Phillips &lt;<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>&gt;</p>
-<p class="date">Date: 2014-12-19 Fri 14:37</p>
+<p class="author">Author: Andrew Phillips <<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>></p>
+<p class="date">Date: 2014-12-19 Fri 20:14</p>
 </div>
 </body>
 </html>

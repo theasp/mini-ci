@@ -200,14 +200,14 @@ Create the directory =tasks.d=, then place the following file in =tasks.d/100-ma
 
 set -ex
 
-# Override datadir to match the pre-installed structure
-make datadir=$(pwd)/share
+# Override the prefix to install into ~/opt/mini-ci
+make prefix=~/opt/mini-ci
 #+END_SRC
 
 Place the following file in =tasks.d/500-run_tests=:
 #+BEGIN_SRC sh
 #!/bin/sh
-./tests.sh
+make test
 #+END_SRC
 
 Run =chmod +x tasks.d/500-run_tests= to make the script executable.  Now when you run =mini-ci -F= in the job directory you will get:
