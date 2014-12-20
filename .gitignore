@@ -1,2 +1,3 @@
 /mini-ci
 .nfs*
+/mini-ci-header.sh
