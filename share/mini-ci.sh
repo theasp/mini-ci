@@ -22,8 +22,8 @@ declare -A CUR_STATUS_TIME=()
 
 declare -x BUILD_DISPLAY_NAME=""
 declare -x BUILD_ID=""
-declare -x BUILD_LOG_DIR=""
 declare -x BUILD_NUMBER=""
+declare -x BUILD_OUTPUT_DIR=""
 declare -x BUILD_TAG=""
 declare -x JOB_DIR=""
 declare -x JOB_NAME=""
@@ -325,13 +325,13 @@ tasks_start() {
   if [[ -d $TASKS_DIR ]]; then
     test -d "$BUILDS_DIR" || mkdir "$BUILDS_DIR"
 
-    BUILD_LOG_DIR="$BUILDS_DIR"
-    while [[ -d "$BUILD_LOG_DIR" ]]; do
+    BUILD_OUTPUT_DIR="$BUILDS_DIR"
+    while [[ -d "$BUILD_OUTPUT_DIR" ]]; do
       BUILD_NUMBER=$(( $BUILD_NUMBER + 1 ))
-      BUILD_LOG_DIR="$BUILDS_DIR/$BUILD_NUMBER"
+      BUILD_OUTPUT_DIR="$BUILDS_DIR/$BUILD_NUMBER"
     done
 
-    test -d "$BUILD_LOG_DIR" || mkdir "$BUILD_LOG_DIR"
+    test -d "$BUILD_OUTPUT_DIR" || mkdir "$BUILD_OUTPUT_DIR"
 
     if [[ "$BUILD_KEEP" -gt 0 ]]; then
       while read num; do
@@ -341,7 +341,7 @@ tasks_start() {
       done < <(seq 1 $(( $BUILD_NUMBER - $BUILD_KEEP)))
     fi
 
-    test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$BUILD_LOG_DIR/"
+    test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$BUILD_OUTPUT_DIR/"
 
     BUILD_ID=$(date +%Y-%m-%d_%H-%M-%S)
     BUILD_DISPLAY_NAME="#${BUILD_NUMBER}"
@@ -369,7 +369,7 @@ tasks_finish() {
 
   if [[ "$BUILD_ARCHIVE_WORKSPACE" = "yes" ]]; then
     log "Archiving workspace for build $BUILD_NUMBER"
-    cp -a $WORKSPACE $BUILD_LOG_DIR/workspace
+    cp -a $WORKSPACE $BUILD_OUTPUT_DIR/workspace
   fi
 }
 
@@ -513,8 +513,8 @@ run_tasks() {
   for task in $(ls -1 $TASKS_DIR | grep -E -e '^[a-zA-Z0-9_-]+$' | sort); do
     local file="$TASKS_DIR/$task"
     if [[ -x $file ]]; then
-      local log_file="${BUILD_LOG_DIR}/task-${task}.log"
-      log "Running task $task, logging to ${BUILD_LOG_DIR}/task-${task}.log"
+      local log_file="${BUILD_OUTPUT_DIR}/task-${task}.log"
+      log "Running task $task, logging to ${BUILD_OUTPUT_DIR}/task-${task}.log"
       if (cd $WORKSPACE && $file) > $log_file 2>&1; then
         log "Task $task returned code $?"
       else
