@@ -11,15 +11,18 @@ Table of Contents
 
 1 Introduction
 2 Features
-3 Usage
-4 Configuration
-5 Contents of a Job Directory
-.. 5.1 `config'
-.. 5.2 `tasks.d'
-6 Examples
-.. 6.1 Mini-CI Job Directory
-.. 6.2 Starting the Mini-CI Daemon as a User
-.. 6.3 Notifying a Mini-CI Daemon from GIT
+3 Installation
+.. 3.1 Ubuntu PPA
+.. 3.2 From Source
+4 Usage
+5 Configuration
+6 Contents of a Job Directory
+.. 6.1 `config'
+.. 6.2 `tasks.d'
+7 Examples
+.. 7.1 Mini-CI Job Directory
+.. 7.2 Starting the Mini-CI Daemon as a User
+.. 7.3 Notifying a Mini-CI Daemon from GIT
 
 
 
@@ -53,7 +56,33 @@ Table of Contents
     • The only limits are the scripts you provide.
 
 
-3 Usage
+3 Installation
+══════════════
+
+3.1 Ubuntu PPA
+──────────────
+
+  • Stable release:
+    [https://launchpad.net/~theasp/+archive/ubuntu/mini-ci]
+  • Snapshot release:
+    [https://launchpad.net/~theasp/+archive/ubuntu/mini-ci-snapshot]
+
+
+3.2 From Source
+───────────────
+
+  To install into `/usr/local':
+  ┌────
+  │ make clean install
+  └────
+
+  To install into your home directory (`~/opt/mini-ci'):
+  ┌────
+  │ make clean install prefix=~/opt/mini-ci
+  └────
+
+
+4 Usage
 ═══════
 
   From the output of `mini-ci --help':
@@ -88,7 +117,7 @@ Table of Contents
   └────
 
 
-4 Configuration
+5 Configuration
 ═══════════════
 
   You can configure a Mini-CI job by copying the `skeleton' directory
@@ -100,7 +129,7 @@ Table of Contents
   foreground.
 
 
-5 Contents of a Job Directory
+6 Contents of a Job Directory
 ═════════════════════════════
 
   • `config': The configuration file for the job.
@@ -118,7 +147,7 @@ Table of Contents
     daemon.
 
 
-5.1 `config'
+6.1 `config'
 ────────────
 
   The `config' file is a shell script that is sourced when Mini-CI is
@@ -224,7 +253,7 @@ Table of Contents
   └────
 
 
-5.2 `tasks.d'
+6.2 `tasks.d'
 ─────────────
 
   The `tasks.d' directory contains all the tasks that would be executed
@@ -236,11 +265,28 @@ Table of Contents
   that is not zero, it is considered a build error and no further
   scripts are executed.
 
+  Mini-CI exports the following variables:
+  • MINI_CI_DIR: The data directory for Mini-CI
+  • MINI_CI_VER: The version of the Mini-CI running
+  • BUILD_DISPLAY_NAME: The build number with "#" prepended.
+    i.e. "#123"
+  • BUILD_ID: The date and time the build started in the following
+    format: `%Y-%m-%d_%H-%M-%S'
+  • BUILD_OUTPUT_DIR: The directory used for storage for the current
+    build
+  • BUILD_NUMBER: The current build number.
+  • BUILD_TAG: A string of the form: `mini-ci-${JOB_NAME}-${JOB_NUMBER}'
+  • JOB_DIR: The directory where the job is stored
+  • JOB_NAME: Name of the the job
+  • WORKSPACE: The current workspace directory
+  • GIT_URL: The URL of the GIT repository
+  • SVN_URL: The URL of the Subversion repository
 
-6 Examples
+
+7 Examples
 ══════════
 
-6.1 Mini-CI Job Directory
+7.1 Mini-CI Job Directory
 ─────────────────────────
 
   This example will configure to monitor Mini-CI's GIT repository and
@@ -300,7 +346,7 @@ Table of Contents
   -m quit' in the job directory in another shell.
 
 
-6.2 Starting the Mini-CI Daemon as a User
+7.2 Starting the Mini-CI Daemon as a User
 ─────────────────────────────────────────
 
   The easiest way to run Mini-CI as a user is to have `cron' start it.
@@ -315,7 +361,7 @@ Table of Contents
   to.
 
 
-6.3 Notifying a Mini-CI Daemon from GIT
+7.3 Notifying a Mini-CI Daemon from GIT
 ───────────────────────────────────────
 
   You can have git notify Mini-CI upon every push to a repository, which
