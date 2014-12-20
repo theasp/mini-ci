@@ -5,3 +5,4 @@
 /debian/mini-ci.substvars
 /debian/files
 /debian/mini-ci/
+/*.tar.gz
