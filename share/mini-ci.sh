@@ -125,6 +125,7 @@ main() {
 
   # Load the plugins.  Has to be done here
   for dir in "${MINI_CI_DIR}/plugins.d" "${JOB_DIR}/plugins.d"; do
+    debug "Looking for plugins in $dir"
     if [[ -d $dir ]]; then
       for plugin in $(ls -1 $dir/*.sh); do
         debug "Loading plugin $plugin"
