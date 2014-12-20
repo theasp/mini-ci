@@ -1,3 +1,7 @@
 /mini-ci
 .nfs*
 /mini-ci-header.sh
+/debian/mini-ci.debhelper.log
+/debian/mini-ci.substvars
+/debian/files
+/debian/mini-ci/

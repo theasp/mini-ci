@@ -1,0 +1,18 @@
+Source: mini-ci
+Section: unknown
+Priority: optional
+Maintainer: Andrew Phillips <theasp@gmail.com>
+Build-Depends: debhelper (>= 9), shunit2
+Standards-Version: 3.9.5
+Homepage: https://github.com/theasp/mini-ci
+
+Package: mini-ci
+Architecture: all
+Depends: bash (>> 4.0)
+Suggests: git, subversion
+Description: Lightweight continuous integration daemon
+ Mini-CI is a small daemon to perform continuous integration (CI) for
+ a single repository/project. Most other CI software is complicated to
+ setup and use due to feature bloat and hiding what is going on
+ underneath with GUIs. If you know how to build your project from the
+ command line, setting up Mini-CI should be easy.
