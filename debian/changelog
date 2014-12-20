@@ -1,5 +1,5 @@
-mini-ci (0.1-1) unstable; urgency=low
+mini-ci (0.1-1) trusty; urgency=low
 
   * Initial release.
 
- -- Andrew Phillips <theasp@gmail.com>  Fri, 19 Dec 2014 16:11:06 -0400
+ -- Andrew Phillips <theasp@gmail.com>  Fri, 19 Dec 2014 21:24:46 -0400
