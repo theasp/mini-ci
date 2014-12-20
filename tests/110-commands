@@ -9,7 +9,7 @@ testExit() {
 EMAIL_NOTIFY="NEVER"
 EOF
     
-    ./mini-ci -d $TMPDIR -F quit
+    ./mini-ci -d $TMPDIR -F -D quit
     assertEquals "Wrong return code" $? 0 || return
 
     rm -rf $TMPDIR

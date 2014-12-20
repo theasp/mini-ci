@@ -18,7 +18,7 @@ REPO_PLUGIN=git
 GIT_URL=$GIT_URL
 EOF
 
-    ./mini-ci -d $TMPDIR -F poll quit
+    ./mini-ci -d $TMPDIR -F -D poll quit
     assertEquals "Wrong return code" $? 0
 
     assertTrue "Did not checkout repository" "[ -d '${WORK_DIR}/.git' ]"
@@ -47,7 +47,7 @@ REPO_PLUGIN=git
 GIT_URL=$GIT_URL
 EOF
 
-    ./mini-ci -d $TMPDIR -F update quit
+    ./mini-ci -d $TMPDIR -F -D update quit
     assertEquals "Wrong return code" $? 0
 
     assertTrue "Did not checkout repository" "[ -d '${WORK_DIR}/.git' ]"
@@ -74,7 +74,7 @@ REPO_PLUGIN=git
 GIT_URL=$GIT_URL
 EOF
 
-    (cd $TMPDIR && $CURDIR/mini-ci -F poll quit)
+    (cd $TMPDIR && $CURDIR/mini-ci -F -D poll quit)
     assertEquals "Wrong return code" $? 0
 
     assertTrue "Did not checkout repository" "[ -d '${WORK_DIR}/.git' ]"
@@ -87,7 +87,7 @@ EOF
      git add test-file;
      git commit -m 'Added test-file')
 
-    ./mini-ci -d $TMPDIR -F update quit
+    ./mini-ci -d $TMPDIR -F -D update quit
     assertEquals "Wrong return code" $? 0
 
     assertTrue "Did not find new file" "[ -f '${WORK_DIR}/test-file' ]"
