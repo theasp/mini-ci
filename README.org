@@ -18,6 +18,20 @@ Mini-CI is a small daemon to perform continuous integration (CI) for a single re
   - Just a small bash script.
 - Can monitor any repository and use any build system.
   - The only limits are the scripts you provide.
+* Installation
+** Ubuntu PPA
+- Stable release: https://launchpad.net/~theasp/+archive/ubuntu/mini-ci
+- Snapshot release: https://launchpad.net/~theasp/+archive/ubuntu/mini-ci-snapshot
+** From Source
+To install into =/usr/local=:
+#+BEGIN_SRC sh
+make clean install
+#+END_SRC
+
+To install into your home directory (=~/opt/mini-ci=):
+#+BEGIN_SRC sh
+make clean install prefix=~/opt/mini-ci
+#+END_SRC
 * Usage
 From the output of =mini-ci --help=:
 #+BEGIN_SRC sh :exports results :results drawer :eval no-export
