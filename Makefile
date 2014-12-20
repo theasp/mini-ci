@@ -40,14 +40,14 @@ mini-ci: $(MINI_CI)
 	cat $^ > $@
 	chmod +x $@
 
-mini-ci-header.sh:
-	echo "#!/bin/bash"
-	echo "MINI_CI_DIR=$(datadir)!" > $@
-	echo "MINI_CI_VER=$(VERSION)!" >> $@
+mini-ci-header.sh: Makefile
+	echo "#!/bin/bash" > $@
+	echo 'declare -x MINI_CI_DIR="$${MINI_CI_DIR:-$(datadir)}"' >> $@
+	echo "declare -x MINI_CI_VER=$(VERSION)" >> $@
 
 .PHONY: test
-test:
-	./tests.sh
+test: mini-ci
+	MINI_CI_DIR=$(PWD)/share ./tests.sh
 
 .PHONY: clean
 clean:
