@@ -4,9 +4,6 @@
 # AUTHOR: Andrew Phillips <theasp@gmail.com>
 # LICENSE: GPLv2
 
-declare -x MINI_CI_DIR=./share
-declare -x MINI_CI_VER=unknown
-
 source $MINI_CI_DIR/mini-ci.sh
 
 main "$@"
