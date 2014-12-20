@@ -53,4 +53,10 @@ test: mini-ci
 clean:
 	$(RM) -f $(DESTS)
 	$(RM) -f mini-ci-header.sh
+	$(RM) -f *.tar.gz
 
+.PHONY: tar
+tar: $(NAME)-$(VERSION).tar.gz
+
+$(NAME)-$(VERSION).tar.gz: clean
+	tar cvfz $@ --transform "s!^!$(NAME)-$(VERSION)/!" --show-transformed --exclude-vcs --exclude-backup -- *
