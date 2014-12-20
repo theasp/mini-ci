@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2014-12-20 Sat 16:03 -->
+<!-- 2014-12-20 Sat 16:22 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -446,29 +446,29 @@ The <code>tasks.d</code> directory contains all the tasks that would be executed
 Mini-CI exports the following variables:
 </p>
 <ul class="org-ul">
-<li>MINI<sub>CI</sub><sub>DIR</sub>: The data directory for Mini-CI
+<li><code>MINI_CI_DIR</code>: The data directory for Mini-CI
 </li>
-<li>MINI<sub>CI</sub><sub>VER</sub>: The version of the Mini-CI running
+<li><code>MINI_CI_VER</code>: The version of the Mini-CI running
 </li>
-<li>BUILD<sub>DISPLAY</sub><sub>NAME</sub>: The build number with "#" prepended.  i.e. "#123"
+<li><code>BUILD_DISPLAY_NAME</code>: The build number with "#" prepended.  i.e. "#123"
 </li>
-<li>BUILD<sub>ID</sub>: The date and time the build started in the following format:  <code>%Y-%m-%d_%H-%M-%S</code>
+<li><code>BUILD_ID</code>: The date and time the build started in the following format:  <code>%Y-%m-%d_%H-%M-%S</code>
 </li>
-<li>BUILD<sub>OUTPUT</sub><sub>DIR</sub>: The directory used for storage for the current build
+<li><code>BUILD_OUTPUT_DIR</code>: The directory used for storage for the current build
 </li>
-<li>BUILD<sub>NUMBER</sub>: The current build number.
+<li><code>BUILD_NUMBER</code>: The current build number.
 </li>
-<li>BUILD<sub>TAG</sub>: A string of the form: <code>mini-ci-${JOB_NAME}-${JOB_NUMBER}</code>
+<li><code>BUILD_TAG</code>: A string of the form: <code>mini-ci-${JOB_NAME}-${JOB_NUMBER}</code>
 </li>
-<li>JOB<sub>DIR</sub>: The directory where the job is stored
+<li><code>JOB_DIR</code>: The directory where the job is stored
 </li>
-<li>JOB<sub>NAME</sub>: Name of the the job
+<li><code>JOB_NAME</code>: Name of the the job
 </li>
-<li>WORKSPACE: The current workspace directory
+<li><code>WORKSPACE</code>: The current workspace directory
 </li>
-<li>GIT<sub>URL</sub>: The URL of the GIT repository
+<li><code>GIT_URL</code>: The URL of the GIT repository
 </li>
-<li>SVN<sub>URL</sub>: The URL of the Subversion repository
+<li><code>SVN_URL</code>: The URL of the Subversion repository
 </li>
 </ul>
 </div>
@@ -590,7 +590,7 @@ You can easily change the above script to SSH to another system, or user.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Andrew Phillips <<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>></p>
-<p class="date">Date: 2014-12-20 Sat 16:03</p>
+<p class="date">Date: 2014-12-20 Sat 16:22</p>
 </div>
 </body>
 </html>

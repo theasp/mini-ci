@@ -266,21 +266,22 @@ Table of Contents
   scripts are executed.
 
   Mini-CI exports the following variables:
-  • MINI_CI_DIR: The data directory for Mini-CI
-  • MINI_CI_VER: The version of the Mini-CI running
-  • BUILD_DISPLAY_NAME: The build number with "#" prepended.
+  • `MINI_CI_DIR': The data directory for Mini-CI
+  • `MINI_CI_VER': The version of the Mini-CI running
+  • `BUILD_DISPLAY_NAME': The build number with "#" prepended.
     i.e. "#123"
-  • BUILD_ID: The date and time the build started in the following
+  • `BUILD_ID': The date and time the build started in the following
     format: `%Y-%m-%d_%H-%M-%S'
-  • BUILD_OUTPUT_DIR: The directory used for storage for the current
+  • `BUILD_OUTPUT_DIR': The directory used for storage for the current
     build
-  • BUILD_NUMBER: The current build number.
-  • BUILD_TAG: A string of the form: `mini-ci-${JOB_NAME}-${JOB_NUMBER}'
-  • JOB_DIR: The directory where the job is stored
-  • JOB_NAME: Name of the the job
-  • WORKSPACE: The current workspace directory
-  • GIT_URL: The URL of the GIT repository
-  • SVN_URL: The URL of the Subversion repository
+  • `BUILD_NUMBER': The current build number.
+  • `BUILD_TAG': A string of the form:
+    `mini-ci-${JOB_NAME}-${JOB_NUMBER}'
+  • `JOB_DIR': The directory where the job is stored
+  • `JOB_NAME': Name of the the job
+  • `WORKSPACE': The current workspace directory
+  • `GIT_URL': The URL of the GIT repository
+  • `SVN_URL': The URL of the Subversion repository
 
 
 7 Examples
