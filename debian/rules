@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 # See debhelper(7) (uncomment to enable)
 # output every command that modifies files on the build system.
-DH_VERBOSE = 1
+# DH_VERBOSE = 1
 
 # see EXAMPLES in dpkg-buildflags(1) and read /usr/share/dpkg/*
 DPKG_EXPORT_BUILDFLAGS = 1
@@ -16,6 +16,7 @@ include /usr/share/dpkg/default.mk
 # package maintainers to append LDFLAGS
 #export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
+DH_ALWAYS_EXCLUDE=.git
 
 # main packaging script based on dh7 syntax
 %:
