@@ -1,0 +1,7 @@
+REPO_PLUGIN="git"
+GIT_URL=https://github.com/theasp/mini-ci
+POLL_FREQ=600
+
+export TASK_DPUT_PACKAGES_DEST=ppa:theasp/mini-ci-snapshot
+export TASK_DEBUILD_SNAPSHOT_SERIES="vivid utopic trusty precise lucid"
+export TASK_DEBUILD_SNAPSHOT_KEYID=085F2A7F

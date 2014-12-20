@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Make a tar file and store it in the build output dir.
+
+TAR_DIR="${TAR_DIR:-${BUILD_OUTPUT_DIR}/tar/}"
+
+set -ex
+
+make clean tar
+mkdir -p "$TAR_DIR"
+cp *.tar* "$TAR_DIR"

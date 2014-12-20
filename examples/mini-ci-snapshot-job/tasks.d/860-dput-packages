@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Upload all source or binary debian packages to a repository using
+# dput. You should put the following in your config:
+#
+# TASK_DPUT_PACKAGES_DEST: The destination for dput to upload to.  No
+# default.
+# export TASK_DPUT_PACKAGES_DEST=<dput-destination>
+
+if [[ -z "$TASK_DPUT_PACKAGES_DEST" ]]; then
+    echo "ERROR: $(basename $0) needs TASK_DPUT_PACKAGES_DEST set"
+    exit 1
+fi
+
+DEB_DIR="${DEB_DIR:-${BUILD_OUTPUT_DIR}/deb/}"
+
+set -ex
+
+dput "$TASK_DPUT_PACKAGES_DEST" "$DEB_DIR"/*.changes
