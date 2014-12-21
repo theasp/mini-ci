@@ -188,11 +188,10 @@ main_loop() {
   # may have changed if running as a daemon.
   acquire_lock
 
-  RUN=yes
   STATE=idle
   NEXT_POLL=0
 
-  while [[ "$RUN" = "yes" ]]; do
+  while true; do
     # read_commands has a 1 second timeout
     read_commands
     process_queue
