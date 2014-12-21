@@ -1,6 +1,6 @@
 declare BUILD_ARCHIVE_WORKSPACE
 
-plugin_on_load_config_pre_repo_git() {
+plugin_on_load_config_pre_archive_workspace() {
     BUILD_ARCHIVE_WORKSPACE="no"
 }
 
