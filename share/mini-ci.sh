@@ -358,7 +358,7 @@ tasks_start() {
     BUILD_DISPLAY_NAME="#${BUILD_NUMBER}"
     BUILD_TAG="${SHNAME}-${JOB_NAME}-${BUILD_NUMBER}"
 
-    log "Starting tasks as run number $BUILD_NUMBER"
+    log "Starting tasks as build number $BUILD_NUMBER"
     run_tasks < /dev/null > $TASKS_LOG 2>&1 &
     add_child $! "tasks_finish"
   else
@@ -376,10 +376,10 @@ tasks_finish() {
   do_hook "tasks_finish_pre"
 
   if [[ $1 -eq 0 ]]; then
-    log "Tasks finished sucessfully, run number $BUILD_NUMBER"
+    log "Tasks finished sucessfully, build number $BUILD_NUMBER"
     update_status "tasks" "OK"
   else
-    warning "Tasks did not finish sucessfully, run number $BUILD_NUMBER"
+    warning "Tasks did not finish sucessfully, build number $BUILD_NUMBER"
     update_status "tasks" "ERROR"
   fi
 
