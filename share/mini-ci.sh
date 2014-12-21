@@ -769,8 +769,6 @@ quit() {
   exit 0
 }
 
-# TODO: Error handling, stop asking for passwords
-
 handle_children() {
   local tmpPids=()
   local tmpCBs=()
