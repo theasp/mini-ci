@@ -733,6 +733,23 @@ handle_children() {
   CHILD_CBS=(${tmpCBs[@]})
 }
 
+do_hook() {
+  local hook_name=$1
+
+  for f in $(find_plugin_functions "on_${hook_name}"); do
+    # Filter debugging for plugin functions because some hooks will
+    # fill filesystems...
+    case $hook_name in
+      read_command_pre|read_command_post) ;;
+      process_queue_pre|process_queue_post) ;;
+      queue_pre|queue_post) ;;
+      *) debug "Executing plugin function $f" ;;
+    esac
+
+    $f
+  done
+}
+
 find_plugin_functions() {
   local test_re="(plugin_$1_[A-Za-z0-9_]+) \(\)"
   while read line; do
