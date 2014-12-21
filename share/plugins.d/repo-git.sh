@@ -1,6 +1,6 @@
 declare -x GIT_URL
 
-plugin_config_default_repo_git() {
+plugin_on_load_config_pre_repo_git() {
   GIT_URL=""
 }
 

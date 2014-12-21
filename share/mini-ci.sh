@@ -202,23 +202,17 @@ main_loop() {
       schedule_poll
     fi
   done
-
-  quit
 }
 
 queue() {
   local cmd=$1
-  case $cmd in
-    status|poll|update|tasks|clean|abort|quit|shutdown|reload)
-    ;;
-    *)
-      error "Unknown command: $cmd"
-      exit 1
-      ;;
-  esac
+
+  do_hook "queue_pre"
 
   QUEUE=(${QUEUE[@]} $@)
   debug "Queued $@"
+
+  do_hook "queue_post"
 }
 
 add_child() {
@@ -228,21 +222,29 @@ add_child() {
 }
 
 clean() {
+  do_hook "clean_pre"
+
   log "Cleaning workspace"
   if [[ -e "$WORKSPACE" ]]; then
     log "Removing workspace $WORKSPACE"
     rm -rf $WORKSPACE
   fi
   queue "update"
+
+  do_hook "clean_post"
 }
 
 schedule_poll() {
+  do_hook "schedule_poll_pre"
+
   if [[ "$POLL_FREQ" -gt 0 ]]; then
     NEXT_POLL=$(( $(printf '%(%s)T\n' -1) + $POLL_FREQ))
   fi
+
+  do_hook "schedule_poll_post"
 }
 
-repo_run() {
+run_repo() {
   local operation=$1
   local callback=$2
   local log_file=$3
@@ -262,24 +264,30 @@ repo_run() {
   return 1
 }
 
-repo_poll_start() {
+poll_start() {
   if [[ ! -e $WORKSPACE ]]; then
     (LOG_FILE=$POLL_LOG; log "Missing workdir, doing update instead")
-    repo_update_start
+    update_start
   else
     STATE="poll"
     log "Polling job"
 
-    if ! repo_run poll "repo_poll_finish" "$POLL_LOG"; then
+    do_hook "poll_start_pre"
+
+    if ! run_repo poll "poll_finish" "$POLL_LOG"; then
       STATE="idle"
       update_status "poll" "ERROR"
     fi
+
+    do_hook "poll_start_post"
   fi
 }
 
-repo_poll_finish() {
+poll_finish() {
   STATE="idle"
-  local line=$(tail -n 1 $POLL_LOG)
+
+  do_hook "poll_finish_pre"
+
   if [[ $1 -eq 0 ]]; then
     log "Poll finished sucessfully, no update required"
     update_status "poll" "OK"
@@ -291,22 +299,31 @@ repo_poll_finish() {
     warning "Poll did not finish sucessfully"
     update_status "poll" "ERROR"
   fi
+
+  do_hook "poll_finish_post"
 }
 
-repo_update_start() {
+update_start() {
   STATE="update"
   log "Updating workspace"
 
   test -e $WORKSPACE || mkdir $WORKSPACE
 
-  if ! repo_run update "repo_update_finish" "$UPDATE_LOG"; then
+  do_hook "update_start_pre"
+
+  if ! run_repo update "update_finish" "$UPDATE_LOG"; then
     STATE="idle"
     update_status "update" "ERROR"
   fi
+
+  do_hook "update_start_post"
 }
 
-repo_update_finish() {
+update_finish() {
   STATE="idle"
+
+  do_hook "update_finish_pre"
+
   if [[ $1 -eq 0 ]]; then
     log "Update finished sucessfully, queuing tasks"
     update_status "update" "OK"
@@ -317,10 +334,15 @@ repo_update_finish() {
     warning "Update did not finish sucessfully"
     update_status "update" "ERROR"
   fi
+
+  do_hook "update_finish_post"
 }
 
 tasks_start() {
   STATE="tasks"
+
+  do_hook "tasks_start_pre"
+
   if [[ -d $TASKS_DIR ]]; then
     test -d "$BUILDS_DIR" || mkdir "$BUILDS_DIR"
 
@@ -354,10 +376,15 @@ tasks_start() {
     STATE="idle"
     update_status "tasks" "ERROR"
   fi
+
+  do_hook "tasks_start_post"
 }
 
 tasks_finish() {
   STATE="idle"
+
+  do_hook "tasks_finish_pre"
+
   if [[ $1 -eq 0 ]]; then
     log "Tasks finished sucessfully, run number $BUILD_NUMBER"
     update_status "tasks" "OK"
@@ -370,9 +397,15 @@ tasks_finish() {
     log "Archiving workspace for build $BUILD_NUMBER"
     cp -a $WORKSPACE $BUILD_OUTPUT_DIR/workspace
   fi
+
+  do_hook "tasks_finish_post"
 }
 
 abort() {
+  log "Aborting any processes"
+
+  do_hook "abort_pre"
+
   unset QUEUE
 
   local tmpPids=()
@@ -405,10 +438,14 @@ abort() {
   esac
 
   STATE="idle"
+
+  do_hook "abort_post"
 }
 
 write_status_file() {
   debug "Write status file $STATUS_FILE"
+
+  do_hook "write_status_pre"
 
   local tmpfile=$STATUS_FILE.tmp
   local status_str=$(declare -p CUR_STATUS)
@@ -423,10 +460,14 @@ status_time=${status_time_str#*=}
 EOF
 
   mv $tmpfile $STATUS_FILE
+
+  do_hook "write_status_post"
 }
 
 read_status_file() {
   debug "Reading status file in $STATUS_FILE"
+
+  do_hook "read_status_pre"
 
   for state in poll update tasks; do
     CUR_STATUS[$state]=UNKNOWN
@@ -450,12 +491,16 @@ read_status_file() {
       update_state $state "UNKNOWN"
     fi
   fi
+
+  do_hook "read_status_post"
 }
 
 update_status() {
   local item=$1
   local new_status=$2
   local new_status_time=$(printf '%(%s)T\n' -1)
+
+  do_hook "update_status_pre"
 
   debug "Setting status of $item to $new_status"
 
@@ -468,6 +513,8 @@ update_status() {
   write_status_file
 
   notify_status $item $old_status $old_status_time $new_status $new_status_time
+
+  do_hook "update_status_post"
 }
 
 notify_status() {
@@ -476,6 +523,8 @@ notify_status() {
   local old_time=$3
   local new=$4
   local new_time=$5
+
+  do_hook "notify_status_pre"
 
   local -A notify_status
 
@@ -506,9 +555,13 @@ notify_status() {
     # Run in subshell to prevent side effects
     $f $item $old $old_time $new $new_time "$active_states"
   done
+
+  do_hook "notify_status_post"
 }
 
 run_tasks() {
+  do_hook "run_tasks_pre"
+
   for task in $(ls -1 $TASKS_DIR | grep -E -e '^[a-zA-Z0-9_-]+$' | sort); do
     local file="$TASKS_DIR/$task"
     if [[ -x $file ]]; then
@@ -521,14 +574,22 @@ run_tasks() {
       fi
     fi
   done
+
+  do_hook "run_tasks_post"
 }
 
 status() {
+  do_hook "status_pre"
+
   debug ${!CUR_STATUS[@]}
   log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:${CUR_STATUS[poll]} Update:${CUR_STATUS[update]} Tasks:${CUR_STATUS[tasks]}"
+
+  do_hook "status_post"
 }
 
 read_commands() {
+  do_hook "read_commands_pre"
+
   while read -t 1 cmd args <&3; do
     #read CMD ARGS
     if [[ "$cmd" ]]; then
@@ -536,21 +597,37 @@ read_commands() {
 
       case $cmd in
         poll|update|clean|tasks) queue "$cmd" ;;
-        status) status ;;
-        abort) abort ;;
-        reload) reload_config ;;
-        quit|shutdown)
-          RUN=no
-          break
-          ;;
-        *)
-          warning "Unknown command $cmd" ;;
+        *) run_cmd $cmd ;;
       esac
     fi
   done
+
+  do_hook "read_commands_post"
+}
+
+run_cmd() {
+  local cmd=$1
+
+  do_hook "run_cmd_pre"
+
+  case $cmd in
+    quit|shutdown) quit ;;
+    status) status ;;
+    abort) abort ;;
+    reload) reload_config ;;
+    clean) clean ;;
+    poll) poll_start ;;
+    update) update_start ;;
+    tasks) tasks_start ;;
+    *) warning "Unknown command $cmd" ;;
+  esac
+
+  do_hook "run_cmd_pre"
 }
 
 process_queue() {
+  do_hook "process_queue_pre"
+
   while [[ ${QUEUE[0]} ]]; do
     if [[ "$STATE" != "idle" ]]; then
       break
@@ -558,32 +635,25 @@ process_queue() {
 
     local cmd=${QUEUE[0]}
     QUEUE=(${QUEUE[@]:1})
-    case $cmd in
-      quit|shutdown)
-        RUN=no
-        break
-        ;;
-      status) status ;;
-      abort) abort ;;
-      reload) reload_config ;;
-      clean) clean ;;
-      poll) repo_poll_start ;;
-      update) repo_update_start ;;
-      tasks) tasks_start ;;
-      *)
-        error "Unknown job in queue: $cmd" ;;
-    esac
+    run_cmd $cmd
   done
+
+  do_hook "process_queue_post"
 }
 
 reload_config() {
   log "Reloading configuration"
+
+  do_hook "reload_config_pre"
+
   load_config
   # Abort needs to be after reading the config file so that the
   # status directory is valid.
   abort
 
   acquire_lock
+
+  do_hook "reload_config_post"
 }
 
 load_config() {
@@ -603,9 +673,7 @@ load_config() {
   UPDATE_LOG="./update.log"
   WORKSPACE="./workspace"
 
-  for f in $(find_plugin_functions config_default); do
-    $f
-  done
+  do_hook "load_config_pre"
 
   if [[ -f $CONFIG_FILE ]]; then
     source $CONFIG_FILE
@@ -633,14 +701,14 @@ load_config() {
   UPDATE_LOG=$(make_full_path "$UPDATE_LOG")
   WORKSPACE=$(make_full_path "$WORKSPACE")
 
-  for f in $(find_plugin_functions config_fix); do
-    $f
-  done
+  do_hook "load_config_post"
 }
 
 acquire_lock() {
   local oknodo=$1
   local cur_pid=$BASHPID
+
+  do_hook "acquire_lock_pre"
 
   if [[ -e $PID_FILE ]]; then
     local test_pid=$(< $PID_FILE)
@@ -659,11 +727,15 @@ acquire_lock() {
 
   debug "Writing $cur_pid to $PID_FILE"
   echo $cur_pid > $PID_FILE
+
+  do_hook "acquire_lock_post"
 }
 
 send_message() {
   local timeout=$1
   local cmd=$2
+
+  do_hook "send_message_pre"
 
   case $cmd in
     status|poll|update|tasks|clean|abort|quit|shutdown|reload) ;;
@@ -694,13 +766,21 @@ send_message() {
   if [[ $? -ne 0 ]]; then
     error "Error writing to $CONTROL_FIFO"
   fi
+
+  do_hook "send_message_post"
 }
 
 quit() {
   log "Shutting down"
+
+  do_hook "quit_pre"
+
   abort
   rm -f $PID_FILE
   rm -f $CONTROL_FILE
+
+  do_hook "quit_post"
+
   exit 0
 }
 

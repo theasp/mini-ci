@@ -2,13 +2,13 @@ declare EMAIL_ADDRESS
 declare EMAIL_NOTIFY
 declare EMAIL_SUBJECT
 
-plugin_config_default_notify_email() {
+plugin_on_load_config_pre_notify_email() {
   EMAIL_ADDRESS=""
   EMAIL_NOTIFY="NEWPROB, RECOVER"
   EMAIL_SUBJECT=""
 }
 
-plugin_config_fix_notify_email() {
+plugin_on_load_config_post_notify_email() {
   EMAIL_NOTIFY=${EMAIL_NOTIFY//,/ /}
   EMAIL_NOTIFY=${EMAIL_NOTIFY^^[[:alpha:]]}
   EMAIL_ADDRESS=${EMAIL_ADDRESS//,/ /}

@@ -23,6 +23,8 @@ Table of Contents
 .. 7.1 Mini-CI Job Directory
 .. 7.2 Starting the Mini-CI Daemon as a User
 .. 7.3 Notifying a Mini-CI Daemon from GIT
+8 Plugin API
+.. 8.1 Hooks
 
 
 
@@ -379,3 +381,60 @@ Table of Contents
 
   You can easily change the above script to SSH to another system, or
   user.
+
+
+8 Plugin API
+════════════
+
+8.1 Hooks
+─────────
+
+  Your plugin can provide functions using the following names:
+  • `on_abort_post_<plugin_name>'
+  • `on_abort_pre_<plugin_name>'
+  • `on_acquire_lock_post_<plugin_name>'
+  • `on_acquire_lock_pre_<plugin_name>'
+  • `on_clean_post_<plugin_name>'
+  • `on_clean_pre_<plugin_name>'
+  • `on_load_config_post_<plugin_name>'
+  • `on_load_config_pre_<plugin_name>'
+  • `on_notify_status_post_<plugin_name>'
+  • `on_notify_status_pre_<plugin_name>'
+  • `on_poll_finish_post_<plugin_name>'
+  • `on_poll_finish_pre_<plugin_name>'
+  • `on_poll_start_post_<plugin_name>'
+  • `on_poll_start_pre_<plugin_name>'
+  • `on_process_queue_post_<plugin_name>'
+  • `on_process_queue_pre_<plugin_name>'
+  • `on_queue_post_<plugin_name>'
+  • `on_queue_pre_<plugin_name>'
+  • `on_quit_post_<plugin_name>'
+  • `on_quit_pre_<plugin_name>'
+  • `on_read_commands_post_<plugin_name>'
+  • `on_read_commands_pre_<plugin_name>'
+  • `on_read_status_post_<plugin_name>'
+  • `on_read_status_pre_<plugin_name>'
+  • `on_reload_config_post_<plugin_name>'
+  • `on_reload_config_pre_<plugin_name>'
+  • `on_run_cmd_pre_<plugin_name>'
+  • `on_run_cmd_pre_<plugin_name>'
+  • `on_run_tasks_post_<plugin_name>'
+  • `on_run_tasks_pre_<plugin_name>'
+  • `on_schedule_poll_post_<plugin_name>'
+  • `on_schedule_poll_pre_<plugin_name>'
+  • `on_send_message_post_<plugin_name>'
+  • `on_send_message_pre_<plugin_name>'
+  • `on_status_post_<plugin_name>'
+  • `on_status_pre_<plugin_name>'
+  • `on_tasks_finish_post_<plugin_name>'
+  • `on_tasks_finish_pre_<plugin_name>'
+  • `on_tasks_start_post_<plugin_name>'
+  • `on_tasks_start_pre_<plugin_name>'
+  • `on_update_finish_post_<plugin_name>'
+  • `on_update_finish_pre_<plugin_name>'
+  • `on_update_start_post_<plugin_name>'
+  • `on_update_start_pre_<plugin_name>'
+  • `on_update_status_post_<plugin_name>'
+  • `on_update_status_pre_<plugin_name>'
+  • `on_write_status_post_<plugin_name>'
+  • `on_write_status_pre_<plugin_name>'

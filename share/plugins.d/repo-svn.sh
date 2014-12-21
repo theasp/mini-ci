@@ -1,7 +1,7 @@
 declare -x SVN_URL=""
 declare SVN_CMD="svn"
 
-plugin_config_default_repo_svn() {
+plugin_on_load_config_pre_repo_svn() {
   SVN_URL=""
 }
 
