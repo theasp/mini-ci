@@ -29,7 +29,6 @@ declare -x JOB_DIR=""
 declare -x JOB_NAME=""
 declare -x WORKSPACE=""
 declare BUILDS_DIR=""
-declare BUILD_KEEP=""
 declare CONFIG_FILE=""
 declare CONTROL_FIFO=""
 declare DEBUG=""
@@ -352,14 +351,6 @@ tasks_start() {
     done
 
     test -d "$BUILD_OUTPUT_DIR" || mkdir "$BUILD_OUTPUT_DIR"
-
-    if [[ "$BUILD_KEEP" -gt 0 ]]; then
-      while read num; do
-        if [[ -d "$BUILDS_DIR/$num" ]]; then
-          rm -r "$BUILDS_DIR/$num"
-        fi
-      done < <(seq 1 $(( $BUILD_NUMBER - $BUILD_KEEP)))
-    fi
 
     test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$BUILD_OUTPUT_DIR/"
 
