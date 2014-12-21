@@ -29,7 +29,6 @@ declare -x JOB_DIR=""
 declare -x JOB_NAME=""
 declare -x WORKSPACE=""
 declare BUILDS_DIR=""
-declare BUILD_ARCHIVE_WORKSPACE=""
 declare BUILD_KEEP=""
 declare CONFIG_FILE=""
 declare CONTROL_FIFO=""
@@ -393,11 +392,6 @@ tasks_finish() {
     update_status "tasks" "ERROR"
   fi
 
-  if [[ "$BUILD_ARCHIVE_WORKSPACE" = "yes" ]]; then
-    log "Archiving workspace for build $BUILD_NUMBER"
-    cp -a $WORKSPACE $BUILD_OUTPUT_DIR/workspace
-  fi
-
   do_hook "tasks_finish_post"
 }
 
@@ -659,7 +653,6 @@ reload_config() {
 
 load_config() {
   BUILDS_DIR="./builds"
-  BUILD_ARCHIVE_WORKSPACE=""
   BUILD_KEEP=0
   CONTROL_FIFO="./control.fifo"
   LOG_FILE=""
