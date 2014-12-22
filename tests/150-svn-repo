@@ -1,0 +1,106 @@
+#!/bin/bash
+
+SHNAME=$(basename $0)
+CURDIR=$PWD
+
+testPoll() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+    SVN_URL=$TMPDIR/repo.svn
+    WORK_DIR=$TMPDIR/workspace
+    POLL_LOG=$TMPDIR/poll.log
+    UPDATE_LOG=$TMPDIR/update.log
+    
+    svnadmin create $SVN_URL || return
+    
+    cat > $TMPDIR/config <<EOF
+EMAIL_NOTIFY="NEVER"
+REPO_PLUGIN=svn
+SVN_URL=file://$SVN_URL
+EOF
+
+    ./mini-ci -d $TMPDIR -F -D poll quit
+    assertEquals "Wrong return code" $? 0
+
+    assertTrue "Did not checkout repository" "[ -d '${WORK_DIR}/.svn' ]"
+    assertTrue "Did not create $(basename "${POLL_LOG}")" "[ -f '${POLL_LOG}' ]"
+    assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
+
+    if [ -f "${POLL_LOG}" ]; then
+        LINES=$(wc -l < "$POLL_LOG")
+        assertTrue "Not enough lines in $POLL_LOG ($LINES)" "[ $LINES -gt 0 ]"
+    fi
+    rm -rf $TMPDIR
+}
+
+
+testInitialUpdate() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+    SVN_URL=$TMPDIR/repo.svn
+    WORK_DIR=$TMPDIR/workspace
+    UPDATE_LOG=$TMPDIR/update.log
+
+    svnadmin create $SVN_URL || return
+    
+    cat > $TMPDIR/config <<EOF
+EMAIL_NOTIFY="NEVER"
+REPO_PLUGIN=svn
+SVN_URL=file://$SVN_URL
+EOF
+
+    ./mini-ci -d $TMPDIR -F -D update quit
+    assertEquals "Wrong return code" $? 0
+
+    assertTrue "Did not checkout repository" "[ -d '${WORK_DIR}/.svn' ]"
+    assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
+    rm -rf $TMPDIR
+}
+
+testNextUpdate() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+    SVN_URL=$TMPDIR/repo.svn
+    SVN_TMP=$TMPDIR/repo
+    WORK_DIR=$TMPDIR/workspace
+    POLL_LOG=$TMPDIR/poll.log
+    UPDATE_LOG=$TMPDIR/update.log
+
+    svnadmin create $SVN_URL || return
+    (
+        svn co file://$SVN_URL $SVN_TMP
+        cd $SVN_TMP;
+        date > initial-commit;
+        svn add initial-commit;
+        svn commit . -m 'Initial commit'
+    )
+    
+    cat > $TMPDIR/config <<EOF
+EMAIL_NOTIFY="NEVER"
+REPO_PLUGIN=svn
+SVN_URL=file://$SVN_URL
+EOF
+
+    (cd $TMPDIR && $CURDIR/mini-ci -F -D poll quit)
+    assertEquals "Wrong return code" $? 0
+
+    assertTrue "Did not checkout repository" "[ -d '${WORK_DIR}/.svn' ]"
+    assertTrue "Did not create $(basename "${POLL_LOG}")" "[ -f '${POLL_LOG}' ]"
+    assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
+    rm -f $UPDATE_LOG
+
+    (
+        cd $SVN_TMP;
+        date > test-file;
+        svn add test-file;
+        svn commit . -m 'Added test-file'
+    )
+
+    ./mini-ci -d $TMPDIR -F -D update quit
+    assertEquals "Wrong return code" $? 0
+
+    assertTrue "Did not find new file" "[ -f '${WORK_DIR}/test-file' ]"
+    assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
+    
+    #rm -rf $TMPDIR
+}
+
+
+. shunit2
