@@ -20,7 +20,7 @@ plugin_repo_update_git() {
 
   local cur_url=$(git ls-remote --get-url)
   log "Starting update of $cur_url"
-  
+
   local old_local=$(git rev-parse @{0})
 
   if ! git pull; then

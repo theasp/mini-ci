@@ -30,4 +30,3 @@ plugin_repo_poll_external() {
 # sh-indentation: 2
 # indent-tabs-mode: nil
 # End:
-
