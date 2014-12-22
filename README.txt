@@ -24,7 +24,10 @@ Table of Contents
 .. 7.2 Starting the Mini-CI Daemon as a User
 .. 7.3 Notifying a Mini-CI Daemon from GIT
 8 Plugin API
-.. 8.1 Hooks
+.. 8.1 Repository Plugins
+.. 8.2 Notification Plugins
+.. 8.3 Generic Hooks
+.. 8.4 Example Plugin
 
 
 
@@ -137,6 +140,8 @@ Table of Contents
   • `config': The configuration file for the job.
   • `tasks.d': Contains all the tasks that would be executed during a
     build of your repository
+  • `plugins.d': Contains any additional plugins to be used for this
+    job.
   • `builds': The builds directory contains the output of each build of
     a job in numbered directories.
   • `workspace': The directory your repository is checked out into, and
@@ -386,8 +391,51 @@ Table of Contents
 8 Plugin API
 ════════════
 
-8.1 Hooks
-─────────
+  Mini-CI can be extended with plugins written as bash functions.  Any
+  plugin matching `*.sh' in the `plugins.d' directory in either the
+  Mini-CI installation path or the current job directory will be sourced
+  when Mini-CI starts up.  Plugins must declare their variables using
+  `declare' (or `declare -x' if the variable is to be exported).
+  Variables that are to be set using the config file should be set the
+  default value using a function of the name
+  `plugin_on_load_config_pre_<name>'.  In most cases the plugin's
+  functions will run in the same shell as the rest of Mini-CI so that
+  the plugin can modify variables, but this also introduces the chance
+  that a plugin will introduce unwanted side-effects.
+
+
+8.1 Repository Plugins
+──────────────────────
+
+  Repository plugins are ran in a subshell with `STDOUT' redirected to
+  the appropriate logfile.  A repository plugin must provide the
+  following functions:
+  • `plugin_repo_update_<name>'
+    • Must exit with a return code of 0 if successful.
+  • `plugin_repo_poll_<name>'
+    • Must exit with a return code of 0 if successful.
+    • Must exit with a return code of 1 if there is an error.
+    • Must exit with a return code of 2 if the repository is out of
+      date.
+
+
+8.2 Notification Plugins
+────────────────────────
+
+  A notification plugin must provide a function named
+  `plugin_notify_<name>', which accepts the following arguments:
+  • item: The name of the state that triggered the notification,
+    i.e. `poll', `update', `tasks', etc.
+  • old: The old status of that state, i.e. `UNKNOWN', `ERROR', or `OK'
+  • old_time: The time in epoch seconds the old status was set
+  • new: The new status of the state
+  • new_time: The time in epoch seconds the new status was set
+  • active_states: A string containing one of `OK', `ERROR', `UNKNOWN',
+    additionally it may contain `NEWPROB' or `RECOVER'.
+
+
+8.3 Generic Hooks
+─────────────────
 
   Your plugin can provide functions using the following names:
   • `on_abort_post_<plugin_name>'
@@ -438,3 +486,33 @@ Table of Contents
   • `on_update_status_pre_<plugin_name>'
   • `on_write_status_post_<plugin_name>'
   • `on_write_status_pre_<plugin_name>'
+
+
+8.4 Example Plugin
+──────────────────
+
+  The `build-keep.sh' plugin uses a variable `BUILD_KEEP' which is
+  settable from the config file and used the `tasks_finish_post' hook:
+  ┌────
+  │ declare BUILD_KEEP
+  │ 
+  │ plugin_on_load_config_pre_build_keep() {
+  │   BUILD_KEEP="0"
+  │ }
+  │ 
+  │ plugin_on_tasks_finish_post_build_keep() {
+  │   if [[ "$BUILD_KEEP" -gt 0 ]]; then
+  │     while read num; do
+  │       if [[ -d "$BUILDS_DIR/$num" ]]; then
+  │         rm -r "$BUILDS_DIR/$num"
+  │       fi
+  │     done < <(seq 1 $(( $BUILD_NUMBER - $BUILD_KEEP)))
+  │   fi
+  │ }
+  │ 
+  │ # Local Variables:
+  │ # sh-basic-offset: 2
+  │ # sh-indentation: 2
+  │ # indent-tabs-mode: nil
+  │ # End:
+  └────
