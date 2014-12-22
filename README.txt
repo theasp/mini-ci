@@ -360,9 +360,10 @@ Table of Contents
   The easiest way to run Mini-CI as a user is to have `cron' start it.
   For instance, the following crontab will start Mini-CI every 10
   minutes, and if it is already running for that job directory it will
-  exit quietly:
+  exit quietly, otherwise it will poll the repository for any updates it
+  missed when it starts:
   ┌────
-  │ */10 * * * * mini-ci --oknodo -d ~/some-mini-ci-job-directory
+  │ */10 * * * * mini-ci --oknodo -d ~/some-mini-ci-job-directory poll
   └────
 
   Mini-CI will run in the background doing it's thing whenever it needs

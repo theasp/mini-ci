@@ -260,9 +260,9 @@ Mini-CI started in foreground mode, downloaded the repository, then ran all the 
 You can stop the daemon by pressing =ctrl-c=, or by running =mini-ci -m quit= in the job directory in another shell.
 
 ** Starting the Mini-CI Daemon as a User
-The easiest way to run Mini-CI as a user is to have =cron= start it.  For instance, the following crontab will start Mini-CI every 10 minutes, and if it is already running for that job directory it will exit quietly:
+The easiest way to run Mini-CI as a user is to have =cron= start it.  For instance, the following crontab will start Mini-CI every 10 minutes, and if it is already running for that job directory it will exit quietly, otherwise it will poll the repository for any updates it missed when it starts:
 #+BEGIN_EXAMPLE
-*/10 * * * * mini-ci --oknodo -d ~/some-mini-ci-job-directory
+*/10 * * * * mini-ci --oknodo -d ~/some-mini-ci-job-directory poll
 #+END_EXAMPLE
 
 Mini-CI will run in the background doing it's thing whenever it needs to.

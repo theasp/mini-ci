@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2014-12-22 Mon 14:21 -->
+<!-- 2014-12-22 Mon 15:13 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -564,10 +564,10 @@ You can stop the daemon by pressing <code>ctrl-c</code>, or by running <code>min
 <h3 id="sec-7-2"><span class="section-number-3">7.2</span> Starting the Mini-CI Daemon as a User</h3>
 <div class="outline-text-3" id="text-7-2">
 <p>
-The easiest way to run Mini-CI as a user is to have <code>cron</code> start it.  For instance, the following crontab will start Mini-CI every 10 minutes, and if it is already running for that job directory it will exit quietly:
+The easiest way to run Mini-CI as a user is to have <code>cron</code> start it.  For instance, the following crontab will start Mini-CI every 10 minutes, and if it is already running for that job directory it will exit quietly, otherwise it will poll the repository for any updates it missed when it starts:
 </p>
 <pre class="example">
-*/10 * * * * mini-ci --oknodo -d ~/some-mini-ci-job-directory
+*/10 * * * * mini-ci --oknodo -d ~/some-mini-ci-job-directory poll
 </pre>
 
 <p>
@@ -795,7 +795,7 @@ The <code>build-keep.sh</code> plugin uses a variable <code>BUILD_KEEP</code> wh
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Andrew Phillips &lt;<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>&gt;</p>
-<p class="date">Date: 2014-12-22 Mon 14:21</p>
+<p class="date">Date: 2014-12-22 Mon 15:13</p>
 </div>
 </body>
 </html>
