@@ -1,7 +1,7 @@
 declare BUILD_KEEP
 
 plugin_on_load_config_pre_build_keep() {
-  BUILD_ARCHIVE_WORKSPACE="0"
+  BUILD_KEEP="0"
 }
 
 plugin_on_tasks_finish_post_build_keep() {
