@@ -575,18 +575,28 @@ status() {
 
 read_commands() {
   do_hook "read_commands_pre"
+  local cmd=""
 
-  while read -t 1 cmd args <&3; do
-    #read CMD ARGS
-    if [[ "$cmd" ]]; then
-      cmd=$(echo $cmd | tr '[:upper:]' '[:lower:]')
-
-      case $cmd in
-        poll|update|clean|tasks) queue "$cmd" ;;
-        *) run_cmd $cmd ;;
-      esac
+  # If there is something queued and state is idle, only attempt a
+  # read if there is something to read.  This should clear the queue
+  # faster.
+  if [[ "$STATE" = "idle" && "${!QUEUE[@]}" != "" ]]; then
+    debug "Short wait"
+    if read -t 0 <&3; then
+      read -t 1 cmd <&3 || true
     fi
-  done
+  else
+    read -t 1 cmd <&3 || true
+  fi
+
+  if [[ -n "$cmd" ]]; then
+    cmd=$(echo $cmd | tr '[:upper:]' '[:lower:]')
+
+    case $cmd in
+      poll|update|clean|tasks) queue "$cmd" ;;
+      *) run_cmd $cmd ;;
+    esac
+  fi
 
   do_hook "read_commands_post"
 }
