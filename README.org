@@ -209,8 +209,8 @@ Mini-CI exports the following variables:
 - =JOB_DIR=: The directory where the job is stored
 - =JOB_NAME=: Name of the the job
 - =WORKSPACE=: The current workspace directory
-- =GIT_URL=: The URL of the GIT repository
-- =SVN_URL=: The URL of the Subversion repository
+- =GIT_URL=: The URL of the GIT repository (when using the GIT plugin)
+- =SVN_URL=: The URL of the Subversion repository (when using the Subversion plugin)
 
 * Examples
 ** Mini-CI Job Directory
