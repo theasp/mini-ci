@@ -99,7 +99,7 @@ EOF
     assertTrue "Did not find new file" "[ -f '${WORK_DIR}/test-file' ]"
     assertTrue "Did not create $(basename "${UPDATE_LOG}")" "[ -f '${UPDATE_LOG}' ]"
     
-    #rm -rf $TMPDIR
+    rm -rf $TMPDIR
 }
 
 
