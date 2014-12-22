@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2014-12-21 Sun 12:17 -->
+<!-- 2014-12-22 Mon 11:31 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -203,7 +203,7 @@ Mini-CI is a small daemon to perform continuous integration (CI) for a single re
 </li>
 <li>NO support for multiple projects!
 <ul class="org-ul">
-<li>You can run it more than once…
+<li>You can run it more than once&#x2026;
 </li>
 </ul>
 </li>
@@ -271,8 +271,8 @@ From the output of <code>mini-ci --help</code>:
 Usage: mini-ci [option ...] [command ...]
 
 Options:
-  -d|--job-dir <dir>       directory for job
-  -c|--config-file <file>  config file to use, relative to job-dir
+  -d|--job-dir &lt;dir&gt;       directory for job
+  -c|--config-file &lt;file&gt;  config file to use, relative to job-dir
   -m|--message [timeout]   send commands to running daemon, then exit
   -o|--oknodo              exit quietly if already running
   -D|--debug               log debugging information
@@ -294,7 +294,7 @@ Commands:
 Commands given while not in message mode will be queued.  For instance
 the following command will have a repository polled for updates (which
 will trigger update and tasks if required) then quit.
-  mini-ci -d <dir> -F poll quit
+  mini-ci -d &lt;dir&gt; -F poll quit
 </pre>
 </div>
 </div>
@@ -357,24 +357,16 @@ The <code>config</code> file in <code>skeleton</code> is:
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- git</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- svn</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- external</span>
-<span style="color: #eedd82;">REPO_PLUGIN</span>=<span style="color: #ffa07a;">"<plugin>"</span>
+<span style="color: #eedd82;">REPO_PLUGIN</span>=<span style="color: #ffa07a;">"&lt;plugin&gt;"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_FREQ: If this is set to a number greater than zero, it will poll the</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repository using the repo-handler every this many seconds, starting</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">at startup.  To have a more complicated scheme, use cron.</span>
 <span style="color: #eedd82;">POLL_FREQ</span>=600
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_KEEP: If this is set to a number greater than zero, only this</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">many build log directories will be kept.  Defaults to "0".</span>
-<span style="color: #eedd82;">BUILD_KEEP</span>=0
-
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">WORKSPACE: The directory where the repository will be checked out</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">into, and where tasks are launched.  Defaults to "./workspace".</span>
 <span style="color: #eedd82;">WORKSPACE</span>=<span style="color: #ffa07a;">"./workspace"</span>
-
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_ARCHIVE_WORKSPACE: When set to "yes" will copy the workspace into</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the $BUILDS_DIR/$BUILD_NUM/workspace.  Defaults to "".</span>
-<span style="color: #eedd82;">BUILD_ARCHIVE_WORKSPACE</span>=<span style="color: #ffa07a;">""</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">TASKS_DIR: The directory which holds the tasks to be performed on</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the checked out repository.  Defaults to "./tasks.d"</span>
@@ -414,12 +406,12 @@ The <code>config</code> file in <code>skeleton</code> is:
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">GIT_URL: The URL to the repository.  Fetching the URL must not ask</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
-<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">GIT_URL="<url>"</span>
+<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">GIT_URL="&lt;url&gt;"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">SVN_URL: The URL to the repository.  Fetching the URL must not ask</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
-<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">SVN_URL="<url>"</span>
+<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">SVN_URL="&lt;url&gt;"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_NOTIFY: A space and/or comma separated list of conditions to</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",</span>
@@ -436,6 +428,14 @@ The <code>config</code> file in <code>skeleton</code> is:
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_SUBJECT: The subject to have for notification emails.</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Defaults to "Mini-CI Notification - $JOB_NAME".</span>
 <span style="color: #eedd82;">EMAIL_SUBJECT</span>=<span style="color: #ffa07a;">"Mini-CI Notification - $JOB_NAME"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_ARCHIVE_WORKSPACE: When set to "yes" will copy the workspace into</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the $BUILDS_DIR/$BUILD_NUM/workspace.  Defaults to "no".</span>
+<span style="color: #eedd82;">BUILD_ARCHIVE_WORKSPACE</span>=<span style="color: #ffa07a;">""</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_KEEP: If this is set to a number greater than zero, only this</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">many build log directories will be kept.  Defaults to "0".</span>
+<span style="color: #eedd82;">BUILD_KEEP</span>=0
 </pre>
 </div>
 </div>
@@ -444,7 +444,7 @@ The <code>config</code> file in <code>skeleton</code> is:
 <h3 id="sec-6-2"><span class="section-number-3">6.2</span> <code>tasks.d</code></h3>
 <div class="outline-text-3" id="text-6-2">
 <p>
-The <code>tasks.d</code> directory contains all the tasks that would be executed during a build of your repository.  The <code>skeleton</code> contains a few examples.  Each script must match the regular expression <code>^[a-zA-Z0-9_-]+$</code> and will be ran in sort order, therefore it is recommended that each script be named in the form <code><nnn>-<description_of_task></code>.  If a script exits with a return code that is not zero, it is considered a build error and no further scripts are executed.
+The <code>tasks.d</code> directory contains all the tasks that would be executed during a build of your repository.  The <code>skeleton</code> contains a few examples.  Each script must match the regular expression <code>^[a-zA-Z0-9_-]+$</code> and will be ran in sort order, therefore it is recommended that each script be named in the form <code>&lt;nnn&gt;-&lt;description_of_task&gt;</code>.  If a script exits with a return code that is not zero, it is considered a build error and no further scripts are executed.
 </p>
 
 <p>
@@ -602,101 +602,101 @@ You can easily change the above script to SSH to another system, or user.
 Your plugin can provide functions using the following names:
 </p>
 <ul class="org-ul">
-<li><code>on_abort_post_<plugin_name></code>
+<li><code>on_abort_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_abort_pre_<plugin_name></code>
+<li><code>on_abort_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_acquire_lock_post_<plugin_name></code>
+<li><code>on_acquire_lock_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_acquire_lock_pre_<plugin_name></code>
+<li><code>on_acquire_lock_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_clean_post_<plugin_name></code>
+<li><code>on_clean_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_clean_pre_<plugin_name></code>
+<li><code>on_clean_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_load_config_post_<plugin_name></code>
+<li><code>on_load_config_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_load_config_pre_<plugin_name></code>
+<li><code>on_load_config_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_notify_status_post_<plugin_name></code>
+<li><code>on_notify_status_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_notify_status_pre_<plugin_name></code>
+<li><code>on_notify_status_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_poll_finish_post_<plugin_name></code>
+<li><code>on_poll_finish_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_poll_finish_pre_<plugin_name></code>
+<li><code>on_poll_finish_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_poll_start_post_<plugin_name></code>
+<li><code>on_poll_start_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_poll_start_pre_<plugin_name></code>
+<li><code>on_poll_start_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_process_queue_post_<plugin_name></code>
+<li><code>on_process_queue_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_process_queue_pre_<plugin_name></code>
+<li><code>on_process_queue_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_queue_post_<plugin_name></code>
+<li><code>on_queue_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_queue_pre_<plugin_name></code>
+<li><code>on_queue_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_quit_post_<plugin_name></code>
+<li><code>on_quit_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_quit_pre_<plugin_name></code>
+<li><code>on_quit_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_read_commands_post_<plugin_name></code>
+<li><code>on_read_commands_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_read_commands_pre_<plugin_name></code>
+<li><code>on_read_commands_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_read_status_post_<plugin_name></code>
+<li><code>on_read_status_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_read_status_pre_<plugin_name></code>
+<li><code>on_read_status_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_reload_config_post_<plugin_name></code>
+<li><code>on_reload_config_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_reload_config_pre_<plugin_name></code>
+<li><code>on_reload_config_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_run_cmd_pre_<plugin_name></code>
+<li><code>on_run_cmd_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_run_cmd_pre_<plugin_name></code>
+<li><code>on_run_cmd_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_run_tasks_post_<plugin_name></code>
+<li><code>on_run_tasks_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_run_tasks_pre_<plugin_name></code>
+<li><code>on_run_tasks_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_schedule_poll_post_<plugin_name></code>
+<li><code>on_schedule_poll_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_schedule_poll_pre_<plugin_name></code>
+<li><code>on_schedule_poll_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_send_message_post_<plugin_name></code>
+<li><code>on_send_message_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_send_message_pre_<plugin_name></code>
+<li><code>on_send_message_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_status_post_<plugin_name></code>
+<li><code>on_status_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_status_pre_<plugin_name></code>
+<li><code>on_status_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_tasks_finish_post_<plugin_name></code>
+<li><code>on_tasks_finish_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_tasks_finish_pre_<plugin_name></code>
+<li><code>on_tasks_finish_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_tasks_start_post_<plugin_name></code>
+<li><code>on_tasks_start_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_tasks_start_pre_<plugin_name></code>
+<li><code>on_tasks_start_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_update_finish_post_<plugin_name></code>
+<li><code>on_update_finish_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_update_finish_pre_<plugin_name></code>
+<li><code>on_update_finish_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_update_start_post_<plugin_name></code>
+<li><code>on_update_start_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_update_start_pre_<plugin_name></code>
+<li><code>on_update_start_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_update_status_post_<plugin_name></code>
+<li><code>on_update_status_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_update_status_pre_<plugin_name></code>
+<li><code>on_update_status_pre_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_write_status_post_<plugin_name></code>
+<li><code>on_write_status_post_&lt;plugin_name&gt;</code>
 </li>
-<li><code>on_write_status_pre_<plugin_name></code>
+<li><code>on_write_status_pre_&lt;plugin_name&gt;</code>
 </li>
 </ul>
 </div>
@@ -704,8 +704,8 @@ Your plugin can provide functions using the following names:
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Andrew Phillips <<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>></p>
-<p class="date">Date: 2014-12-21 Sun 12:17</p>
+<p class="author">Author: Andrew Phillips &lt;<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>&gt;</p>
+<p class="date">Date: 2014-12-22 Mon 11:31</p>
 </div>
 </body>
 </html>

@@ -92,7 +92,7 @@ The =config= file is a shell script that is sourced when Mini-CI is started whic
 The =config= file in =skeleton= is:
 #+BEGIN_SRC sh :exports results :results drawer :eval no-export
 echo "#+BEGIN_SRC sh"
-cat skeleton/config
+cat examples/skeleton/config
 echo "#+END_SRC"
 #+END_SRC
 
@@ -119,17 +119,9 @@ REPO_PLUGIN="<plugin>"
 # at startup.  To have a more complicated scheme, use cron.
 POLL_FREQ=600
 
-# BUILD_KEEP: If this is set to a number greater than zero, only this
-# many build log directories will be kept.  Defaults to "0".
-BUILD_KEEP=0
-
 # WORKSPACE: The directory where the repository will be checked out
 # into, and where tasks are launched.  Defaults to "./workspace".
 WORKSPACE="./workspace"
-
-# BUILD_ARCHIVE_WORKSPACE: When set to "yes" will copy the workspace into
-# the $BUILDS_DIR/$BUILD_NUM/workspace.  Defaults to "".
-BUILD_ARCHIVE_WORKSPACE=""
 
 # TASKS_DIR: The directory which holds the tasks to be performed on
 # the checked out repository.  Defaults to "./tasks.d"
@@ -191,6 +183,15 @@ EMAIL_ADDRESS=""
 # EMAIL_SUBJECT: The subject to have for notification emails.
 # Defaults to "Mini-CI Notification - $JOB_NAME".
 EMAIL_SUBJECT="Mini-CI Notification - $JOB_NAME"
+
+# BUILD_ARCHIVE_WORKSPACE: When set to "yes" will copy the workspace into
+# the $BUILDS_DIR/$BUILD_NUM/workspace.  Defaults to "no".
+BUILD_ARCHIVE_WORKSPACE=""
+
+# BUILD_KEEP: If this is set to a number greater than zero, only this
+# many build log directories will be kept.  Defaults to "0".
+BUILD_KEEP=0
+
 #+END_SRC
 :END:
 ** =tasks.d=

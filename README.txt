@@ -180,17 +180,9 @@ Table of Contents
   │ # at startup.  To have a more complicated scheme, use cron.
   │ POLL_FREQ=600
   │ 
-  │ # BUILD_KEEP: If this is set to a number greater than zero, only this
-  │ # many build log directories will be kept.  Defaults to "0".
-  │ BUILD_KEEP=0
-  │ 
   │ # WORKSPACE: The directory where the repository will be checked out
   │ # into, and where tasks are launched.  Defaults to "./workspace".
   │ WORKSPACE="./workspace"
-  │ 
-  │ # BUILD_ARCHIVE_WORKSPACE: When set to "yes" will copy the workspace into
-  │ # the $BUILDS_DIR/$BUILD_NUM/workspace.  Defaults to "".
-  │ BUILD_ARCHIVE_WORKSPACE=""
   │ 
   │ # TASKS_DIR: The directory which holds the tasks to be performed on
   │ # the checked out repository.  Defaults to "./tasks.d"
@@ -252,6 +244,14 @@ Table of Contents
   │ # EMAIL_SUBJECT: The subject to have for notification emails.
   │ # Defaults to "Mini-CI Notification - $JOB_NAME".
   │ EMAIL_SUBJECT="Mini-CI Notification - $JOB_NAME"
+  │ 
+  │ # BUILD_ARCHIVE_WORKSPACE: When set to "yes" will copy the workspace into
+  │ # the $BUILDS_DIR/$BUILD_NUM/workspace.  Defaults to "no".
+  │ BUILD_ARCHIVE_WORKSPACE=""
+  │ 
+  │ # BUILD_KEEP: If this is set to a number greater than zero, only this
+  │ # many build log directories will be kept.  Defaults to "0".
+  │ BUILD_KEEP=0
   └────
 
 
