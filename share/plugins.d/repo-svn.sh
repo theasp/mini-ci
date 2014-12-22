@@ -12,7 +12,7 @@ plugin_repo_update_svn() {
     fi
 
     log "Starting checkout of $SVN_URL"
-    if ! $SVN_CMD checkout $repo . < /dev/null; then
+    if ! $SVN_CMD checkout $SVN_URL . < /dev/null; then
       error "$SVN_CMD checkout returned $?"
     fi
     log "Checkout finished without error"
