@@ -193,6 +193,15 @@ BUILD_ARCHIVE_WORKSPACE=""
 # many build log directories will be kept.  Defaults to "0".
 BUILD_KEEP=0
 
+# BUILD_DEPENDENCY_LIST: This is a list of status files, seperated by
+# spaces, for other Mini-CI jobs that will cause tasks to wait until
+# they are "idle" and the status of their tasks is "OK".  Defaults to
+# "".
+BUILD_DEPENDENCY_LIST=""
+
+# BUILD_DEPENDENCY_TIMEOUT: The number of seconds to wait for
+# dependencies to be ready.  Defaults to "1200" (20 minutes).
+BUILD_DEPENDENCY_TIMEOUT=1200
 #+END_SRC
 :END:
 ** =tasks.d=
@@ -356,7 +365,7 @@ egrep 'do_hook ".*"' share/mini-ci.sh | cut -f 2 -d \" | sort | sed -e 's/^/- =o
 The =build-keep.sh= plugin uses a variable =BUILD_KEEP= which is settable from the config file and used the =tasks_finish_post= hook:
 #+BEGIN_SRC sh :exports results :results raw drawer :eval no-export
 echo "#+BEGIN_SRC sh"
-cat share/plugins.d/build-keep.sh
+cat share/plugins.d/build-keep.sh | grep -v '^#'
 echo "#+END_SRC"
 #+END_SRC
 
@@ -379,15 +388,10 @@ plugin_on_tasks_finish_post_build_keep() {
   fi
 }
 
-# Local Variables:
-# sh-basic-offset: 2
-# sh-indentation: 2
-# indent-tabs-mode: nil
-# End:
 #+END_SRC
 :END:
 
 # Local variables:
 # org-ascii-charset: utf-8
-# eval: (add-hook 'after-save-hook '(lambda () (org-ascii-export-to-ascii) (org-html-export-to-html) ) nil t)
-# end:
+# eval: (add-hook 'after-save-hook '(lambda () (org-ascii-export-to-ascii) (org-html-export-to-html)) nil t)
+# End:

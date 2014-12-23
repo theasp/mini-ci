@@ -1,0 +1,104 @@
+#!/bin/bash
+
+SHNAME=$(basename $0)
+TMPDIR=$(mktemp -u -d "/tmp/${SHNAME}-XXXXXX")
+
+source ./share/functions.sh
+source ./share/plugins.d/dependency.sh
+
+set +e
+
+testSetDefaults() {
+    plugin_on_load_config_pre_dependency
+    assertTrue "BUILD_DEPENDENCY_LIST has value" '[ "$BUILD_DEPENDENCY_LIST" = "" ]'
+    assertTrue "BUILD_DEPENDENCY_TIMEOUT not set" '[ "$BUILD_DEPENDENCY_TIMEOUT" != "" ]'
+}
+
+testNoWait() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+    STATUS_FILE=$TMPDIR/status
+
+    cat > $STATUS_FILE <<EOF
+state=idle
+status='([tasks]="OK")'
+EOF
+
+    plugin_on_load_config_pre_dependency
+
+    BUILD_DEPENDENCY_LIST="$STATUS_FILE"
+    BUILD_DEPENDENCY_TIMEOUT=5
+
+    plugin_on_tasks_start_pre_dependency
+    assertEquals "Function return value" "0" "$?"
+
+    rm -rf $TMPDIR
+}
+
+testWaitIdle() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+    STATUS_FILE=$TMPDIR/status
+
+    cat > $STATUS_FILE <<EOF
+state=idle
+status='([tasks]="ok")'
+EOF
+
+    plugin_on_load_config_pre_dependency
+
+    BUILD_DEPENDENCY_LIST="$STATUS_FILE"
+    BUILD_DEPENDENCY_TIMEOUT=1
+
+    plugin_on_tasks_start_pre_dependency
+    assertEquals "Function return value" "1" "$?"
+
+    rm -rf $TMPDIR
+}
+
+testWaitError() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+    STATUS_FILE=$TMPDIR/status
+
+    cat > $STATUS_FILE <<EOF
+state=idle
+status='([tasks]="ok")'
+EOF
+
+    plugin_on_load_config_pre_dependency
+
+    BUILD_DEPENDENCY_LIST="$STATUS_FILE"
+    BUILD_DEPENDENCY_TIMEOUT=1
+
+    plugin_on_tasks_start_pre_dependency
+    assertEquals "Function return value" "1" "$?"
+
+    rm -rf $TMPDIR
+}
+
+testWaitTimeout() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+    STATUS_FILE=$TMPDIR/status
+
+    cat > $STATUS_FILE <<EOF
+state=tasks
+status='([tasks]="OK")'
+EOF
+    (
+        sleep 2
+        cat > $STATUS_FILE <<EOF
+state=idle
+status='([tasks]="OK")'
+EOF
+    ) &
+
+    plugin_on_load_config_pre_dependency
+
+    BUILD_DEPENDENCY_LIST="$STATUS_FILE"
+    BUILD_DEPENDENCY_TIMEOUT=5
+
+    plugin_on_tasks_start_pre_dependency
+    assertEquals "Function return value" "0" "$?"
+
+    rm -rf $TMPDIR
+}
+
+. shunit2

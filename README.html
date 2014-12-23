@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2014-12-22 Mon 15:13 -->
+<!-- 2014-12-23 Tue 16:37 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -441,6 +441,16 @@ The <code>config</code> file in <code>skeleton</code> is:
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_KEEP: If this is set to a number greater than zero, only this</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">many build log directories will be kept.  Defaults to "0".</span>
 <span style="color: #eedd82;">BUILD_KEEP</span>=0
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_DEPENDENCY_LIST: This is a list of status files, seperated by</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">spaces, for other Mini-CI jobs that will cause tasks to wait until</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">they are "idle" and the status of their tasks is "OK".  Defaults to</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"".</span>
+<span style="color: #eedd82;">BUILD_DEPENDENCY_LIST</span>=<span style="color: #ffa07a;">""</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_DEPENDENCY_TIMEOUT: The number of seconds to wait for</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">dependencies to be ready.  Defaults to "1200" (20 minutes).</span>
+<span style="color: #eedd82;">BUILD_DEPENDENCY_TIMEOUT</span>=1200
 </pre>
 </div>
 </div>
@@ -476,9 +486,9 @@ Mini-CI exports the following variables:
 </li>
 <li><code>WORKSPACE</code>: The current workspace directory
 </li>
-<li><code>GIT_URL</code>: The URL of the GIT repository
+<li><code>GIT_URL</code>: The URL of the GIT repository (when using the GIT plugin)
 </li>
-<li><code>SVN_URL</code>: The URL of the Subversion repository
+<li><code>SVN_URL</code>: The URL of the Subversion repository (when using the Subversion plugin)
 </li>
 </ul>
 </div>
@@ -781,12 +791,6 @@ The <code>build-keep.sh</code> plugin uses a variable <code>BUILD_KEEP</code> wh
     <span style="color: #00ffff;">done</span> &lt; &lt;(seq 1 $(( $<span style="color: #eedd82;">BUILD_NUMBER</span> - $<span style="color: #eedd82;">BUILD_KEEP</span>)))
   <span style="color: #00ffff;">fi</span>
 }
-
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Local Variables&#58;</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">sh-basic-offset: 2</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">sh-indentation: 2</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">indent-tabs-mode: nil</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">End:</span>
 </pre>
 </div>
 </div>
@@ -795,7 +799,7 @@ The <code>build-keep.sh</code> plugin uses a variable <code>BUILD_KEEP</code> wh
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Andrew Phillips &lt;<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>&gt;</p>
-<p class="date">Date: 2014-12-22 Mon 15:13</p>
+<p class="date">Date: 2014-12-23 Tue 16:37</p>
 </div>
 </body>
 </html>

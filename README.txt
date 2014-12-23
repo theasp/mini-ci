@@ -257,6 +257,16 @@ Table of Contents
   │ # BUILD_KEEP: If this is set to a number greater than zero, only this
   │ # many build log directories will be kept.  Defaults to "0".
   │ BUILD_KEEP=0
+  │ 
+  │ # BUILD_DEPENDENCY_LIST: This is a list of status files, seperated by
+  │ # spaces, for other Mini-CI jobs that will cause tasks to wait until
+  │ # they are "idle" and the status of their tasks is "OK".  Defaults to
+  │ # "".
+  │ BUILD_DEPENDENCY_LIST=""
+  │ 
+  │ # BUILD_DEPENDENCY_TIMEOUT: The number of seconds to wait for
+  │ # dependencies to be ready.  Defaults to "1200" (20 minutes).
+  │ BUILD_DEPENDENCY_TIMEOUT=1200
   └────
 
 
@@ -287,8 +297,9 @@ Table of Contents
   • `JOB_DIR': The directory where the job is stored
   • `JOB_NAME': Name of the the job
   • `WORKSPACE': The current workspace directory
-  • `GIT_URL': The URL of the GIT repository
-  • `SVN_URL': The URL of the Subversion repository
+  • `GIT_URL': The URL of the GIT repository (when using the GIT plugin)
+  • `SVN_URL': The URL of the Subversion repository (when using the
+    Subversion plugin)
 
 
 7 Examples
@@ -510,10 +521,4 @@ Table of Contents
   │     done < <(seq 1 $(( $BUILD_NUMBER - $BUILD_KEEP)))
   │   fi
   │ }
-  │ 
-  │ # Local Variables:
-  │ # sh-basic-offset: 2
-  │ # sh-indentation: 2
-  │ # indent-tabs-mode: nil
-  │ # End:
   └────

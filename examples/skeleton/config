@@ -91,3 +91,12 @@ BUILD_ARCHIVE_WORKSPACE=""
 # many build log directories will be kept.  Defaults to "0".
 BUILD_KEEP=0
 
+# BUILD_DEPENDENCY_LIST: This is a list of status files, seperated by
+# spaces, for other Mini-CI jobs that will cause tasks to wait until
+# they are "idle" and the status of their tasks is "OK".  Defaults to
+# "".
+BUILD_DEPENDENCY_LIST=""
+
+# BUILD_DEPENDENCY_TIMEOUT: The number of seconds to wait for
+# dependencies to be ready.  Defaults to "1200" (20 minutes).
+BUILD_DEPENDENCY_TIMEOUT=1200
