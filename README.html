@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2014-12-23 Tue 16:37 -->
+<!-- 2014-12-24 Wed 18:41 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -206,7 +206,7 @@ Mini-CI is a small daemon to perform continuous integration (CI) for a single re
 </li>
 <li>NO support for multiple projects!
 <ul class="org-ul">
-<li>You can run it more than once&#x2026;
+<li>You can run it more than once…
 </li>
 </ul>
 </li>
@@ -274,8 +274,8 @@ From the output of <code>mini-ci --help</code>:
 Usage: mini-ci [option ...] [command ...]
 
 Options:
-  -d|--job-dir &lt;dir&gt;       directory for job
-  -c|--config-file &lt;file&gt;  config file to use, relative to job-dir
+  -d|--job-dir <dir>       directory for job
+  -c|--config-file <file>  config file to use, relative to job-dir
   -m|--message [timeout]   send commands to running daemon, then exit
   -o|--oknodo              exit quietly if already running
   -D|--debug               log debugging information
@@ -297,7 +297,7 @@ Commands:
 Commands given while not in message mode will be queued.  For instance
 the following command will have a repository polled for updates (which
 will trigger update and tasks if required) then quit.
-  mini-ci -d &lt;dir&gt; -F poll quit
+  mini-ci -d <dir> -F poll quit
 </pre>
 </div>
 </div>
@@ -362,7 +362,7 @@ The <code>config</code> file in <code>skeleton</code> is:
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- git</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- svn</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- external</span>
-<span style="color: #eedd82;">REPO_PLUGIN</span>=<span style="color: #ffa07a;">"&lt;plugin&gt;"</span>
+<span style="color: #eedd82;">REPO_PLUGIN</span>=<span style="color: #ffa07a;">"<plugin>"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_FREQ: If this is set to a number greater than zero, it will poll the</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repository using the repo-handler every this many seconds, starting</span>
@@ -411,12 +411,12 @@ The <code>config</code> file in <code>skeleton</code> is:
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">GIT_URL: The URL to the repository.  Fetching the URL must not ask</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
-<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">GIT_URL="&lt;url&gt;"</span>
+<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">GIT_URL="<url>"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">SVN_URL: The URL to the repository.  Fetching the URL must not ask</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
-<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">SVN_URL="&lt;url&gt;"</span>
+<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">SVN_URL="<url>"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_NOTIFY: A space and/or comma separated list of conditions to</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",</span>
@@ -459,7 +459,7 @@ The <code>config</code> file in <code>skeleton</code> is:
 <h3 id="sec-6-2"><span class="section-number-3">6.2</span> <code>tasks.d</code></h3>
 <div class="outline-text-3" id="text-6-2">
 <p>
-The <code>tasks.d</code> directory contains all the tasks that would be executed during a build of your repository.  The <code>skeleton</code> contains a few examples.  Each script must match the regular expression <code>^[a-zA-Z0-9_-]+$</code> and will be ran in sort order, therefore it is recommended that each script be named in the form <code>&lt;nnn&gt;-&lt;description_of_task&gt;</code>.  If a script exits with a return code that is not zero, it is considered a build error and no further scripts are executed.
+The <code>tasks.d</code> directory contains all the tasks that would be executed during a build of your repository.  The <code>skeleton</code> contains a few examples.  Each script must match the regular expression <code>^[a-zA-Z0-9_-]+$</code> and will be ran in sort order, therefore it is recommended that each script be named in the form <code><nnn>-<description_of_task></code>.  If a script exits with a return code that is not zero, it is considered a build error and no further scripts are executed.
 </p>
 
 <p>
@@ -611,7 +611,7 @@ You can easily change the above script to SSH to another system, or user.
 <h2 id="sec-8"><span class="section-number-2">8</span> Plugin API</h2>
 <div class="outline-text-2" id="text-8">
 <p>
-Mini-CI can be extended with plugins written as bash functions.  Any plugin matching <code>*.sh</code> in the <code>plugins.d</code> directory in either the Mini-CI installation path or the current job directory will be sourced when Mini-CI starts up.  Plugins must declare their variables using <code>declare</code> (or <code>declare -x</code> if the variable is to be exported).  Variables that are to be set using the config file should be set the default value using a function of the name <code>plugin_on_load_config_pre_&lt;name&gt;</code>.  In most cases the plugin's functions will run in the same shell as the rest of Mini-CI so that the plugin can modify variables, but this also introduces the chance that a plugin will introduce unwanted side-effects.
+Mini-CI can be extended with plugins written as bash functions.  Any plugin matching <code>*.sh</code> in the <code>plugins.d</code> directory in either the Mini-CI installation path or the current job directory will be sourced when Mini-CI starts up.  Plugins must declare their variables using <code>declare</code> (or <code>declare -x</code> if the variable is to be exported).  Variables that are to be set using the config file should be set the default value using a function of the name <code>plugin_on_load_config_pre_<name></code>.  In most cases the plugin's functions will run in the same shell as the rest of Mini-CI so that the plugin can modify variables, but this also introduces the chance that a plugin will introduce unwanted side-effects.
 </p>
 </div>
 <div id="outline-container-sec-8-1" class="outline-3">
@@ -621,13 +621,13 @@ Mini-CI can be extended with plugins written as bash functions.  Any plugin matc
 Repository plugins are ran in a subshell with <code>STDOUT</code> redirected to the appropriate logfile.  A repository plugin must provide the following functions:
 </p>
 <ul class="org-ul">
-<li><code>plugin_repo_update_&lt;name&gt;</code>
+<li><code>plugin_repo_update_<name></code>
 <ul class="org-ul">
 <li>Must exit with a return code of 0 if successful.
 </li>
 </ul>
 </li>
-<li><code>plugin_repo_poll_&lt;name&gt;</code>
+<li><code>plugin_repo_poll_<name></code>
 <ul class="org-ul">
 <li>Must exit with a return code of 0 if successful.
 </li>
@@ -644,7 +644,7 @@ Repository plugins are ran in a subshell with <code>STDOUT</code> redirected to 
 <h3 id="sec-8-2"><span class="section-number-3">8.2</span> Notification Plugins</h3>
 <div class="outline-text-3" id="text-8-2">
 <p>
-A notification plugin must provide a function named <code>plugin_notify_&lt;name&gt;</code>, which accepts the following arguments:
+A notification plugin must provide a function named <code>plugin_notify_<name></code>, which accepts the following arguments:
 </p>
 <ul class="org-ul">
 <li>item: The name of the state that triggered the notification, i.e. <code>poll</code>, <code>update</code>, <code>tasks</code>, etc.
@@ -669,101 +669,101 @@ A notification plugin must provide a function named <code>plugin_notify_&lt;name
 Your plugin can provide functions using the following names:
 </p>
 <ul class="org-ul">
-<li><code>on_abort_post_&lt;plugin_name&gt;</code>
+<li><code>on_abort_post_<plugin_name></code>
 </li>
-<li><code>on_abort_pre_&lt;plugin_name&gt;</code>
+<li><code>on_abort_pre_<plugin_name></code>
 </li>
-<li><code>on_acquire_lock_post_&lt;plugin_name&gt;</code>
+<li><code>on_acquire_lock_post_<plugin_name></code>
 </li>
-<li><code>on_acquire_lock_pre_&lt;plugin_name&gt;</code>
+<li><code>on_acquire_lock_pre_<plugin_name></code>
 </li>
-<li><code>on_clean_post_&lt;plugin_name&gt;</code>
+<li><code>on_clean_post_<plugin_name></code>
 </li>
-<li><code>on_clean_pre_&lt;plugin_name&gt;</code>
+<li><code>on_clean_pre_<plugin_name></code>
 </li>
-<li><code>on_load_config_post_&lt;plugin_name&gt;</code>
+<li><code>on_load_config_post_<plugin_name></code>
 </li>
-<li><code>on_load_config_pre_&lt;plugin_name&gt;</code>
+<li><code>on_load_config_pre_<plugin_name></code>
 </li>
-<li><code>on_notify_status_post_&lt;plugin_name&gt;</code>
+<li><code>on_notify_status_post_<plugin_name></code>
 </li>
-<li><code>on_notify_status_pre_&lt;plugin_name&gt;</code>
+<li><code>on_notify_status_pre_<plugin_name></code>
 </li>
-<li><code>on_poll_finish_post_&lt;plugin_name&gt;</code>
+<li><code>on_poll_finish_post_<plugin_name></code>
 </li>
-<li><code>on_poll_finish_pre_&lt;plugin_name&gt;</code>
+<li><code>on_poll_finish_pre_<plugin_name></code>
 </li>
-<li><code>on_poll_start_post_&lt;plugin_name&gt;</code>
+<li><code>on_poll_start_post_<plugin_name></code>
 </li>
-<li><code>on_poll_start_pre_&lt;plugin_name&gt;</code>
+<li><code>on_poll_start_pre_<plugin_name></code>
 </li>
-<li><code>on_process_queue_post_&lt;plugin_name&gt;</code>
+<li><code>on_process_queue_post_<plugin_name></code>
 </li>
-<li><code>on_process_queue_pre_&lt;plugin_name&gt;</code>
+<li><code>on_process_queue_pre_<plugin_name></code>
 </li>
-<li><code>on_queue_post_&lt;plugin_name&gt;</code>
+<li><code>on_queue_post_<plugin_name></code>
 </li>
-<li><code>on_queue_pre_&lt;plugin_name&gt;</code>
+<li><code>on_queue_pre_<plugin_name></code>
 </li>
-<li><code>on_quit_post_&lt;plugin_name&gt;</code>
+<li><code>on_quit_post_<plugin_name></code>
 </li>
-<li><code>on_quit_pre_&lt;plugin_name&gt;</code>
+<li><code>on_quit_pre_<plugin_name></code>
 </li>
-<li><code>on_read_commands_post_&lt;plugin_name&gt;</code>
+<li><code>on_read_commands_post_<plugin_name></code>
 </li>
-<li><code>on_read_commands_pre_&lt;plugin_name&gt;</code>
+<li><code>on_read_commands_pre_<plugin_name></code>
 </li>
-<li><code>on_read_status_post_&lt;plugin_name&gt;</code>
+<li><code>on_read_status_post_<plugin_name></code>
 </li>
-<li><code>on_read_status_pre_&lt;plugin_name&gt;</code>
+<li><code>on_read_status_pre_<plugin_name></code>
 </li>
-<li><code>on_reload_config_post_&lt;plugin_name&gt;</code>
+<li><code>on_reload_config_post_<plugin_name></code>
 </li>
-<li><code>on_reload_config_pre_&lt;plugin_name&gt;</code>
+<li><code>on_reload_config_pre_<plugin_name></code>
 </li>
-<li><code>on_run_cmd_pre_&lt;plugin_name&gt;</code>
+<li><code>on_run_cmd_pre_<plugin_name></code>
 </li>
-<li><code>on_run_cmd_pre_&lt;plugin_name&gt;</code>
+<li><code>on_run_cmd_pre_<plugin_name></code>
 </li>
-<li><code>on_run_tasks_post_&lt;plugin_name&gt;</code>
+<li><code>on_run_tasks_post_<plugin_name></code>
 </li>
-<li><code>on_run_tasks_pre_&lt;plugin_name&gt;</code>
+<li><code>on_run_tasks_pre_<plugin_name></code>
 </li>
-<li><code>on_schedule_poll_post_&lt;plugin_name&gt;</code>
+<li><code>on_schedule_poll_post_<plugin_name></code>
 </li>
-<li><code>on_schedule_poll_pre_&lt;plugin_name&gt;</code>
+<li><code>on_schedule_poll_pre_<plugin_name></code>
 </li>
-<li><code>on_send_message_post_&lt;plugin_name&gt;</code>
+<li><code>on_send_message_post_<plugin_name></code>
 </li>
-<li><code>on_send_message_pre_&lt;plugin_name&gt;</code>
+<li><code>on_send_message_pre_<plugin_name></code>
 </li>
-<li><code>on_status_post_&lt;plugin_name&gt;</code>
+<li><code>on_status_post_<plugin_name></code>
 </li>
-<li><code>on_status_pre_&lt;plugin_name&gt;</code>
+<li><code>on_status_pre_<plugin_name></code>
 </li>
-<li><code>on_tasks_finish_post_&lt;plugin_name&gt;</code>
+<li><code>on_tasks_finish_post_<plugin_name></code>
 </li>
-<li><code>on_tasks_finish_pre_&lt;plugin_name&gt;</code>
+<li><code>on_tasks_finish_pre_<plugin_name></code>
 </li>
-<li><code>on_tasks_start_post_&lt;plugin_name&gt;</code>
+<li><code>on_tasks_start_post_<plugin_name></code>
 </li>
-<li><code>on_tasks_start_pre_&lt;plugin_name&gt;</code>
+<li><code>on_tasks_start_pre_<plugin_name></code>
 </li>
-<li><code>on_update_finish_post_&lt;plugin_name&gt;</code>
+<li><code>on_update_finish_post_<plugin_name></code>
 </li>
-<li><code>on_update_finish_pre_&lt;plugin_name&gt;</code>
+<li><code>on_update_finish_pre_<plugin_name></code>
 </li>
-<li><code>on_update_start_post_&lt;plugin_name&gt;</code>
+<li><code>on_update_start_post_<plugin_name></code>
 </li>
-<li><code>on_update_start_pre_&lt;plugin_name&gt;</code>
+<li><code>on_update_start_pre_<plugin_name></code>
 </li>
-<li><code>on_update_status_post_&lt;plugin_name&gt;</code>
+<li><code>on_update_status_post_<plugin_name></code>
 </li>
-<li><code>on_update_status_pre_&lt;plugin_name&gt;</code>
+<li><code>on_update_status_pre_<plugin_name></code>
 </li>
-<li><code>on_write_status_post_&lt;plugin_name&gt;</code>
+<li><code>on_write_status_post_<plugin_name></code>
 </li>
-<li><code>on_write_status_pre_&lt;plugin_name&gt;</code>
+<li><code>on_write_status_pre_<plugin_name></code>
 </li>
 </ul>
 </div>
@@ -785,10 +785,8 @@ The <code>build-keep.sh</code> plugin uses a variable <code>BUILD_KEEP</code> wh
 <span style="color: #87cefa;">plugin_on_tasks_finish_post_build_keep</span>() {
   <span style="color: #00ffff;">if</span> [[ <span style="color: #ffa07a;">"$BUILD_KEEP"</span> -gt 0 ]]; <span style="color: #00ffff;">then</span>
     <span style="color: #00ffff;">while </span><span style="color: #b0c4de;">read</span> num; <span style="color: #00ffff;">do</span>
-      <span style="color: #00ffff;">if</span> [[ -d <span style="color: #ffa07a;">"$BUILDS_DIR/$num"</span> ]]; <span style="color: #00ffff;">then</span>
-        rm -r <span style="color: #ffa07a;">"$BUILDS_DIR/$num"</span>
-      <span style="color: #00ffff;">fi</span>
-    <span style="color: #00ffff;">done</span> &lt; &lt;(seq 1 $(( $<span style="color: #eedd82;">BUILD_NUMBER</span> - $<span style="color: #eedd82;">BUILD_KEEP</span>)))
+      [[ -d <span style="color: #ffa07a;">"$BUILDS_DIR/$num"</span> ]] && rm -r <span style="color: #ffa07a;">"$BUILDS_DIR/$num"</span>
+    <span style="color: #00ffff;">done</span> < <(seq 1 $(( $<span style="color: #eedd82;">BUILD_NUMBER</span> - $<span style="color: #eedd82;">BUILD_KEEP</span>)))
   <span style="color: #00ffff;">fi</span>
 }
 </pre>
@@ -798,8 +796,8 @@ The <code>build-keep.sh</code> plugin uses a variable <code>BUILD_KEEP</code> wh
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Andrew Phillips &lt;<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>&gt;</p>
-<p class="date">Date: 2014-12-23 Tue 16:37</p>
+<p class="author">Author: Andrew Phillips <<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>></p>
+<p class="date">Date: 2014-12-24 Wed 18:41</p>
 </div>
 </body>
 </html>
