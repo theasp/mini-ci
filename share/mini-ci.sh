@@ -136,12 +136,12 @@ main() {
 
   if [[ "$message" = "yes" ]]; then
     unset LOG_FILE
-    if [[ ! -e $CONTROL_FIFO ]]; then
+    if [[ ! -e "$CONTROL_FIFO" ]]; then
       error "Control fifo $CONTROL_FIFO is missing"
     fi
 
     for cmd in $@; do
-      send_message $timeout $cmd
+      send_message "$timeout" "$cmd"
     done
     exit 0
   fi
@@ -149,7 +149,7 @@ main() {
   acquire_lock $oknodo
 
   for cmd in $@; do
-    queue $cmd
+    queue "$cmd"
   done
 
   if [[ "$daemon" = "yes" ]]; then
@@ -171,10 +171,10 @@ main_loop() {
 
   read_status_file
 
-  rm -f $CONTROL_FIFO
-  mkfifo $CONTROL_FIFO
+  rm -f "$CONTROL_FIFO"
+  mkfifo "$CONTROL_FIFO"
 
-  exec 3<> $CONTROL_FIFO
+  exec 3<> "$CONTROL_FIFO"
 
   trap reload_config SIGHUP
   trap quit SIGINT
@@ -205,9 +205,9 @@ main_loop() {
 queue() {
   do_hook "queue_pre" || return
 
-  local cmd=$1
+  local cmd="$1"
 
-  QUEUE=(${QUEUE[@]} $@)
+  QUEUE=(${QUEUE[@]} "$@")
   debug "Queued $@"
 
   do_hook "queue_post" || return
@@ -303,7 +303,7 @@ poll_finish() {
 
 update_start() {
   log "Updating workspace"
-  test -e $WORKSPACE || mkdir $WORKSPACE
+  [[ -e "$WORKSPACE" ]] || mkdir "$WORKSPACE"
   do_hook "update_start_pre" || return
 
   if run_repo update "update_finish" "$UPDATE_LOG"; then
@@ -338,7 +338,7 @@ tasks_start() {
   do_hook "tasks_start_pre" || return
 
   if [[ -d "$TASKS_DIR" ]]; then
-    test -d "$BUILDS_DIR" || mkdir "$BUILDS_DIR"
+    [[ -d "$BUILDS_DIR" ]] || mkdir "$BUILDS_DIR"
 
     BUILD_OUTPUT_DIR="$BUILDS_DIR"
     while [[ -d "$BUILD_OUTPUT_DIR" ]]; do
@@ -346,9 +346,9 @@ tasks_start() {
       BUILD_OUTPUT_DIR="$BUILDS_DIR/$BUILD_NUMBER"
     done
 
-    test -d "$BUILD_OUTPUT_DIR" || mkdir "$BUILD_OUTPUT_DIR"
+    [[ -d "$BUILD_OUTPUT_DIR" ]] || mkdir "$BUILD_OUTPUT_DIR"
 
-    test -f "$UPDATE_LOG" && cp "$UPDATE_LOG" "$BUILD_OUTPUT_DIR/"
+    [[ -f "$UPDATE_LOG" ]] && cp "$UPDATE_LOG" "$BUILD_OUTPUT_DIR/"
 
     BUILD_ID=$(date +%Y-%m-%d_%H-%M-%S)
     BUILD_DISPLAY_NAME="#${BUILD_NUMBER}"
