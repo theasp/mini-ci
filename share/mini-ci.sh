@@ -95,7 +95,7 @@ main() {
         JOB_DIR=$2; shift 2 ;;
       -m|--message)
         message=yes
-        if [[ "$2" ]]; then
+        if [[ -n "$2" ]]; then
 
           timeout=$2
         fi
@@ -124,7 +124,7 @@ main() {
   # Load the plugins.  Has to be done here
   for dir in "${MINI_CI_DIR}/plugins.d" "${JOB_DIR}/plugins.d"; do
     debug "Looking for plugins in $dir"
-    if [[ -d $dir ]]; then
+    if [[ -d "$dir" ]]; then
       for plugin in $(ls -1 $dir/*.sh); do
         debug "Loading plugin $plugin"
         source "$plugin"
@@ -134,7 +134,7 @@ main() {
 
   load_config
 
-  if [[ $message = "yes" ]]; then
+  if [[ "$message" = "yes" ]]; then
     unset LOG_FILE
     if [[ ! -e $CONTROL_FIFO ]]; then
       error "Control fifo $CONTROL_FIFO is missing"
@@ -152,7 +152,7 @@ main() {
     queue $cmd
   done
 
-  if [[ $daemon = "yes" ]]; then
+  if [[ "$daemon" = "yes" ]]; then
     # Based on:
     # http://blog.n01se.net/blog-n01se-net-p-145.html
     [[ -t 0 ]] && exec </dev/null || true
@@ -194,7 +194,7 @@ main_loop() {
     read_commands
     process_queue
     handle_children
-    if [[ $POLL_FREQ -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -ge $NEXT_POLL ]] && [[ $STATE = "idle" ]]; then
+    if [[ "$POLL_FREQ" -gt 0 ]] && [[ $(printf '%(%s)T\n' -1) -ge "$NEXT_POLL" ]] && [[ "$STATE" = "idle" ]]; then
       debug "Poll frequency timeout"
       queue "poll"
       schedule_poll
@@ -286,10 +286,10 @@ poll_finish() {
 
   do_hook "poll_finish_pre" || return
 
-  if [[ $1 -eq 0 ]]; then
+  if [[ "$1" -eq 0 ]]; then
     log "Poll finished sucessfully, no update required"
     update_status "poll" "OK"
-  elif [[ $1 -eq 2 ]]; then
+  elif [[ "$1" -eq 2 ]]; then
     log "Poll finished sucessfully, queuing update"
     queue "update"
     update_status "poll" "OK"
@@ -320,7 +320,7 @@ update_finish() {
   STATE="idle"
   do_hook "update_finish_pre" || return
 
-  if [[ $1 -eq 0 ]]; then
+  if [[ "$1" -eq 0 ]]; then
     log "Update finished sucessfully, queuing tasks"
     update_status "update" "OK"
     # Set poll to ok too, because this did a poll too
@@ -337,7 +337,7 @@ update_finish() {
 tasks_start() {
   do_hook "tasks_start_pre" || return
 
-  if [[ -d $TASKS_DIR ]]; then
+  if [[ -d "$TASKS_DIR" ]]; then
     test -d "$BUILDS_DIR" || mkdir "$BUILDS_DIR"
 
     BUILD_OUTPUT_DIR="$BUILDS_DIR"
@@ -371,7 +371,7 @@ tasks_finish() {
   STATE="idle"
   do_hook "tasks_finish_pre" || return
 
-  if [[ $1 -eq 0 ]]; then
+  if [[ "$1" -eq 0 ]]; then
     log "Tasks finished sucessfully, build number $BUILD_NUMBER"
     update_status "tasks" "OK"
   else
@@ -453,7 +453,7 @@ read_status_file() {
     CUR_STATUS_TIME[$state]=""
   done
 
-  if [[ -f $STATUS_FILE ]]; then
+  if [[ -f "$STATUS_FILE" ]]; then
     local status
     local status_time
     local state
@@ -510,13 +510,13 @@ notify_status() {
   case $new in
     OK)
       notify_status["OK"]=1
-      if [[ $old = "ERROR" ]] || [[ $old = "UNKNOWN" ]]; then
+      if [[ "$old" = "ERROR" ]] || [[ "$old" = "UNKNOWN" ]]; then
         notify_status["RECOVER"]=1
       fi
       ;;
     ERROR|UNKNOWN)
       notify_status["$new"]=1
-      if [[ $old = "OK" ]]; then
+      if [[ "$old" = "OK" ]]; then
         notify_status["NEWPROB"]=1
       fi
       ;;
@@ -524,7 +524,7 @@ notify_status() {
 
   local active_states
   for i in ${!notify_status[@]}; do
-    if [[ ${notify_status[$i]} -eq 1 ]]; then
+    if [[ "${notify_status[$i]}" -eq 1 ]]; then
       active_states="$i ";
     fi
   done
@@ -543,7 +543,7 @@ run_tasks() {
 
   for task in $(ls -1 $TASKS_DIR | grep -E -e '^[a-zA-Z0-9_-]+$' | sort); do
     local file="$TASKS_DIR/$task"
-    if [[ -x $file ]]; then
+    if [[ -x "$file" ]]; then
       local log_file="${BUILD_OUTPUT_DIR}/task-${task}.log"
       log "Running task $task, logging to ${BUILD_OUTPUT_DIR}/task-${task}.log" 2> $log_file
       local msg="Task $task returned code $?"
@@ -618,7 +618,7 @@ run_cmd() {
 process_queue() {
   do_hook "process_queue_pre" || return
 
-  while [[ ${QUEUE[0]} ]]; do
+  while [[ -n "${QUEUE[0]}" ]]; do
     if [[ "$STATE" != "idle" ]]; then
       break
     fi
@@ -664,7 +664,7 @@ load_config() {
 
   do_hook "load_config_pre" || return
 
-  if [[ -f $CONFIG_FILE ]]; then
+  if [[ -f "$CONFIG_FILE" ]]; then
     source $CONFIG_FILE
   else
     error "Unable to find configuration file $CONFIG_FILE"
@@ -695,13 +695,12 @@ load_config() {
 
 acquire_lock() {
   local oknodo=$1
-  local cur_pid=$BASHPID
 
   do_hook "acquire_lock_pre" || return
 
-  if [[ -e $PID_FILE ]]; then
-    local test_pid=$(< $PID_FILE)
-    if [[ $test_pid && $test_pid -ne $cur_pid ]]; then
+  if [[ -e "$PID_FILE" ]]; then
+    local test_pid="$(< $PID_FILE)"
+    if [[ -n "$test_pid" ]] && [[ "$test_pid" -ne "$BASHPID" ]]; then
       debug "Lock file present $PID_FILE, has $test_pid"
       if kill -0 $test_pid >/dev/null 2>&1; then
         if [[ $oknodo = "yes" ]]; then
