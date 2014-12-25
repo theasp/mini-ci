@@ -561,7 +561,6 @@ run_tasks() {
 status() {
   do_hook "status_pre" || return
 
-  debug ${!CUR_STATUS[@]}
   log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:${CUR_STATUS[poll]} Update:${CUR_STATUS[update]} Tasks:${CUR_STATUS[tasks]}"
 
   do_hook "status_post" || return
