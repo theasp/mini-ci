@@ -541,16 +541,16 @@ notify_status() {
 run_tasks() {
   do_hook "run_tasks_pre" || return
 
-  for task in $(ls -1 $TASKS_DIR | grep -E -e '^[a-zA-Z0-9_-]+$' | sort); do
+  for task in $(ls -1 "$TASKS_DIR" | grep -E -e '^[a-zA-Z0-9_-]+$' | sort); do
     local file="$TASKS_DIR/$task"
     if [[ -x "$file" ]]; then
       local log_file="${BUILD_OUTPUT_DIR}/task-${task}.log"
-      log "Running task $task, logging to ${BUILD_OUTPUT_DIR}/task-${task}.log" 2> $log_file
+      log "Running task $task, logging to ${BUILD_OUTPUT_DIR}/task-${task}.log" 2> "$log_file"
       local msg="Task $task returned code $?"
-      if (cd $WORKSPACE && $file) >> $log_file 2>&1; then
-        log $msg 2>> $log_file
+      if (cd "$WORKSPACE" && "$file") >> "$log_file" 2>&1; then
+        log $msg 2>> "$log_file"
       else
-        error $msg 2>> $log_file
+        error $msg 2>> "$log_file"
       fi
     fi
   done
@@ -714,7 +714,7 @@ acquire_lock() {
   fi
 
   debug "Writing $cur_pid to $PID_FILE"
-  echo $cur_pid > $PID_FILE
+  echo $cur_pid > "$PID_FILE"
 
   do_hook "acquire_lock_post" || return
 }
