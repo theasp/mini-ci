@@ -712,8 +712,8 @@ acquire_lock() {
     fi
   fi
 
-  debug "Writing $$ to $PID_FILE"
-  echo $$ > "$PID_FILE"
+  debug "Writing $BASHPID to $PID_FILE"
+  echo $BASHPID > "$PID_FILE"
 
   do_hook "acquire_lock_post" || return
 }
