@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2014-12-24 Wed 18:41 -->
+<!-- 2015-01-09 Fri 14:52 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -590,7 +590,7 @@ Mini-CI will run in the background doing it's thing whenever it needs to.
 <h3 id="sec-7-3"><span class="section-number-3">7.3</span> Notifying a Mini-CI Daemon from GIT</h3>
 <div class="outline-text-3" id="text-7-3">
 <p>
-You can have git notify Mini-CI upon every push to a repository, which makes polling the repository unnecessary.  Put this in <code>hooks/post-update</code> in your git repository directory (or <code>.git/hooks/post-update</code> if you aren't using a bare repository), and it will send a message to Mini-CI to do an update.
+You can have git notify Mini-CI upon every push to a repository, which makes polling the repository unnecessary.  Put this in <code>hooks/post-update</code> in your git repository directory (or <code>.git/hooks/post-update</code> if you aren't using a bare repository), and it will send a message to Mini-CI to do an update, which will trigger a build.
 </p>
 <div class="org-src-container">
 
@@ -797,7 +797,7 @@ The <code>build-keep.sh</code> plugin uses a variable <code>BUILD_KEEP</code> wh
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Andrew Phillips <<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>></p>
-<p class="date">Date: 2014-12-24 Wed 18:41</p>
+<p class="date">Date: 2015-01-09 Fri 14:52</p>
 </div>
 </body>
 </html>

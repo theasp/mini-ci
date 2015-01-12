@@ -388,7 +388,8 @@ Table of Contents
   makes polling the repository unnecessary.  Put this in
   `hooks/post-update' in your git repository directory (or
   `.git/hooks/post-update' if you aren't using a bare repository), and
-  it will send a message to Mini-CI to do an update.
+  it will send a message to Mini-CI to do an update, which will trigger
+  a build.
   ┌────
   │ #!/bin/sh
   │ 

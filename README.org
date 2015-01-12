@@ -277,7 +277,7 @@ The easiest way to run Mini-CI as a user is to have =cron= start it.  For instan
 Mini-CI will run in the background doing it's thing whenever it needs to.
 
 ** Notifying a Mini-CI Daemon from GIT
-You can have git notify Mini-CI upon every push to a repository, which makes polling the repository unnecessary.  Put this in =hooks/post-update= in your git repository directory (or =.git/hooks/post-update= if you aren't using a bare repository), and it will send a message to Mini-CI to do an update.
+You can have git notify Mini-CI upon every push to a repository, which makes polling the repository unnecessary.  Put this in =hooks/post-update= in your git repository directory (or =.git/hooks/post-update= if you aren't using a bare repository), and it will send a message to Mini-CI to do an update, which will trigger a build.
 #+BEGIN_SRC sh
 #!/bin/sh
 
