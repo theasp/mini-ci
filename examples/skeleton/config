@@ -19,6 +19,12 @@ REPO_PLUGIN="<plugin>"
 # Defaults to 600.
 POLL_FREQ=600
 
+# POLL_DELAY: If this is set to a number greater than zero, mini-ci
+# will sleep this many seconds after a poll that indicates a change
+# was made in the repository.  Use this to delay doing an update to
+# allow a series of commits to take place.  Defaults to 0.
+POLL_DELAY=0
+
 # WORKSPACE: The directory where the repository will be checked out
 # into, and where tasks are launched.  Defaults to "./workspace".
 WORKSPACE="./workspace"

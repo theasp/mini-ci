@@ -33,6 +33,7 @@ declare CONFIG_FILE=""
 declare CONTROL_FIFO=""
 declare DEBUG=""
 declare PID_FILE=""
+declare POLL_DELAY=""
 declare POLL_FREQ=""
 declare POLL_LOG=""
 declare REPO_PLUGIN=""
@@ -293,6 +294,10 @@ poll_finish() {
     log "Poll finished sucessfully, queuing update"
     queue "update"
     update_status "poll" "OK"
+
+    if [[ "$POLL_DELAY" -gt 0 ]]; then
+      sleep "$POLL_DELAY"
+    fi
   else
     warning "Poll did not finish sucessfully"
     update_status "poll" "ERROR"
@@ -651,6 +656,7 @@ load_config() {
   CONTROL_FIFO="./control.fifo"
   LOG_FILE=""
   PID_FILE="./mini-ci.pid"
+  POLL_DELAY=0
   POLL_FREQ=0
   POLL_LOG="./poll.log"
   REPO_PLUGIN=""
