@@ -551,11 +551,11 @@ run_tasks() {
     if [[ -x "$file" ]]; then
       local log_file="${BUILD_OUTPUT_DIR}/task-${task}.log"
       log "Running task $task, logging to ${BUILD_OUTPUT_DIR}/task-${task}.log" 2> "$log_file"
-      local msg="Task $task returned code $?"
+
       if (cd "$WORKSPACE" && "$file") >> "$log_file" 2>&1; then
-        log $msg 2>> "$log_file"
+        log "Task $task returned code $?" 2>> "$log_file"
       else
-        error $msg 2>> "$log_file"
+        error "Task $task returned code $?" 2>> "$log_file"
       fi
     fi
   done
