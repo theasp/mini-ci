@@ -180,10 +180,17 @@ Table of Contents
   │ # - external
   │ REPO_PLUGIN="<plugin>"
   │ 
-  │ # POLL_FREQ: If this is set to a number greater than zero, it will poll the
-  │ # repository using the repo-handler every this many seconds, starting
-  │ # at startup.  To have a more complicated scheme, use cron.
+  │ # POLL_FREQ: If this is set to a number greater than zero, it will
+  │ # poll the repository using the repo-handler every this many seconds,
+  │ # starting at startup.  To have a more complicated scheme, use cron.
+  │ # Defaults to 600.
   │ POLL_FREQ=600
+  │ 
+  │ # POLL_DELAY: If this is set to a number greater than zero, mini-ci
+  │ # will sleep this many seconds after a poll that indicates a change
+  │ # was made in the repository.  Use this to delay doing an update to
+  │ # allow a series of commits to take place.  Defaults to 0.
+  │ POLL_DELAY=0
   │ 
   │ # WORKSPACE: The directory where the repository will be checked out
   │ # into, and where tasks are launched.  Defaults to "./workspace".
@@ -228,6 +235,10 @@ Table of Contents
   │ # for a username or password.  Use ~/.netrc or ssh keys for remote
   │ # repositories.
   │ #GIT_URL="<url>"
+  │ 
+  │ # GIT_BRANCH: The branch of the repository.  Only affects the initial
+  │ # checkout.  Defaults to "master".
+  │ GIT_BRANCH="master"
   │ 
   │ # SVN_URL: The URL to the repository.  Fetching the URL must not ask
   │ # for a username or password.  Use ~/.netrc or ssh keys for remote

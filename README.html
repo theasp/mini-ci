@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2015-01-09 Fri 14:52 -->
+<!-- 2015-01-31 Sat 14:36 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -364,10 +364,17 @@ The <code>config</code> file in <code>skeleton</code> is:
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- external</span>
 <span style="color: #eedd82;">REPO_PLUGIN</span>=<span style="color: #ffa07a;">"<plugin>"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_FREQ: If this is set to a number greater than zero, it will poll the</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repository using the repo-handler every this many seconds, starting</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">at startup.  To have a more complicated scheme, use cron.</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_FREQ: If this is set to a number greater than zero, it will</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">poll the repository using the repo-handler every this many seconds,</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">starting at startup.  To have a more complicated scheme, use cron.</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Defaults to 600.</span>
 <span style="color: #eedd82;">POLL_FREQ</span>=600
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_DELAY: If this is set to a number greater than zero, mini-ci</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">will sleep this many seconds after a poll that indicates a change</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">was made in the repository.  Use this to delay doing an update to</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">allow a series of commits to take place.  Defaults to 0.</span>
+<span style="color: #eedd82;">POLL_DELAY</span>=0
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">WORKSPACE: The directory where the repository will be checked out</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">into, and where tasks are launched.  Defaults to "./workspace".</span>
@@ -412,6 +419,10 @@ The <code>config</code> file in <code>skeleton</code> is:
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
 <span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">GIT_URL="<url>"</span>
+
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">GIT_BRANCH: The branch of the repository.  Only affects the initial</span>
+<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">checkout.  Defaults to "master".</span>
+<span style="color: #eedd82;">GIT_BRANCH</span>=<span style="color: #ffa07a;">"master"</span>
 
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">SVN_URL: The URL to the repository.  Fetching the URL must not ask</span>
 <span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
@@ -797,7 +808,7 @@ The <code>build-keep.sh</code> plugin uses a variable <code>BUILD_KEEP</code> wh
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Andrew Phillips <<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>></p>
-<p class="date">Date: 2015-01-09 Fri 14:52</p>
+<p class="date">Date: 2015-01-31 Sat 14:36</p>
 </div>
 </body>
 </html>
