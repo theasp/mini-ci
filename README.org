@@ -171,6 +171,10 @@ MINICI_LOG="./mini-ci.log"
 # repositories.
 #GIT_URL="<url>"
 
+# GIT_BRANCH: The branch of the repository.  Only affects the initial
+# checkout.  Defaults to "master".
+GIT_BRANCH="master"
+
 # SVN_URL: The URL to the repository.  Fetching the URL must not ask
 # for a username or password.  Use ~/.netrc or ssh keys for remote
 # repositories.
