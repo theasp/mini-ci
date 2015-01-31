@@ -1,0 +1,33 @@
+#!/bin/bash
+
+SHNAME=$(basename $0)
+
+source ./share/functions.sh
+
+set +e
+
+testLog() {
+    (log "TEST")
+    RC=$?
+    assertTrue "Did not return proper return code (log)" "[ $RC = 0 ]"    
+}
+
+testDebug() {
+    (debug "TEST")
+    RC=$?
+    assertTrue "Did not return proper return code (debug)" "[ $RC = 0 ]"    
+}
+
+testWarning() {
+    (warning "TEST")
+    RC=$?
+    assertTrue "Did not return proper return code (warning)" "[ $RC = 0 ]"    
+}
+
+testError() {
+    (error "TEST")
+    RC=$?
+    assertTrue "Did not return proper return code (error)" "[ $RC = 1 ]"    
+}
+
+. /usr/bin/shunit2
