@@ -10,7 +10,11 @@ testPoll() {
     POLL_LOG=$TMPDIR/poll.log
     UPDATE_LOG=$TMPDIR/update.log
     
-    git --bare init $GIT_URL || return
+    git init $GIT_URL || return
+    (cd $GIT_URL;
+     date > initial-commit;
+     git add initial-commit;
+     git commit -m 'Initial commit')
     
     cat > $TMPDIR/config <<EOF
 EMAIL_NOTIFY="NEVER"
@@ -39,7 +43,11 @@ testInitialUpdate() {
     WORK_DIR=$TMPDIR/workspace
     UPDATE_LOG=$TMPDIR/update.log
 
-    git --bare init $GIT_URL || return
+    git init $GIT_URL || return
+    (cd $GIT_URL;
+     date > initial-commit;
+     git add initial-commit;
+     git commit -m 'Initial commit')
     
     cat > $TMPDIR/config <<EOF
 EMAIL_NOTIFY="NEVER"
