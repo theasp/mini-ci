@@ -115,9 +115,10 @@ JOB_NAME="$(basename $JOB_DIR)"
 # - external
 REPO_PLUGIN="<plugin>"
 
-# POLL_FREQ: If this is set to a number greater than zero, it will poll the
-# repository using the repo-handler every this many seconds, starting
-# at startup.  To have a more complicated scheme, use cron.
+# POLL_FREQ: If this is set to a number greater than zero, it will
+# poll the repository using the repo-handler every this many seconds,
+# starting at startup.  To have a more complicated scheme, use cron.
+# Defaults to 600.
 POLL_FREQ=600
 
 # POLL_DELAY: If this is set to a number greater than zero, mini-ci
