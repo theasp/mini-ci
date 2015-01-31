@@ -1,0 +1,102 @@
+#!/bin/bash
+
+SHNAME=$(basename $0)
+CURDIR=$(pwd)
+
+source ./share/functions.sh
+source ./share/plugins.d/repo-git.sh
+
+set +e
+
+testSetDefaults() {
+    GIT_URL="error"
+    GIT_BRANCH="error"
+    plugin_on_load_config_pre_repo_git
+    assertEquals "GIT_URL has wrong value" "" "$GIT_URL"
+    assertEquals "GIT_BRANCH has wrong value" "master" "$GIT_BRANCH"
+}
+
+testUpdate() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+    WORKSPACE=$TMPDIR/workspace
+    CHANGES_FILE=$TMPDIR/changes.log
+    GIT_URL=$TMPDIR/repo.git
+    GIT_BRANCH=master
+
+    mkdir $WORKSPACE || return
+    cd $WORKSPACE || return
+
+    (plugin_repo_update_git) > $CHANGES_FILE
+    RC=$?
+    assertTrue "Did not return proper return code for bad checkout (update)" "[ $RC = 1 ]"
+
+    git init $GIT_URL || return
+    (cd $GIT_URL;
+     date > initial-commit;
+     git add initial-commit;
+     git commit -m 'Initial commit')
+
+    (plugin_repo_update_git) > $CHANGES_FILE
+    RC=$?
+    assertTrue "Did not return proper return code for missing checkout (update)" "[ $RC = 0 ]"
+
+    (cd $GIT_URL;
+     date > update-commit;
+     git add update-commit;
+     git commit -m 'Update commit')
+
+    (plugin_repo_update_git) > $CHANGES_FILE
+    RC=$?
+    assertTrue "Did not return proper return code for out of date (update)" "[ $RC = 0 ]"
+    assertTrue "Did not log checkout details (update)" "[ -s $CHANGES_FILE ]"
+
+    cd $CURDIR
+    rm -rf $TMPDIR
+}
+
+testPoll() {
+    TMPDIR=$(mktemp -d "/tmp/${SHNAME}-XXXXXX")
+    WORKSPACE=$TMPDIR/workspace
+    CHANGES_FILE=$TMPDIR/changes.log
+    GIT_URL=$TMPDIR/repo.git
+    GIT_BRANCH=master
+
+    mkdir $WORKSPACE || return
+    cd $WORKSPACE || return
+
+    (plugin_repo_poll_git)
+    RC=$?
+    assertTrue "Did not return proper return code for bad checkout (poll)" "[ $RC = 2 ]"
+
+    git init $GIT_URL || return
+    (cd $GIT_URL;
+     date > initial-commit;
+     git add initial-commit;
+     git commit -m 'Initial commit')
+
+    (plugin_repo_poll_git)
+    RC=$?
+    assertTrue "Did not return proper return code for missing checkout (poll)" "[ $RC = 2 ]"
+
+    (plugin_repo_update_git) > $CHANGES_FILE
+    RC=$?
+    assertTrue "Did not return proper return code for missing checkout (update)" "[ $RC = 0 ]"
+
+    (plugin_repo_poll_git)
+    RC=$?
+    assertTrue "Did not return proper return code for no updates (poll)" "[ $RC = 0 ]"
+
+    (cd $GIT_URL;
+     date > update-commit;
+     git add update-commit;
+     git commit -m 'Update commit')
+
+    (plugin_repo_poll_git)
+    RC=$?
+    assertTrue "Did not return proper return code for out of date (poll)" "[ $RC = 2 ]"
+
+    cd $CURDIR
+    rm -rf $TMPDIR
+}
+
+. shunit2

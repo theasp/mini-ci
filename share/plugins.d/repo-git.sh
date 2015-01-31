@@ -1,7 +1,9 @@
 declare -x GIT_URL
+declare -x GIT_BRANCH
 
 plugin_on_load_config_pre_repo_git() {
   GIT_URL=""
+  GIT_BRANCH="master"
 }
 
 plugin_repo_update_git() {
@@ -11,7 +13,9 @@ plugin_repo_update_git() {
     fi
 
     log "Starting clone of $GIT_URL"
-    if ! git clone $GIT_URL .; then
+    if git clone --single-branch --branch "$GIT_BRANCH" "$GIT_URL" .; then
+      log "git pull returned $?"
+    else
       error "git clone returned $?"
     fi
     log "Clone finished without error"
@@ -23,7 +27,9 @@ plugin_repo_update_git() {
 
   local old_local=$(git rev-parse @{0})
 
-  if ! git pull; then
+  if git pull --rebase=false; then
+    log "git pull returned $?"
+  else
     error "git pull returned $?"
   fi
 
@@ -47,7 +53,9 @@ plugin_repo_poll_git() {
     exit 2
   fi
 
-  if ! git remote update; then
+  if git remote update; then
+    log "git remote update returned $?"
+  else
     error "git remote update returned $?"
   fi
 
