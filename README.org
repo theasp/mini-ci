@@ -392,7 +392,6 @@ plugin_on_tasks_finish_post_build_keep() {
     done < <(seq 1 $(( $BUILD_NUMBER - $BUILD_KEEP)))
   fi
 }
-
 #+END_SRC
 :END:
 
