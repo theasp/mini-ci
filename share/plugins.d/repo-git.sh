@@ -27,7 +27,7 @@ plugin_repo_update_git() {
 
   local old_local=$(git rev-parse @{0})
 
-  if git pull --rebase=false; then
+  if git pull; then
     log "git pull returned $?"
   else
     error "git pull returned $?"
