@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Mini-CI</title>
-<!-- 2015-01-31 Sat 14:36 -->
+<!-- 2015-02-18 Wed 21:04 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Andrew Phillips" />
@@ -258,7 +257,7 @@ To install into your home directory (<code>~/opt/mini-ci</code>):
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh">make clean install <span style="color: #eedd82;">prefix</span>=~/opt/mini-ci
+<pre class="src src-sh">make clean install <span style="color: #ffd787;">prefix</span>=~/opt/mini-ci
 </pre>
 </div>
 </div>
@@ -349,119 +348,119 @@ The <code>config</code> file in <code>skeleton</code> is:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">All paths are relative to the job directory.</span>
+<pre class="src src-sh"><span style="color: #ff8700;"># </span><span style="color: #ff8700;">All paths are relative to the job directory.</span>
 
-<span style="color: #ff7f24;">####################</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Main Configuration</span>
+<span style="color: #ff8700;">####################</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">Main Configuration</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">JOB_NAME: The name of the job.  Defaults to "$(</span><span style="color: #fa8072;">basename</span><span style="color: #ff7f24;"> $JOB_DIR)"</span>
-<span style="color: #eedd82;">JOB_NAME</span>=<span style="color: #ffa07a;">"$(</span><span style="color: #fa8072;">basename</span><span style="color: #ffa07a;"> $JOB_DIR)"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">JOB_NAME: The name of the job.  Defaults to "$(</span><span style="color: #ff875f;">basename</span><span style="color: #ff8700;"> $JOB_DIR)"</span>
+<span style="color: #ffd787;">JOB_NAME</span>=<span style="color: #ffaf87;">"$(</span><span style="color: #ff875f;">basename</span><span style="color: #ffaf87;"> $JOB_DIR)"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">REPO_PLUGIN: This is the name of a plugin that will handle</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repository actions.  The following plugins come with Mini-CI:</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- git</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- svn</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">- external</span>
-<span style="color: #eedd82;">REPO_PLUGIN</span>=<span style="color: #ffa07a;">"<plugin>"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">REPO_PLUGIN: This is the name of a plugin that will handle</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">repository actions.  The following plugins come with Mini-CI:</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">- git</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">- svn</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">- external</span>
+<span style="color: #ffd787;">REPO_PLUGIN</span>=<span style="color: #ffaf87;">"<plugin>"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_FREQ: If this is set to a number greater than zero, it will</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">poll the repository using the repo-handler every this many seconds,</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">starting at startup.  To have a more complicated scheme, use cron.</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Defaults to 600.</span>
-<span style="color: #eedd82;">POLL_FREQ</span>=600
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">POLL_FREQ: If this is set to a number greater than zero, it will</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">poll the repository using the repo-handler every this many seconds,</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">starting at startup.  To have a more complicated scheme, use cron.</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">Defaults to 600.</span>
+<span style="color: #ffd787;">POLL_FREQ</span>=600
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_DELAY: If this is set to a number greater than zero, mini-ci</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">will sleep this many seconds after a poll that indicates a change</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">was made in the repository.  Use this to delay doing an update to</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">allow a series of commits to take place.  Defaults to 0.</span>
-<span style="color: #eedd82;">POLL_DELAY</span>=0
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">POLL_DELAY: If this is set to a number greater than zero, mini-ci</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">will sleep this many seconds after a poll that indicates a change</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">was made in the repository.  Use this to delay doing an update to</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">allow a series of commits to take place.  Defaults to 0.</span>
+<span style="color: #ffd787;">POLL_DELAY</span>=0
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">WORKSPACE: The directory where the repository will be checked out</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">into, and where tasks are launched.  Defaults to "./workspace".</span>
-<span style="color: #eedd82;">WORKSPACE</span>=<span style="color: #ffa07a;">"./workspace"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">WORKSPACE: The directory where the repository will be checked out</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">into, and where tasks are launched.  Defaults to "./workspace".</span>
+<span style="color: #ffd787;">WORKSPACE</span>=<span style="color: #ffaf87;">"./workspace"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">TASKS_DIR: The directory which holds the tasks to be performed on</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the checked out repository.  Defaults to "./tasks.d"</span>
-<span style="color: #eedd82;">TASKS_DIR</span>=<span style="color: #ffa07a;">"./tasks.d"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">TASKS_DIR: The directory which holds the tasks to be performed on</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">the checked out repository.  Defaults to "./tasks.d"</span>
+<span style="color: #ffd787;">TASKS_DIR</span>=<span style="color: #ffaf87;">"./tasks.d"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILDS_DIR: The directory which stores the output of each build when</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">tasks run.  Defaults to "./builds".</span>
-<span style="color: #eedd82;">BUILDS_DIR</span>=<span style="color: #ffa07a;">"./builds"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">BUILDS_DIR: The directory which stores the output of each build when</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">tasks run.  Defaults to "./builds".</span>
+<span style="color: #ffd787;">BUILDS_DIR</span>=<span style="color: #ffaf87;">"./builds"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">CONTROL_FIFO: The fifo that mini-ci will read to accept commands.</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Defaults to "./control.fifo".</span>
-<span style="color: #eedd82;">CONTROL_FIFO</span>=<span style="color: #ffa07a;">"./control.fifo"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">CONTROL_FIFO: The fifo that mini-ci will read to accept commands.</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">Defaults to "./control.fifo".</span>
+<span style="color: #ffd787;">CONTROL_FIFO</span>=<span style="color: #ffaf87;">"./control.fifo"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">PID_FILE: The file containing the process ID for mini-ci.  Defaults</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">to "./minici.pid".</span>
-<span style="color: #eedd82;">PID_FILE</span>=<span style="color: #ffa07a;">"./mini-ci.pid"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">PID_FILE: The file containing the process ID for mini-ci.  Defaults</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">to "./minici.pid".</span>
+<span style="color: #ffd787;">PID_FILE</span>=<span style="color: #ffaf87;">"./mini-ci.pid"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">STATUS_FILE: A file where status information is kept.  Defaults to</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"./status".</span>
-<span style="color: #eedd82;">STATUS_FILE</span>=<span style="color: #ffa07a;">"./status"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">STATUS_FILE: A file where status information is kept.  Defaults to</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">"./status".</span>
+<span style="color: #ffd787;">STATUS_FILE</span>=<span style="color: #ffaf87;">"./status"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">POLL_LOG: Name of the poll log.  Defaults to "./poll.log".</span>
-<span style="color: #eedd82;">POLL_LOG</span>=<span style="color: #ffa07a;">"./poll.log"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">POLL_LOG: Name of the poll log.  Defaults to "./poll.log".</span>
+<span style="color: #ffd787;">POLL_LOG</span>=<span style="color: #ffaf87;">"./poll.log"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">UPDATE_LOG: Name of the update log.  Defaults to "./update.log".</span>
-<span style="color: #eedd82;">UPDATE_LOG</span>=<span style="color: #ffa07a;">"./update.log"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">UPDATE_LOG: Name of the update log.  Defaults to "./update.log".</span>
+<span style="color: #ffd787;">UPDATE_LOG</span>=<span style="color: #ffaf87;">"./update.log"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">TASKS_LOG: Name of the tasks log.  Defaults to "./tasks.log".</span>
-<span style="color: #eedd82;">TASKS_LOG</span>=<span style="color: #ffa07a;">"./tasks.log"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">TASKS_LOG: Name of the tasks log.  Defaults to "./tasks.log".</span>
+<span style="color: #ffd787;">TASKS_LOG</span>=<span style="color: #ffaf87;">"./tasks.log"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">MINICI_LOG: Name of the mini-ci log.  Defaults to "./mini-ci.log".</span>
-<span style="color: #eedd82;">MINICI_LOG</span>=<span style="color: #ffa07a;">"./mini-ci.log"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">MINICI_LOG: Name of the mini-ci log.  Defaults to "./mini-ci.log".</span>
+<span style="color: #ffd787;">MINICI_LOG</span>=<span style="color: #ffaf87;">"./mini-ci.log"</span>
 
-<span style="color: #ff7f24;">####################</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Plugin Configuration</span>
+<span style="color: #ff8700;">####################</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">Plugin Configuration</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">GIT_URL: The URL to the repository.  Fetching the URL must not ask</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
-<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">GIT_URL="<url>"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">GIT_URL: The URL to the repository.  Fetching the URL must not ask</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">repositories.</span>
+<span style="color: #ff8700;">#</span><span style="color: #ff8700;">GIT_URL="<url>"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">GIT_BRANCH: The branch of the repository.  Only affects the initial</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">checkout.  Defaults to "master".</span>
-<span style="color: #eedd82;">GIT_BRANCH</span>=<span style="color: #ffa07a;">"master"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">GIT_BRANCH: The branch of the repository.  Only affects the initial</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">checkout.  Defaults to "master".</span>
+<span style="color: #ffd787;">GIT_BRANCH</span>=<span style="color: #ffaf87;">"master"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">SVN_URL: The URL to the repository.  Fetching the URL must not ask</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">repositories.</span>
-<span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">SVN_URL="<url>"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">SVN_URL: The URL to the repository.  Fetching the URL must not ask</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">for a username or password.  Use ~/.netrc or ssh keys for remote</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">repositories.</span>
+<span style="color: #ff8700;">#</span><span style="color: #ff8700;">SVN_URL="<url>"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_NOTIFY: A space and/or comma separated list of conditions to</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"RECOVER" (when a state changes from "ERROR" or "UNKNOWN" to "OK")</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">and "NEWPROB" (when a state changes from "OK" to "ERROR" or</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"UNKNOWN").  Defaults to "NEWPROB, RECOVER".</span>
-<span style="color: #eedd82;">EMAIL_NOTIFY</span>=<span style="color: #ffa07a;">"NEWPROB, RECOVER"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">EMAIL_NOTIFY: A space and/or comma separated list of conditions to</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">notify about.  Valid options are "NEVER", "ERROR", "OK", "UNKNOWN",</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">"RECOVER" (when a state changes from "ERROR" or "UNKNOWN" to "OK")</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">and "NEWPROB" (when a state changes from "OK" to "ERROR" or</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">"UNKNOWN").  Defaults to "NEWPROB, RECOVER".</span>
+<span style="color: #ffd787;">EMAIL_NOTIFY</span>=<span style="color: #ffaf87;">"NEWPROB, RECOVER"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_ADDRESS: A space and/or comma separated list of addresses to</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">email.  If not specified, will be sent to the user that is running</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the script.  Defaults to "".</span>
-<span style="color: #eedd82;">EMAIL_ADDRESS</span>=<span style="color: #ffa07a;">""</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">EMAIL_ADDRESS: A space and/or comma separated list of addresses to</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">email.  If not specified, will be sent to the user that is running</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">the script.  Defaults to "".</span>
+<span style="color: #ffd787;">EMAIL_ADDRESS</span>=<span style="color: #ffaf87;">""</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">EMAIL_SUBJECT: The subject to have for notification emails.</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Defaults to "Mini-CI Notification - $JOB_NAME".</span>
-<span style="color: #eedd82;">EMAIL_SUBJECT</span>=<span style="color: #ffa07a;">"Mini-CI Notification - $JOB_NAME"</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">EMAIL_SUBJECT: The subject to have for notification emails.</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">Defaults to "Mini-CI Notification - $JOB_NAME".</span>
+<span style="color: #ffd787;">EMAIL_SUBJECT</span>=<span style="color: #ffaf87;">"Mini-CI Notification - $JOB_NAME"</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_ARCHIVE_WORKSPACE: When set to "yes" will copy the workspace into</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">the $BUILDS_DIR/$BUILD_NUM/workspace.  Defaults to "no".</span>
-<span style="color: #eedd82;">BUILD_ARCHIVE_WORKSPACE</span>=<span style="color: #ffa07a;">""</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">BUILD_ARCHIVE_WORKSPACE: When set to "yes" will copy the workspace into</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">the $BUILDS_DIR/$BUILD_NUM/workspace.  Defaults to "no".</span>
+<span style="color: #ffd787;">BUILD_ARCHIVE_WORKSPACE</span>=<span style="color: #ffaf87;">""</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_KEEP: If this is set to a number greater than zero, only this</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">many build log directories will be kept.  Defaults to "0".</span>
-<span style="color: #eedd82;">BUILD_KEEP</span>=0
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">BUILD_KEEP: If this is set to a number greater than zero, only this</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">many build log directories will be kept.  Defaults to "0".</span>
+<span style="color: #ffd787;">BUILD_KEEP</span>=0
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_DEPENDENCY_LIST: This is a list of status files, seperated by</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">spaces, for other Mini-CI jobs that will cause tasks to wait until</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">they are "idle" and the status of their tasks is "OK".  Defaults to</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">"".</span>
-<span style="color: #eedd82;">BUILD_DEPENDENCY_LIST</span>=<span style="color: #ffa07a;">""</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">BUILD_DEPENDENCY_LIST: This is a list of status files, seperated by</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">spaces, for other Mini-CI jobs that will cause tasks to wait until</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">they are "idle" and the status of their tasks is "OK".  Defaults to</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">"".</span>
+<span style="color: #ffd787;">BUILD_DEPENDENCY_LIST</span>=<span style="color: #ffaf87;">""</span>
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">BUILD_DEPENDENCY_TIMEOUT: The number of seconds to wait for</span>
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">dependencies to be ready.  Defaults to "1200" (20 minutes).</span>
-<span style="color: #eedd82;">BUILD_DEPENDENCY_TIMEOUT</span>=1200
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">BUILD_DEPENDENCY_TIMEOUT: The number of seconds to wait for</span>
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">dependencies to be ready.  Defaults to "1200" (20 minutes).</span>
+<span style="color: #ffd787;">BUILD_DEPENDENCY_TIMEOUT</span>=1200
 </pre>
 </div>
 </div>
@@ -521,9 +520,9 @@ Create and enter a directory called <code>mini-ci-job</code>, then place the fol
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #eedd82;">REPO_PLGUIN</span>=<span style="color: #ffa07a;">"git"</span>
-<span style="color: #eedd82;">GIT_URL</span>=<span style="color: #ffa07a;">"https://github.com/theasp/mini-ci"</span>
-<span style="color: #eedd82;">POLL_FREQ</span>=600
+<pre class="src src-sh"><span style="color: #ffd787;">REPO_PLGUIN</span>=<span style="color: #ffaf87;">"git"</span>
+<span style="color: #ffd787;">GIT_URL</span>=<span style="color: #ffaf87;">"https://github.com/theasp/mini-ci"</span>
+<span style="color: #ffd787;">POLL_FREQ</span>=600
 </pre>
 </div>
 
@@ -536,12 +535,12 @@ Create the directory <code>tasks.d</code>, then place the following file in <cod
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">!/bin/</span><span style="color: #00ffff;">sh</span>
+<pre class="src src-sh"><span style="color: #ff8700;">#</span><span style="color: #ff8700;">!/bin/</span><span style="color: #00ffff;">sh</span>
 
-<span style="color: #b0c4de;">set</span> -ex
+<span style="color: #afd7d7;">set</span> -ex
 
-<span style="color: #ff7f24;"># </span><span style="color: #ff7f24;">Override the prefix to install into ~/opt/mini-ci</span>
-make <span style="color: #eedd82;">prefix</span>=~/opt/mini-ci
+<span style="color: #ff8700;"># </span><span style="color: #ff8700;">Override the prefix to install into ~/opt/mini-ci</span>
+make <span style="color: #ffd787;">prefix</span>=~/opt/mini-ci
 </pre>
 </div>
 
@@ -550,7 +549,7 @@ Place the following file in <code>tasks.d/500-run_tests</code>:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">!/bin/</span><span style="color: #00ffff;">sh</span>
+<pre class="src src-sh"><span style="color: #ff8700;">#</span><span style="color: #ff8700;">!/bin/</span><span style="color: #00ffff;">sh</span>
 make test
 </pre>
 </div>
@@ -605,9 +604,9 @@ You can have git notify Mini-CI upon every push to a repository, which makes pol
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #ff7f24;">#</span><span style="color: #ff7f24;">!/bin/</span><span style="color: #00ffff;">sh</span>
+<pre class="src src-sh"><span style="color: #ff8700;">#</span><span style="color: #ff8700;">!/bin/</span><span style="color: #00ffff;">sh</span>
 
-<span style="color: #b0c4de;">set</span> -e
+<span style="color: #afd7d7;">set</span> -e
 mini-ci -d ~/some-mini-ci-job-directory -m update
 </pre>
 </div>
@@ -787,17 +786,17 @@ The <code>build-keep.sh</code> plugin uses a variable <code>BUILD_KEEP</code> wh
 </p>
 <div class="org-src-container">
 
-<pre class="src src-sh"><span style="color: #b0c4de;">declare</span> BUILD_KEEP
+<pre class="src src-sh"><span style="color: #afd7d7;">declare</span> BUILD_KEEP
 
-<span style="color: #87cefa;">plugin_on_load_config_pre_build_keep</span>() {
-  <span style="color: #eedd82;">BUILD_KEEP</span>=<span style="color: #ffa07a;">"0"</span>
+<span style="color: #87d7ff;">plugin_on_load_config_pre_build_keep</span>() {
+  <span style="color: #ffd787;">BUILD_KEEP</span>=<span style="color: #ffaf87;">"0"</span>
 }
 
-<span style="color: #87cefa;">plugin_on_tasks_finish_post_build_keep</span>() {
-  <span style="color: #00ffff;">if</span> [[ <span style="color: #ffa07a;">"$BUILD_KEEP"</span> -gt 0 ]]; <span style="color: #00ffff;">then</span>
-    <span style="color: #00ffff;">while </span><span style="color: #b0c4de;">read</span> num; <span style="color: #00ffff;">do</span>
-      [[ -d <span style="color: #ffa07a;">"$BUILDS_DIR/$num"</span> ]] && rm -r <span style="color: #ffa07a;">"$BUILDS_DIR/$num"</span>
-    <span style="color: #00ffff;">done</span> < <(seq 1 $(( $<span style="color: #eedd82;">BUILD_NUMBER</span> - $<span style="color: #eedd82;">BUILD_KEEP</span>)))
+<span style="color: #87d7ff;">plugin_on_tasks_finish_post_build_keep</span>() {
+  <span style="color: #00ffff;">if</span> [[ <span style="color: #ffaf87;">"$BUILD_KEEP"</span> -gt 0 ]]; <span style="color: #00ffff;">then</span>
+    <span style="color: #00ffff;">while </span><span style="color: #afd7d7;">read</span> num; <span style="color: #00ffff;">do</span>
+      [[ -d <span style="color: #ffaf87;">"$BUILDS_DIR/$num"</span> ]] && rm -r <span style="color: #ffaf87;">"$BUILDS_DIR/$num"</span>
+    <span style="color: #00ffff;">done</span> < <(seq 1 $(( $<span style="color: #ffd787;">BUILD_NUMBER</span> - $<span style="color: #ffd787;">BUILD_KEEP</span>)))
   <span style="color: #00ffff;">fi</span>
 }
 </pre>
@@ -808,7 +807,7 @@ The <code>build-keep.sh</code> plugin uses a variable <code>BUILD_KEEP</code> wh
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Andrew Phillips <<a href="mailto:theasp@gmail.com">theasp@gmail.com</a>></p>
-<p class="date">Date: 2015-01-31 Sat 14:36</p>
+<p class="date">Date: 2015-02-18 Wed 21:04</p>
 </div>
 </body>
 </html>

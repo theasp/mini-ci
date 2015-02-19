@@ -401,5 +401,6 @@ plugin_on_tasks_finish_post_build_keep() {
 
 # Local variables:
 # org-ascii-charset: utf-8
+# org-ascii-verbatim-format: "%s"
 # eval: (add-hook 'after-save-hook '(lambda () (org-ascii-export-to-ascii) (org-html-export-to-html)) nil t)
 # End:

@@ -17,8 +17,8 @@ Table of Contents
 4 Usage
 5 Configuration
 6 Contents of a Job Directory
-.. 6.1 `config'
-.. 6.2 `tasks.d'
+.. 6.1 config
+.. 6.2 tasks.d
 7 Examples
 .. 7.1 Mini-CI Job Directory
 .. 7.2 Starting the Mini-CI Daemon as a User
@@ -76,12 +76,12 @@ Table of Contents
 3.2 From Source
 ───────────────
 
-  To install into `/usr/local':
+  To install into /usr/local:
   ┌────
   │ make clean install
   └────
 
-  To install into your home directory (`~/opt/mini-ci'):
+  To install into your home directory (~/opt/mini-ci):
   ┌────
   │ make clean install prefix=~/opt/mini-ci
   └────
@@ -90,7 +90,7 @@ Table of Contents
 4 Usage
 ═══════
 
-  From the output of `mini-ci --help':
+  From the output of mini-ci --help:
   ┌────
   │ Usage: mini-ci [option ...] [command ...]
   │ 
@@ -125,45 +125,43 @@ Table of Contents
 5 Configuration
 ═══════════════
 
-  You can configure a Mini-CI job by copying the `skeleton' directory
+  You can configure a Mini-CI job by copying the skeleton directory
   somewhere and then editing where required.  This directory is referred
-  to has the "job directory".  The skeleton contains the file `config'
-  and the directory `tasks.d', see their description later.  Once you
-  have the configuration in place you can try it by running `mini-ci -F'
-  in the directory you created, which will run Mini-CI in the
-  foreground.
+  to has the "job directory".  The skeleton contains the file config and
+  the directory tasks.d, see their description later.  Once you have the
+  configuration in place you can try it by running mini-ci -F in the
+  directory you created, which will run Mini-CI in the foreground.
 
 
 6 Contents of a Job Directory
 ═════════════════════════════
 
-  • `config': The configuration file for the job.
-  • `tasks.d': Contains all the tasks that would be executed during a
+  • config: The configuration file for the job.
+  • tasks.d: Contains all the tasks that would be executed during a
     build of your repository
-  • `plugins.d': Contains any additional plugins to be used for this
-    job.
-  • `builds': The builds directory contains the output of each build of
-    a job in numbered directories.
-  • `workspace': The directory your repository is checked out into, and
+  • plugins.d: Contains any additional plugins to be used for this job.
+  • builds: The builds directory contains the output of each build of a
+    job in numbered directories.
+  • workspace: The directory your repository is checked out into, and
     built in.
-  • `mini-ci.log': The main log for Mini-CI.
-  • `poll.log': The log for the last poll operation.
-  • `tasks.log': The log for the last tasks operation.
-  • `update.log': The log for the last update operation.
-  • `control.fifo': This is a FIFO used to communicate with the Mini-CI
+  • mini-ci.log: The main log for Mini-CI.
+  • poll.log: The log for the last poll operation.
+  • tasks.log: The log for the last tasks operation.
+  • update.log: The log for the last update operation.
+  • control.fifo: This is a FIFO used to communicate with the Mini-CI
     daemon.
 
 
-6.1 `config'
-────────────
+6.1 config
+──────────
 
-  The `config' file is a shell script that is sourced when Mini-CI is
+  The config file is a shell script that is sourced when Mini-CI is
   started which contains the configuration to use for your job.  Every
   option should have sane defaults, so feel free to only have the
   entries you wish to use.  If you want a variable exported during your
-  job, for instance `PATH', this would also be a good place to do so.
+  job, for instance PATH, this would also be a good place to do so.
 
-  The `config' file in `skeleton' is:
+  The config file in skeleton is:
   ┌────
   │ # All paths are relative to the job directory.
   │ 
@@ -281,35 +279,34 @@ Table of Contents
   └────
 
 
-6.2 `tasks.d'
-─────────────
+6.2 tasks.d
+───────────
 
-  The `tasks.d' directory contains all the tasks that would be executed
-  during a build of your repository.  The `skeleton' contains a few
+  The tasks.d directory contains all the tasks that would be executed
+  during a build of your repository.  The skeleton contains a few
   examples.  Each script must match the regular expression
-  `^[a-zA-Z0-9_-]+$' and will be ran in sort order, therefore it is
+  ^[a-zA-Z0-9_-]+$ and will be ran in sort order, therefore it is
   recommended that each script be named in the form
-  `<nnn>-<description_of_task>'.  If a script exits with a return code
+  <nnn>-<description_of_task>.  If a script exits with a return code
   that is not zero, it is considered a build error and no further
   scripts are executed.
 
   Mini-CI exports the following variables:
-  • `MINI_CI_DIR': The data directory for Mini-CI
-  • `MINI_CI_VER': The version of the Mini-CI running
-  • `BUILD_DISPLAY_NAME': The build number with "#" prepended.
+  • MINI_CI_DIR: The data directory for Mini-CI
+  • MINI_CI_VER: The version of the Mini-CI running
+  • BUILD_DISPLAY_NAME: The build number with "#" prepended.
     i.e. "#123"
-  • `BUILD_ID': The date and time the build started in the following
-    format: `%Y-%m-%d_%H-%M-%S'
-  • `BUILD_OUTPUT_DIR': The directory used for storage for the current
+  • BUILD_ID: The date and time the build started in the following
+    format: %Y-%m-%d_%H-%M-%S
+  • BUILD_OUTPUT_DIR: The directory used for storage for the current
     build
-  • `BUILD_NUMBER': The current build number.
-  • `BUILD_TAG': A string of the form:
-    `mini-ci-${JOB_NAME}-${JOB_NUMBER}'
-  • `JOB_DIR': The directory where the job is stored
-  • `JOB_NAME': Name of the the job
-  • `WORKSPACE': The current workspace directory
-  • `GIT_URL': The URL of the GIT repository (when using the GIT plugin)
-  • `SVN_URL': The URL of the Subversion repository (when using the
+  • BUILD_NUMBER: The current build number.
+  • BUILD_TAG: A string of the form: mini-ci-${JOB_NAME}-${JOB_NUMBER}
+  • JOB_DIR: The directory where the job is stored
+  • JOB_NAME: Name of the the job
+  • WORKSPACE: The current workspace directory
+  • GIT_URL: The URL of the GIT repository (when using the GIT plugin)
+  • SVN_URL: The URL of the Subversion repository (when using the
     Subversion plugin)
 
 
@@ -322,8 +319,8 @@ Table of Contents
   This example will configure to monitor Mini-CI's GIT repository and
   run tests whenever it's updated.
 
-  Create and enter a directory called `mini-ci-job', then place the
-  following in `config':
+  Create and enter a directory called mini-ci-job, then place the
+  following in config:
   ┌────
   │ REPO_PLGUIN="git"
   │ GIT_URL="https://github.com/theasp/mini-ci"
@@ -333,8 +330,8 @@ Table of Contents
   This configuration will use the GIT repository handler with the URL to
   the Mini-CI repository, and then poll it every 10 minutes.
 
-  Create the directory `tasks.d', then place the following file in
-  `tasks.d/100-make'
+  Create the directory tasks.d, then place the following file in
+  tasks.d/100-make
   ┌────
   │ #!/bin/sh
   │ 
@@ -344,14 +341,14 @@ Table of Contents
   │ make prefix=~/opt/mini-ci
   └────
 
-  Place the following file in `tasks.d/500-run_tests':
+  Place the following file in tasks.d/500-run_tests:
   ┌────
   │ #!/bin/sh
   │ make test
   └────
 
-  Run `chmod +x tasks.d/500-run_tests' to make the script executable.
-  Now when you run `mini-ci -F' in the job directory you will get:
+  Run chmod +x tasks.d/500-run_tests to make the script executable.  Now
+  when you run mini-ci -F in the job directory you will get:
 
   ┌────
   │ 2014-12-18 17:20:03 mini-ci/7145 Starting up
@@ -366,20 +363,20 @@ Table of Contents
   └────
 
   Mini-CI started in foreground mode, downloaded the repository, then
-  ran all the tasks in the `tasks.d' directory.  Notice that it also
-  sent 3 mail notifications due to update, poll and tasks transitioning
-  from `UNKNOWN' to `RECOVER'.  The default email settings will only
-  send mail when they change state.  The process is still running and
-  will check the repository for changes every 10 minutes.
+  ran all the tasks in the tasks.d directory.  Notice that it also sent
+  3 mail notifications due to update, poll and tasks transitioning from
+  UNKNOWN to RECOVER.  The default email settings will only send mail
+  when they change state.  The process is still running and will check
+  the repository for changes every 10 minutes.
 
-  You can stop the daemon by pressing `ctrl-c', or by running `mini-ci
-  -m quit' in the job directory in another shell.
+  You can stop the daemon by pressing ctrl-c, or by running mini-ci -m
+  quit in the job directory in another shell.
 
 
 7.2 Starting the Mini-CI Daemon as a User
 ─────────────────────────────────────────
 
-  The easiest way to run Mini-CI as a user is to have `cron' start it.
+  The easiest way to run Mini-CI as a user is to have cron start it.
   For instance, the following crontab will start Mini-CI every 10
   minutes, and if it is already running for that job directory it will
   exit quietly, otherwise it will poll the repository for any updates it
@@ -397,10 +394,10 @@ Table of Contents
 
   You can have git notify Mini-CI upon every push to a repository, which
   makes polling the repository unnecessary.  Put this in
-  `hooks/post-update' in your git repository directory (or
-  `.git/hooks/post-update' if you aren't using a bare repository), and
-  it will send a message to Mini-CI to do an update, which will trigger
-  a build.
+  hooks/post-update in your git repository directory (or
+  .git/hooks/post-update if you aren't using a bare repository), and it
+  will send a message to Mini-CI to do an update, which will trigger a
+  build.
   ┌────
   │ #!/bin/sh
   │ 
@@ -416,27 +413,27 @@ Table of Contents
 ════════════
 
   Mini-CI can be extended with plugins written as bash functions.  Any
-  plugin matching `*.sh' in the `plugins.d' directory in either the
-  Mini-CI installation path or the current job directory will be sourced
-  when Mini-CI starts up.  Plugins must declare their variables using
-  `declare' (or `declare -x' if the variable is to be exported).
-  Variables that are to be set using the config file should be set the
-  default value using a function of the name
-  `plugin_on_load_config_pre_<name>'.  In most cases the plugin's
-  functions will run in the same shell as the rest of Mini-CI so that
-  the plugin can modify variables, but this also introduces the chance
-  that a plugin will introduce unwanted side-effects.
+  plugin matching *.sh in the plugins.d directory in either the Mini-CI
+  installation path or the current job directory will be sourced when
+  Mini-CI starts up.  Plugins must declare their variables using declare
+  (or declare -x if the variable is to be exported).  Variables that are
+  to be set using the config file should be set the default value using
+  a function of the name plugin_on_load_config_pre_<name>.  In most
+  cases the plugin's functions will run in the same shell as the rest of
+  Mini-CI so that the plugin can modify variables, but this also
+  introduces the chance that a plugin will introduce unwanted
+  side-effects.
 
 
 8.1 Repository Plugins
 ──────────────────────
 
-  Repository plugins are ran in a subshell with `STDOUT' redirected to
-  the appropriate logfile.  A repository plugin must provide the
-  following functions:
-  • `plugin_repo_update_<name>'
+  Repository plugins are ran in a subshell with STDOUT redirected to the
+  appropriate logfile.  A repository plugin must provide the following
+  functions:
+  • plugin_repo_update_<name>
     • Must exit with a return code of 0 if successful.
-  • `plugin_repo_poll_<name>'
+  • plugin_repo_poll_<name>
     • Must exit with a return code of 0 if successful.
     • Must exit with a return code of 1 if there is an error.
     • Must exit with a return code of 2 if the repository is out of
@@ -447,76 +444,76 @@ Table of Contents
 ────────────────────────
 
   A notification plugin must provide a function named
-  `plugin_notify_<name>', which accepts the following arguments:
+  plugin_notify_<name>, which accepts the following arguments:
   • item: The name of the state that triggered the notification,
-    i.e. `poll', `update', `tasks', etc.
-  • old: The old status of that state, i.e. `UNKNOWN', `ERROR', or `OK'
+    i.e. poll, update, tasks, etc.
+  • old: The old status of that state, i.e. UNKNOWN, ERROR, or OK
   • old_time: The time in epoch seconds the old status was set
   • new: The new status of the state
   • new_time: The time in epoch seconds the new status was set
-  • active_states: A string containing one of `OK', `ERROR', `UNKNOWN',
-    additionally it may contain `NEWPROB' or `RECOVER'.
+  • active_states: A string containing one of OK, ERROR, UNKNOWN,
+    additionally it may contain NEWPROB or RECOVER.
 
 
 8.3 Generic Hooks
 ─────────────────
 
   Your plugin can provide functions using the following names:
-  • `on_abort_post_<plugin_name>'
-  • `on_abort_pre_<plugin_name>'
-  • `on_acquire_lock_post_<plugin_name>'
-  • `on_acquire_lock_pre_<plugin_name>'
-  • `on_clean_post_<plugin_name>'
-  • `on_clean_pre_<plugin_name>'
-  • `on_load_config_post_<plugin_name>'
-  • `on_load_config_pre_<plugin_name>'
-  • `on_notify_status_post_<plugin_name>'
-  • `on_notify_status_pre_<plugin_name>'
-  • `on_poll_finish_post_<plugin_name>'
-  • `on_poll_finish_pre_<plugin_name>'
-  • `on_poll_start_post_<plugin_name>'
-  • `on_poll_start_pre_<plugin_name>'
-  • `on_process_queue_post_<plugin_name>'
-  • `on_process_queue_pre_<plugin_name>'
-  • `on_queue_post_<plugin_name>'
-  • `on_queue_pre_<plugin_name>'
-  • `on_quit_post_<plugin_name>'
-  • `on_quit_pre_<plugin_name>'
-  • `on_read_commands_post_<plugin_name>'
-  • `on_read_commands_pre_<plugin_name>'
-  • `on_read_status_post_<plugin_name>'
-  • `on_read_status_pre_<plugin_name>'
-  • `on_reload_config_post_<plugin_name>'
-  • `on_reload_config_pre_<plugin_name>'
-  • `on_run_cmd_pre_<plugin_name>'
-  • `on_run_cmd_pre_<plugin_name>'
-  • `on_run_tasks_post_<plugin_name>'
-  • `on_run_tasks_pre_<plugin_name>'
-  • `on_schedule_poll_post_<plugin_name>'
-  • `on_schedule_poll_pre_<plugin_name>'
-  • `on_send_message_post_<plugin_name>'
-  • `on_send_message_pre_<plugin_name>'
-  • `on_status_post_<plugin_name>'
-  • `on_status_pre_<plugin_name>'
-  • `on_tasks_finish_post_<plugin_name>'
-  • `on_tasks_finish_pre_<plugin_name>'
-  • `on_tasks_start_post_<plugin_name>'
-  • `on_tasks_start_pre_<plugin_name>'
-  • `on_update_finish_post_<plugin_name>'
-  • `on_update_finish_pre_<plugin_name>'
-  • `on_update_start_post_<plugin_name>'
-  • `on_update_start_pre_<plugin_name>'
-  • `on_update_status_post_<plugin_name>'
-  • `on_update_status_pre_<plugin_name>'
-  • `on_write_status_post_<plugin_name>'
-  • `on_write_status_pre_<plugin_name>'
+  • on_abort_post_<plugin_name>
+  • on_abort_pre_<plugin_name>
+  • on_acquire_lock_post_<plugin_name>
+  • on_acquire_lock_pre_<plugin_name>
+  • on_clean_post_<plugin_name>
+  • on_clean_pre_<plugin_name>
+  • on_load_config_post_<plugin_name>
+  • on_load_config_pre_<plugin_name>
+  • on_notify_status_post_<plugin_name>
+  • on_notify_status_pre_<plugin_name>
+  • on_poll_finish_post_<plugin_name>
+  • on_poll_finish_pre_<plugin_name>
+  • on_poll_start_post_<plugin_name>
+  • on_poll_start_pre_<plugin_name>
+  • on_process_queue_post_<plugin_name>
+  • on_process_queue_pre_<plugin_name>
+  • on_queue_post_<plugin_name>
+  • on_queue_pre_<plugin_name>
+  • on_quit_post_<plugin_name>
+  • on_quit_pre_<plugin_name>
+  • on_read_commands_post_<plugin_name>
+  • on_read_commands_pre_<plugin_name>
+  • on_read_status_post_<plugin_name>
+  • on_read_status_pre_<plugin_name>
+  • on_reload_config_post_<plugin_name>
+  • on_reload_config_pre_<plugin_name>
+  • on_run_cmd_pre_<plugin_name>
+  • on_run_cmd_pre_<plugin_name>
+  • on_run_tasks_post_<plugin_name>
+  • on_run_tasks_pre_<plugin_name>
+  • on_schedule_poll_post_<plugin_name>
+  • on_schedule_poll_pre_<plugin_name>
+  • on_send_message_post_<plugin_name>
+  • on_send_message_pre_<plugin_name>
+  • on_status_post_<plugin_name>
+  • on_status_pre_<plugin_name>
+  • on_tasks_finish_post_<plugin_name>
+  • on_tasks_finish_pre_<plugin_name>
+  • on_tasks_start_post_<plugin_name>
+  • on_tasks_start_pre_<plugin_name>
+  • on_update_finish_post_<plugin_name>
+  • on_update_finish_pre_<plugin_name>
+  • on_update_start_post_<plugin_name>
+  • on_update_start_pre_<plugin_name>
+  • on_update_status_post_<plugin_name>
+  • on_update_status_pre_<plugin_name>
+  • on_write_status_post_<plugin_name>
+  • on_write_status_pre_<plugin_name>
 
 
 8.4 Example Plugin
 ──────────────────
 
-  The `build-keep.sh' plugin uses a variable `BUILD_KEEP' which is
-  settable from the config file and used the `tasks_finish_post' hook:
+  The build-keep.sh plugin uses a variable BUILD_KEEP which is settable
+  from the config file and used the tasks_finish_post hook:
   ┌────
   │ declare BUILD_KEEP
   │ 
