@@ -13,7 +13,7 @@ plugin_repo_update_git() {
     fi
 
     log "Starting clone of $GIT_URL"
-    if git clone --single-branch --branch "$GIT_BRANCH" "$GIT_URL" .; then
+    if git clone --branch "$GIT_BRANCH" "$GIT_URL" .; then
       log "git pull returned $?"
     else
       error "git clone returned $?"
