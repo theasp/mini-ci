@@ -1,0 +1,98 @@
+#!/bin/bash
+
+# Upload all source or binary debian packages to a repository using
+# dput. You should put the following in your config:
+
+# TASK_DEBUILD_OPTIONS: Options to pass to debuild, for instance "-S"
+# will only build source packages.  Defaults to "-S".
+# export TASK_DEBUILD_OPTIONS="-S"
+
+# TASK_DEBUILD_SERIES: A list of distributions to generate
+# packages for.  If you are building binary packages this should be
+# left unset.  Defaults to the name of your current release.
+# export TASK_DEBUILD_SERIES="vivid utopic trusty precise lucid"
+
+# TASK_DEBUILD_KEYID: The key to use to sign your packages.
+# You need to set this to something, but you can use "-us -uc" in the
+# options to not use it.
+# export TASK_DEBUILD_KEYID=<keyid>
+
+TASK_DEBUILD_SERIES="${TASK_DEBUILD_SERIES:-$(lsb_release -cs)}"
+TASK_DEBUILD_OPTIONS="${TASK_DEBUILD_OPTIONS:--S}"
+TAR_DIR="${TAR_DIR:-${BUILD_OUTPUT_DIR}/tar/}"
+DEB_DIR="${DEB_DIR:-${BUILD_OUTPUT_DIR}/deb/}"
+
+if [[ -z "$TASK_DEBUILD_KEYID" ]]; then
+    echo "ERROR: $(basename $0) needs TASK_DEBUILD_KEYID set"
+    exit 1
+fi
+
+set -ex
+
+main() {
+    mkdir "$DEB_DIR"
+    
+    for tar in "$TAR_DIR"/*.tar.gz; do
+        tar xvfz $tar -C $DEB_DIR
+    done
+
+    for dir in $DEB_DIR/*; do
+        if [[ -d "$dir/debian" ]]; then
+            (cd $dir; make_tar)
+        fi
+    done
+
+    for series in $TASK_DEBUILD_SERIES; do
+        for dir in $DEB_DIR/*; do
+            if [[ -d "$dir" ]]; then
+                rm -r "$dir"
+            fi
+        done
+
+        (cd $DEB_DIR; make_series $series)
+    done
+}
+
+make_tar() {
+    cur_dir="$(basename $PWD)"
+    cur_ver="${cur_dir/#*-/}"
+    cur_name="${cur_dir%-$cur_ver}"
+
+    cur_ver=$(dpkg-parsechangelog | grep '^Version:' | cut -f 2 -d ' ')
+    new_ver="${cur_ver}"
+    dch --newversion "$new_ver" "Automated build"
+
+    tar cvfz ../"${cur_name}_${new_ver}.orig.tar.gz" . --exclude-vcs --exclude-backup --transform "s!^.!${cur_name}-${new_ver}!" --show-transformed
+}
+
+update_version() {
+    local series=$1
+    local cur_ver=$(dpkg-parsechangelog | grep '^Version:' | cut -f 2 -d ' ')
+    local new_ver="${cur_ver}-$series"
+
+    dch --newversion "$new_ver" "Distribution set to $series" --distribution "$1"
+}
+
+make_package() {
+    debuild -k"${TASK_DEBUILD_KEYID}" ${TASK_DEBUILD_OPTIONS}
+}
+
+make_series() {
+    local series=$1
+
+    for file in *.tar.gz; do
+        tar xvfz "$file"
+    done
+
+    for dir in *; do
+        if [[ -d "$dir/debian" ]]; then
+            (cd "$dir"; update_version $series; make_package)
+        fi
+
+        if [[ -d "$dir" ]]; then
+            rm -r "$dir"
+        fi
+    done
+}
+
+main
