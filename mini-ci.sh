@@ -6,8 +6,6 @@
 
 source $MINI_CI_DIR/mini-ci.sh
 
-main "$@"
-
 # Local Variables:
 # sh-basic-offset: 2
 # sh-indentation: 2

@@ -1,3 +1,4 @@
+#!/bin/bash
 # Mini-CI is a small daemon to perform continuous integration (CI) for
 # a single repository/project.
 #
@@ -845,6 +846,8 @@ find_plugin_function() {
     fi
   done < <(set)
 }
+
+main "$@"
 
 # Local Variables:
 # sh-basic-offset: 2
