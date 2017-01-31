@@ -1,3 +1,9 @@
+# This is a bash script that is sourced by mini-ci
+
+# You can add anything you want to run here, and it will run whenever
+# the config is reloaded.
+# sudo apt-get install build-essential devscripts dh-make
+
 # All paths are relative to the job directory.
 
 ####################
