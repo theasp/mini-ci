@@ -62,6 +62,9 @@ plugin_repo_poll_git() {
     error "git remote update returned $?"
   fi
 
+  log "Removing local changes"
+  git stash -u
+
   local local=$(git rev-parse @{0})
   local remote=$(git rev-parse @{u})
   local base=$(git merge-base @{0} @{u})
