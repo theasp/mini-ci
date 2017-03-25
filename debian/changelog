@@ -1,3 +1,9 @@
+mini-ci (0.2-1) xenial; urgency=medium
+
+  * Several updates.
+
+ -- Andrew Phillips <theasp@gmail.com>  Sat, 25 Mar 2017 10:35:50 -0300
+
 mini-ci (0.1-1) trusty; urgency=low
 
   * Initial release.
