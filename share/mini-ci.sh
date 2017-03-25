@@ -353,6 +353,7 @@ function tasks_start {
     done
 
     [[ -d "$BUILD_OUTPUT_DIR" ]] || mkdir "$BUILD_OUTPUT_DIR"
+    rm -f "$BUILDS_DIR/latest"
     ln -sf "$BUILD_OUTPUT_DIR" "$BUILDS_DIR/latest"
 
     [[ -f "$UPDATE_LOG" ]] && cp "$UPDATE_LOG" "$BUILD_OUTPUT_DIR/"
