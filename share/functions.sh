@@ -1,3 +1,4 @@
+#!/bin/bash
 # Mini-CI is a small daemon to perform continuous integration (CI) for
 # a single repository/project.
 #
@@ -13,7 +14,7 @@ set -e
 
 # This is from here, but ported to BASH:
 # https://code.google.com/p/shunit2/wiki/HOWTO_TestAbsolutePathFn#Fourth_Go
-make_full_path() {
+function make_full_path {
   #set -x
   local shlib_path_=$1
   local shlib_old
@@ -38,7 +39,7 @@ make_full_path() {
 }
 
 # http://stackoverflow.com/questions/392022/best-way-to-kill-all-child-processes
-killtree() {
+function killtree {
   local _pid=$1
   local _sig=${2:--TERM}
   kill -stop ${_pid} # needed to stop quickly forking parent from producing children between child killing and parent killing
@@ -48,22 +49,22 @@ killtree() {
   kill -${_sig} ${_pid}
 }
 
-error() {
+function error {
   log "ERROR: $@"
   exit 1
 }
 
-debug() {
+function debug {
   if [ "$DEBUG" = "yes" ]; then
     log "DEBUG: $@"
   fi
 }
 
-warning() {
+function warning {
   log "WARN: $@"
 }
 
-log() {
+function log {
   local msg="$(date '+%F %T') $SHNAME/$BASHPID $@"
   echo $msg 1>&2
   if [[ $LOG_FILE ]]; then
@@ -74,5 +75,6 @@ log() {
 # Local Variables:
 # sh-basic-offset: 2
 # sh-indentation: 2
+# sh-set-shell: bash
 # indent-tabs-mode: nil
 # End:
