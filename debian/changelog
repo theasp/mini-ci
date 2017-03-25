@@ -1,3 +1,9 @@
+mini-ci (0.2.1-1) xenial; urgency=medium
+
+  * Fix bug with "latest" symlink.
+
+ -- Andrew Phillips <theasp@gmail.com>  Sat, 25 Mar 2017 11:10:22 -0300
+
 mini-ci (0.2-1) xenial; urgency=medium
 
   * Several updates.
