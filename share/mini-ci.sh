@@ -44,7 +44,7 @@ declare TASKS_DIR=""
 declare TASKS_LOG=""
 declare UPDATE_LOG=""
 
-help() {
+function help {
   cat <<EOF
 Usage: $SHNAME [option ...] [command ...]
 
@@ -77,7 +77,7 @@ EOF
 }
 
 
-main() {
+function main {
   local temp=$(getopt -o c:,d:,m::,o,D,F,h --long timeout:,config-file:,job-dir:,message::,oknodo,debug,foreground,help -n 'test.sh' -- "$@")
   eval set -- "$temp"
 
@@ -168,7 +168,7 @@ main() {
   fi
 }
 
-main_loop() {
+function main_loop {
   log "Starting up"
 
   read_status_file
@@ -204,7 +204,7 @@ main_loop() {
   done
 }
 
-queue() {
+function queue {
   do_hook "queue_pre" || return
 
   local cmd="$1"
@@ -215,13 +215,13 @@ queue() {
   do_hook "queue_post" || return
 }
 
-add_child() {
+function add_child {
   debug "Added child $@"
   CHILD_PIDS=(${CHILD_PIDS[@]} $1)
   CHILD_CBS=(${CHILD_CBS[@]} $2)
 }
 
-clean() {
+function clean {
   do_hook "clean_pre" || return
 
   log "Cleaning workspace"
@@ -234,7 +234,7 @@ clean() {
   do_hook "clean_post" || return
 }
 
-schedule_poll() {
+function schedule_poll {
   do_hook "schedule_poll_pre" || return
 
   if [[ "$POLL_FREQ" -gt 0 ]]; then
@@ -244,7 +244,7 @@ schedule_poll() {
   do_hook "schedule_poll_post" || return
 }
 
-run_repo() {
+function run_repo {
   local operation=$1
   local callback=$2
   local log_file=$3
@@ -264,7 +264,7 @@ run_repo() {
   return 1
 }
 
-poll_start() {
+function poll_start {
   if [[ ! -e $WORKSPACE ]]; then
     (LOG_FILE=$POLL_LOG; log "Missing workdir, doing update instead")
     update_start
@@ -283,7 +283,7 @@ poll_start() {
   do_hook "poll_start_post" || return
 }
 
-poll_finish() {
+function poll_finish {
   STATE="idle"
 
   do_hook "poll_finish_pre" || return
@@ -307,7 +307,7 @@ poll_finish() {
   do_hook "poll_finish_post" || return
 }
 
-update_start() {
+function update_start {
   log "Updating workspace"
   [[ -e "$WORKSPACE" ]] || mkdir "$WORKSPACE"
   do_hook "update_start_pre" || return
@@ -322,7 +322,7 @@ update_start() {
   do_hook "update_start_post" || return
 }
 
-update_finish() {
+function update_finish {
   STATE="idle"
   do_hook "update_finish_pre" || return
 
@@ -340,7 +340,7 @@ update_finish() {
   do_hook "update_finish_post" || return
 }
 
-tasks_start() {
+function tasks_start {
   do_hook "tasks_start_pre" || return
 
   if [[ -d "$TASKS_DIR" ]]; then
@@ -374,7 +374,7 @@ tasks_start() {
   do_hook "tasks_start_post" || return
 }
 
-tasks_finish() {
+function tasks_finish {
   STATE="idle"
   do_hook "tasks_finish_pre" || return
 
@@ -389,7 +389,7 @@ tasks_finish() {
   do_hook "tasks_finish_post" || return
 }
 
-abort() {
+function abort {
   log "Aborting any processes"
   do_hook "abort_pre" || return
 
@@ -429,7 +429,7 @@ abort() {
   do_hook "abort_post" || return
 }
 
-write_status_file() {
+function write_status_file {
   debug "Write status file $STATUS_FILE"
   do_hook "write_status_pre" || return
 
@@ -450,7 +450,7 @@ EOF
   do_hook "write_status_post" || return
 }
 
-read_status_file() {
+function read_status_file {
   debug "Reading status file in $STATUS_FILE"
 
   do_hook "read_status_pre" || return
@@ -481,7 +481,7 @@ read_status_file() {
   do_hook "read_status_post" || return
 }
 
-update_status() {
+function update_status {
   local item=$1
   local new_status=$2
   local new_status_time=$(printf '%(%s)T\n' -1)
@@ -503,7 +503,7 @@ update_status() {
   do_hook "update_status_post" || return
 }
 
-notify_status() {
+function notify_status {
   local item=$1
   local old=$2
   local old_time=$3
@@ -545,7 +545,7 @@ notify_status() {
   do_hook "notify_status_post" || return
 }
 
-run_tasks() {
+function run_tasks {
   do_hook "run_tasks_pre" || return
 
   for task in $(ls -1 "$TASKS_DIR" | grep -E -e '^[a-zA-Z0-9_-]+$' | sort); do
@@ -565,7 +565,7 @@ run_tasks() {
   do_hook "run_tasks_post" || return
 }
 
-status() {
+function status {
   do_hook "status_pre" || return
 
   log "PID:$$ State:$STATE Queue:[${QUEUE[@]}] Poll:${CUR_STATUS[poll]} Update:${CUR_STATUS[update]} Tasks:${CUR_STATUS[tasks]}"
@@ -573,7 +573,7 @@ status() {
   do_hook "status_post" || return
 }
 
-read_commands() {
+function read_commands {
   do_hook "read_commands_pre" || return
   local cmd=""
 
@@ -601,7 +601,7 @@ read_commands() {
   do_hook "read_commands_post" || return
 }
 
-run_cmd() {
+function run_cmd {
   local cmd=$1
 
   do_hook "run_cmd_pre" || return
@@ -621,7 +621,7 @@ run_cmd() {
   do_hook "run_cmd_pre" || return
 }
 
-process_queue() {
+function process_queue {
   do_hook "process_queue_pre" || return
 
   while [[ -n "${QUEUE[0]}" ]]; do
@@ -637,7 +637,7 @@ process_queue() {
   do_hook "process_queue_post" || return
 }
 
-reload_config() {
+function reload_config {
   log "Reloading configuration"
 
   do_hook "reload_config_pre" || return
@@ -652,7 +652,7 @@ reload_config() {
   do_hook "reload_config_post" || return
 }
 
-load_config() {
+function load_config {
   BUILDS_DIR="./builds"
   BUILD_KEEP=0
   CONTROL_FIFO="./control.fifo"
@@ -700,7 +700,7 @@ load_config() {
   do_hook "load_config_post" || return
 }
 
-acquire_lock() {
+function acquire_lock {
   local oknodo=$1
 
   do_hook "acquire_lock_pre" || return
@@ -726,7 +726,7 @@ acquire_lock() {
   do_hook "acquire_lock_post" || return
 }
 
-send_message() {
+function send_message {
   local timeout=$1
   local cmd=$2
 
@@ -765,7 +765,7 @@ send_message() {
   do_hook "send_message_post" || return
 }
 
-quit() {
+function quit {
   log "Shutting down"
 
   do_hook "quit_pre" || return
@@ -779,7 +779,7 @@ quit() {
   exit 0
 }
 
-handle_children() {
+function handle_children {
   local tmpPids=()
   local tmpCBs=()
   for ((i=0; i < ${#CHILD_PIDS[@]}; ++i)); do
@@ -805,7 +805,7 @@ handle_children() {
   CHILD_CBS=(${tmpCBs[@]})
 }
 
-do_hook() {
+function do_hook {
   local hook_name=$1
   local rc=0
 
@@ -827,7 +827,7 @@ do_hook() {
   return $rc
 }
 
-find_plugin_functions() {
+function find_plugin_functions {
   local test_re="(plugin_$1_[A-Za-z0-9_]+) \(\)"
   while read line; do
     if [[ "$line" =~ $test_re ]]; then
@@ -836,7 +836,7 @@ find_plugin_functions() {
   done < <(set)
 }
 
-find_plugin_function() {
+function find_plugin_function {
   local test_re="(plugin_$1) \(\)"
   debug "Looking for function matching $test_re"
   while read line; do
