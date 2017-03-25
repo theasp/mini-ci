@@ -22,6 +22,9 @@ plugin_repo_update_git() {
     exit 0
   fi
 
+  log "Removing local changes"
+  git stash -u
+
   local cur_url=$(git ls-remote --get-url)
   log "Starting update of $cur_url"
 
@@ -58,6 +61,9 @@ plugin_repo_poll_git() {
   else
     error "git remote update returned $?"
   fi
+
+  log "Removing local changes"
+  git stash -u
 
   local local=$(git rev-parse @{0})
   local remote=$(git rev-parse @{u})
